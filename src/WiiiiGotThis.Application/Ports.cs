@@ -6,7 +6,7 @@ namespace WiiiiGotThis.Application;
 public interface IIntegrationPublicationStore
 {
     ValueTask SaveAsync(ServicePublication publication, CancellationToken cancellationToken = default);
-    ValueTask<ServicePublication?> LoadAsync(ServiceId serviceId, CancellationToken cancellationToken = default);
+    ValueTask<ServicePublication?> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default);
 }
 
 public interface IIntegrationAdapterCatalog

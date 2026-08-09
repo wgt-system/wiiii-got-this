@@ -42,11 +42,11 @@ public sealed class SqliteIntegrationPublicationStore(SqliteConnectionFactory co
         await connection.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
         command.CommandText = "INSERT INTO wgt_integration_publications(service_id, display_name, published_at_utc) VALUES ($id, $name, $published) ON CONFLICT(service_id) DO UPDATE SET display_name = excluded.display_name, published_at_utc = excluded.published_at_utc;";
-        command.Parameters.AddWithValue("$id", publication.ServiceId.Value.ToString("D"));
+        command.Parameters.AddWithValue("$id", publication.ServiceId.Value);
         command.Parameters.AddWithValue("$name", publication.DisplayName);
         command.Parameters.AddWithValue("$published", publication.PublishedAtUtc.ToString("O"));
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
-    public ValueTask<ServicePublication?> LoadAsync(ServiceId serviceId, CancellationToken cancellationToken = default) => ValueTask.FromResult<ServicePublication?>(null);
+    public ValueTask<ServicePublication?> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default) => ValueTask.FromResult<ServicePublication?>(null);
 }

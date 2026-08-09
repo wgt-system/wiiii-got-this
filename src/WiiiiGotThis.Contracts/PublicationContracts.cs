@@ -3,19 +3,18 @@ using WiiiiGotThis.Domain;
 namespace WiiiiGotThis.Contracts;
 
 public sealed record CapabilityPublication(
-    CapabilityId Id,
+    CapabilityIdentity Id,
     string Title,
-    Version ContractVersion,
-    Availability Availability);
+    Version ContractVersion);
 
 public sealed record ServicePublication(
-    ServiceId ServiceId,
+    ServiceIdentity ServiceId,
     string DisplayName,
     IReadOnlyList<CapabilityPublication> Capabilities,
     DateTimeOffset PublishedAtUtc);
 
 public interface IIntegrationAdapter
 {
-    ServiceId ServiceId { get; }
+    ServiceIdentity ServiceId { get; }
     ValueTask<ServicePublication> GetPublicationAsync(CancellationToken cancellationToken = default);
 }

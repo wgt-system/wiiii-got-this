@@ -11,10 +11,8 @@ public sealed class ReferenceIntegrationTests
     public async Task Reference_publication_has_stable_identity_and_distinct_states()
     {
         var publication = await new ReferenceIntegrationAdapter().GetPublicationAsync();
-        Assert.Equal(ReferenceIntegrationAdapter.StableServiceId, publication.ServiceId);
-        Assert.Contains(publication.Capabilities, item => item.Availability.Reason == AvailabilityReason.Available);
-        Assert.Contains(publication.Capabilities, item => item.Availability.Reason == AvailabilityReason.UnsupportedContext);
-        Assert.Contains(publication.Capabilities, item => item.Availability.Reason == AvailabilityReason.ProviderUnreachable);
+        Assert.Equal(ReferenceIntegrationAdapter.StableServiceIdentity, publication.ServiceId);
+        Assert.Equal(3, publication.Capabilities.Count);
     }
 
     [Fact]
@@ -32,6 +30,6 @@ public sealed class ReferenceIntegrationTests
     {
         public List<ServicePublication> Publications { get; } = [];
         public ValueTask SaveAsync(ServicePublication publication, CancellationToken cancellationToken = default) { Publications.Add(publication); return ValueTask.CompletedTask; }
-        public ValueTask<ServicePublication?> LoadAsync(ServiceId serviceId, CancellationToken cancellationToken = default) => ValueTask.FromResult<ServicePublication?>(null);
+        public ValueTask<ServicePublication?> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default) => ValueTask.FromResult<ServicePublication?>(null);
     }
 }

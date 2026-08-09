@@ -5,7 +5,7 @@ public sealed class DependencyBoundaryTests
     [Fact]
     public void Domain_is_framework_free_and_application_does_not_depend_on_outer_layers()
     {
-        var domainReferences = typeof(WiiiiGotThis.Domain.ServiceId).Assembly.GetReferencedAssemblies().Select(reference => reference.Name).ToHashSet();
+        var domainReferences = typeof(WiiiiGotThis.Domain.ServiceIdentity).Assembly.GetReferencedAssemblies().Select(reference => reference.Name).ToHashSet();
         Assert.DoesNotContain("Avalonia", domainReferences);
         Assert.DoesNotContain("Microsoft.Data.Sqlite", domainReferences);
         Assert.DoesNotContain("System.Net.Http", domainReferences);
