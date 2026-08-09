@@ -22,7 +22,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
     [ObservableProperty] private string currentDeviceName = "Not initialized";
     [ObservableProperty] private DeviceIdentity? currentDeviceIdentity;
-    [ObservableProperty] private ServiceIntegrationListItem? selectedIntegration;
+    [ObservableProperty] private ServiceIntegrationPresentationViewModel? selectedIntegration;
     [ObservableProperty] private CapabilityPresentationViewModel? selectedCapability;
     [ObservableProperty] private CapabilityPresentationViewModel? openedReferenceCapability;
     [ObservableProperty] private string statusText = "Starting…";
@@ -58,7 +58,7 @@ public sealed partial class ShellViewModel : ObservableObject
         BackToCatalogCommand = new RelayCommand(() => OpenedReferenceCapability = null);
     }
 
-    public ObservableCollection<ServiceIntegrationListItem> Integrations { get; } = [];
+    public ObservableCollection<ServiceIntegrationPresentationViewModel> Integrations { get; } = [];
     public ObservableCollection<CapabilityPresentationViewModel> Capabilities { get; } = [];
     public IAsyncRelayCommand RefreshCommand { get; }
     public IAsyncRelayCommand EnableGloballyCommand { get; }
@@ -77,7 +77,7 @@ public sealed partial class ShellViewModel : ObservableObject
             return initializationTask ??= InitializeCoreAsync();
     }
 
-    partial void OnSelectedIntegrationChanged(ServiceIntegrationListItem? value)
+    partial void OnSelectedIntegrationChanged(ServiceIntegrationPresentationViewModel? value)
     {
         RefreshCommandStates();
     }
@@ -138,10 +138,11 @@ public sealed partial class ShellViewModel : ObservableObject
     private async Task ReloadStateAsync()
     {
         if (CurrentDeviceIdentity is null) return;
+        var selectedServiceIdentity = SelectedIntegration?.ServiceIdentity;
         var integrations = await listServiceIntegrations.ListAsync(CurrentDeviceIdentity);
-        Replace(Integrations, integrations);
+        Replace(Integrations, integrations.Select(item => new ServiceIntegrationPresentationViewModel(item)));
         SelectedIntegration = SelectedIntegration is not null
-            ? Integrations.FirstOrDefault(x => x.ServiceIdentity == SelectedIntegration.ServiceIdentity)
+            ? Integrations.FirstOrDefault(x => x.ServiceIdentity == selectedServiceIdentity)
             : Integrations.FirstOrDefault();
 
         var entries = await resolveCapabilityCatalog.ResolveAsync(CurrentDeviceIdentity);

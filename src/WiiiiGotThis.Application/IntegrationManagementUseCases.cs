@@ -37,7 +37,12 @@ public sealed record ServiceIntegrationListItem(
     string DisplayName,
     bool IsGloballyEnabled,
     bool? CurrentDeviceOverride,
-    bool IsEffectivelyEnabled);
+    bool IsEffectivelyEnabled,
+    bool HasLastKnownPublication,
+    bool HasRefreshBeenAttempted,
+    IntegrationRefreshStatus? LatestRefreshResult,
+    DateTimeOffset? LastRefreshAttemptedAtUtc,
+    DateTimeOffset? LastSuccessfulRefreshAtUtc);
 
 public sealed class ListServiceIntegrationsUseCase(
     IServiceIntegrationStore integrations,
@@ -50,16 +55,22 @@ public sealed class ListServiceIntegrationsUseCase(
         foreach (var integration in await integrations.LoadAllAsync(cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var publication = (await publications.LoadAsync(integration.ServiceIdentity, cancellationToken)).Publication;
+            var publicationState = await publications.LoadAsync(integration.ServiceIdentity, cancellationToken);
+            var observation = publicationState.RefreshObservation;
             var overrideValue = integration.DeviceOverrides.TryGetValue(currentDevice, out var value)
                 ? value == Enablement.Enabled
                 : (bool?)null;
             result.Add(new(
                 integration.ServiceIdentity,
-                publication?.DisplayName ?? integration.ServiceIdentity.Value,
+                publicationState.Publication?.DisplayName ?? integration.ServiceIdentity.Value,
                 integration.GlobalEnablement == Enablement.Enabled,
                 overrideValue,
-                integration.GetEffectiveEnablement(currentDevice) == Enablement.Enabled));
+                integration.GetEffectiveEnablement(currentDevice) == Enablement.Enabled,
+                publicationState.Publication is not null,
+                observation.HasAttempted,
+                observation.LatestResult,
+                observation.LastAttemptedAtUtc,
+                observation.LastSuccessfulRefreshAtUtc));
         }
         return result;
     }

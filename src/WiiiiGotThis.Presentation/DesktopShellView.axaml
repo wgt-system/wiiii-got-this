@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:WiiiiGotThis.Presentation" xmlns:app="using:WiiiiGotThis.Application" x:Class="WiiiiGotThis.Presentation.DesktopShellView" x:DataType="vm:ShellViewModel">
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:WiiiiGotThis.Presentation" xmlns:app="using:WiiiiGotThis.Application" xmlns:p="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.DesktopShellView" x:DataType="vm:ShellViewModel">
   <Grid RowDefinitions="Auto,*" ColumnDefinitions="240,300,*" Margin="16">
     <Grid Grid.ColumnSpan="3" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,16">
       <StackPanel><TextBlock FontSize="26" FontWeight="Bold">Wiiii Got This</TextBlock><TextBlock Text="{Binding CurrentDeviceName}" /></StackPanel>
@@ -9,7 +9,7 @@
       <DockPanel>
         <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,8">Integrations</TextBlock>
         <ListBox ItemsSource="{Binding Integrations}" SelectedItem="{Binding SelectedIntegration, Mode=TwoWay}">
-          <ListBox.ItemTemplate><DataTemplate x:DataType="app:ServiceIntegrationListItem"><StackPanel Margin="0,4"><TextBlock Text="{Binding DisplayName}" /><TextBlock FontSize="11" Text="{Binding IsEffectivelyEnabled}" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
+          <ListBox.ItemTemplate><DataTemplate x:DataType="p:ServiceIntegrationPresentationViewModel"><StackPanel Margin="0,4"><TextBlock Text="{Binding DisplayName}" /><TextBlock FontSize="11" Text="{Binding EnablementStatusText}" /><TextBlock FontSize="11" Text="{Binding PublicationRefreshStatusText}" TextWrapping="Wrap" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
         </ListBox>
       </DockPanel>
     </Border>
@@ -27,6 +27,13 @@
         <WrapPanel><Button Command="{Binding EnableGloballyCommand}" Content="Enable globally" Margin="0,0,6,6" /><Button Command="{Binding DisableGloballyCommand}" Content="Disable globally" Margin="0,0,6,6" /></WrapPanel>
         <WrapPanel><Button Command="{Binding EnableOnThisDeviceCommand}" Content="Enable on this device" Margin="0,0,6,6" /><Button Command="{Binding DisableOnThisDeviceCommand}" Content="Disable on this device" Margin="0,0,6,6" /></WrapPanel>
         <Button Command="{Binding InheritGlobalSettingCommand}" Content="Inherit global setting" HorizontalAlignment="Left" />
+        <Separator Margin="0,8" />
+        <TextBlock FontWeight="Bold">Selected integration</TextBlock>
+        <TextBlock Text="{Binding SelectedIntegration.DisplayName}" FontSize="18" />
+        <TextBlock Text="{Binding SelectedIntegration.EnablementStatusText}" />
+        <TextBlock Text="{Binding SelectedIntegration.PublicationRefreshStatusText}" TextWrapping="Wrap" />
+        <TextBlock Text="{Binding SelectedIntegration.LastRefreshAttemptText}" FontSize="11" />
+        <TextBlock Text="{Binding SelectedIntegration.LastSuccessfulRefreshText}" FontSize="11" />
         <Separator Margin="0,8" />
         <StackPanel IsVisible="{Binding IsCapabilityDetailsVisible}" Spacing="8">
           <TextBlock FontWeight="Bold">Selected capability</TextBlock>

@@ -41,6 +41,38 @@ public sealed class ShellViewModelTests
     }
 
     [Fact]
+    public async Task Selected_integration_survives_reload_by_service_identity()
+    {
+        var shell = CreateShell(); await shell.EnsureInitializedAsync();
+        var selectedIdentity = shell.SelectedIntegration!.ServiceIdentity;
+        var previous = shell.SelectedIntegration;
+        await shell.RefreshCommand.ExecuteAsync(null);
+        Assert.Equal(selectedIdentity, shell.SelectedIntegration!.ServiceIdentity);
+        Assert.NotSame(previous, shell.SelectedIntegration);
+    }
+
+    [Fact]
+    public async Task Successful_refresh_updates_visible_catalog_add_remove_title_and_version()
+    {
+        var service = new ServiceIdentity("dynamic-service");
+        var adapter = new DynamicAdapter(service, new ServicePublication(service, "Dynamic", [new(new("a"), "A", new(1, 0)), new(new("removed"), "Removed", new(1, 0))], DateTimeOffset.UtcNow));
+        var shell = CreateShell(adapter); await shell.EnsureInitializedAsync(); await shell.EnableGloballyCommand.ExecuteAsync(null);
+        adapter.Publication = new ServicePublication(service, "Dynamic", [new(new("a"), "Changed", new(2, 0)), new(new("b"), "Added", new(1, 0))], DateTimeOffset.UtcNow);
+        await shell.RefreshCommand.ExecuteAsync(null);
+        Assert.Equal(["a", "b"], shell.Capabilities.Select(x => x.CapabilityIdentity.Value)); Assert.Equal("Changed", shell.Capabilities[0].CapabilityTitle); Assert.Equal(new Version(2, 0), shell.Capabilities[0].ContractVersion);
+    }
+
+    [Fact]
+    public async Task Failed_refresh_retains_last_known_visible_capabilities_and_reports_integration_diagnostic()
+    {
+        var service = new ServiceIdentity("retained-service");
+        var adapter = new DynamicAdapter(service, new ServicePublication(service, "Retained", [new(new("a"), "A", new(1, 0))], DateTimeOffset.UtcNow));
+        var shell = CreateShell(adapter); await shell.EnsureInitializedAsync(); var before = shell.Capabilities.Select(x => x.CapabilityIdentity.Value).ToArray();
+        adapter.PublicationException = new InvalidOperationException(); await shell.RefreshCommand.ExecuteAsync(null);
+        Assert.Equal(before, shell.Capabilities.Select(x => x.CapabilityIdentity.Value)); Assert.Contains("last-known publication", shell.SelectedIntegration!.PublicationRefreshStatusText, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Unavailable_status_copy_is_user_facing_and_distinct()
     {
         var identities = new[] { AvailabilityReason.Disabled, AvailabilityReason.Unknown, AvailabilityReason.Unreachable, AvailabilityReason.Incompatible, AvailabilityReason.Unsupported, AvailabilityReason.MissingPrerequisite };
@@ -65,9 +97,11 @@ public sealed class ShellViewModelTests
         return new CapabilityPresentationViewModel(new CapabilityCatalogEntry(service, publication.DisplayName, publication.Capabilities[0].Id, "Capability", new(1, 0), CapabilityResolver.Resolve(integration, DeviceIdentity.New(), new(service, publication.Capabilities[0].Id), facts))).StatusText;
     }
 
-    private static ShellViewModel CreateShell()
+    private static ShellViewModel CreateShell() => CreateShell(new ReferenceIntegrationAdapter());
+
+    private static ShellViewModel CreateShell(IIntegrationAdapter adapter)
     {
-        var adapter = new ReferenceIntegrationAdapter(); var adapters = new StaticIntegrationAdapterCatalog([adapter]);
+        var adapters = new StaticIntegrationAdapterCatalog([adapter]);
         var integrations = new MemoryIntegrationStore(); var publications = new MemoryPublicationStore();
         return new ShellViewModel(
             new EnsureCurrentDeviceUseCase(new MemoryDeviceStore()),
@@ -98,5 +132,18 @@ public sealed class ShellViewModelTests
         private readonly Dictionary<ServiceIdentity, IntegrationPublicationState> values = [];
         public ValueTask SaveAsync(IntegrationPublicationState state, CancellationToken cancellationToken = default) { values[state.ServiceIdentity] = state; return ValueTask.CompletedTask; }
         public ValueTask<IntegrationPublicationState> LoadAsync(ServiceIdentity id, CancellationToken cancellationToken = default) => ValueTask.FromResult(values.GetValueOrDefault(id) ?? new IntegrationPublicationState(id, null, PublicationRefreshObservation.NotAttempted));
+    }
+
+    private sealed class DynamicAdapter(ServiceIdentity serviceId, ServicePublication publication) : IIntegrationAdapter
+    {
+        public ServiceIdentity ServiceId { get; } = serviceId;
+        public ServicePublication Publication { get; set; } = publication;
+        public Exception? PublicationException { get; set; }
+        public ValueTask<ServicePublication> GetPublicationAsync(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested(); if (PublicationException is not null) throw PublicationException; return ValueTask.FromResult(Publication);
+        }
+        public ValueTask<CapabilityResolutionFacts> ObserveCapabilityAsync(CapabilityPublication capability, CancellationToken cancellationToken = default) =>
+            ValueTask.FromResult(new CapabilityResolutionFacts(ProviderReachability.Reachable, ContractCompatibility.Compatible, CurrentContextSupport.Supported, PrerequisiteState.Satisfied, PresentationInvocationSupport.Supported));
     }
 }
