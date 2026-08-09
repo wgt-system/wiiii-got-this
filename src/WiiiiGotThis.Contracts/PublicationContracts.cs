@@ -17,4 +17,5 @@ public interface IIntegrationAdapter
 {
     ServiceIdentity ServiceId { get; }
     ValueTask<ServicePublication> GetPublicationAsync(CancellationToken cancellationToken = default);
+    ValueTask<CapabilityResolutionFacts> ObserveCapabilityAsync(CapabilityPublication capability, CancellationToken cancellationToken = default);
 }
