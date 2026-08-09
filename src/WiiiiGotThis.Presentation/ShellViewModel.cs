@@ -1,0 +1,170 @@
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using WiiiiGotThis.Application;
+using WiiiiGotThis.Domain;
+
+namespace WiiiiGotThis.Presentation;
+
+public sealed partial class ShellViewModel : ObservableObject
+{
+    private readonly EnsureCurrentDeviceUseCase ensureCurrentDevice;
+    private readonly RefreshPublicationsUseCase refreshPublications;
+    private readonly ListServiceIntegrationsUseCase listServiceIntegrations;
+    private readonly SetGlobalIntegrationEnablementUseCase setGlobalEnablement;
+    private readonly SetDeviceIntegrationOverrideUseCase setDeviceOverride;
+    private readonly ClearDeviceIntegrationOverrideUseCase clearDeviceOverride;
+    private readonly ResolveCapabilityCatalogUseCase resolveCapabilityCatalog;
+    private readonly string suggestedDeviceName;
+    private readonly object initializationGate = new();
+    private Task? initializationTask;
+
+    [ObservableProperty] private string currentDeviceName = "Not initialized";
+    [ObservableProperty] private DeviceIdentity? currentDeviceIdentity;
+    [ObservableProperty] private ServiceIntegrationListItem? selectedIntegration;
+    [ObservableProperty] private CapabilityPresentationViewModel? selectedCapability;
+    [ObservableProperty] private CapabilityPresentationViewModel? openedReferenceCapability;
+    [ObservableProperty] private string statusText = "Starting…";
+
+    public ShellViewModel(
+        EnsureCurrentDeviceUseCase ensureCurrentDevice,
+        RefreshPublicationsUseCase refreshPublications,
+        ListServiceIntegrationsUseCase listServiceIntegrations,
+        SetGlobalIntegrationEnablementUseCase setGlobalEnablement,
+        SetDeviceIntegrationOverrideUseCase setDeviceOverride,
+        ClearDeviceIntegrationOverrideUseCase clearDeviceOverride,
+        ResolveCapabilityCatalogUseCase resolveCapabilityCatalog,
+        string suggestedDeviceName)
+    {
+        this.ensureCurrentDevice = ensureCurrentDevice;
+        this.refreshPublications = refreshPublications;
+        this.listServiceIntegrations = listServiceIntegrations;
+        this.setGlobalEnablement = setGlobalEnablement;
+        this.setDeviceOverride = setDeviceOverride;
+        this.clearDeviceOverride = clearDeviceOverride;
+        this.resolveCapabilityCatalog = resolveCapabilityCatalog;
+        this.suggestedDeviceName = suggestedDeviceName;
+
+        RefreshCommand = new AsyncRelayCommand(RefreshAsync);
+        EnableGloballyCommand = new AsyncRelayCommand(EnableGloballyAsync, CanManageSelectedIntegration);
+        DisableGloballyCommand = new AsyncRelayCommand(DisableGloballyAsync, CanManageSelectedIntegration);
+        EnableOnThisDeviceCommand = new AsyncRelayCommand(EnableOnThisDeviceAsync, CanManageSelectedIntegration);
+        DisableOnThisDeviceCommand = new AsyncRelayCommand(DisableOnThisDeviceAsync, CanManageSelectedIntegration);
+        InheritGlobalSettingCommand = new AsyncRelayCommand(InheritGlobalSettingAsync, CanManageSelectedIntegration);
+        OpenCapabilityCommand = new AsyncRelayCommand(OpenCapabilityAsync, CanOpenSelectedCapability);
+        BackToCatalogCommand = new RelayCommand(() => OpenedReferenceCapability = null);
+    }
+
+    public ObservableCollection<ServiceIntegrationListItem> Integrations { get; } = [];
+    public ObservableCollection<CapabilityPresentationViewModel> Capabilities { get; } = [];
+    public IAsyncRelayCommand RefreshCommand { get; }
+    public IAsyncRelayCommand EnableGloballyCommand { get; }
+    public IAsyncRelayCommand DisableGloballyCommand { get; }
+    public IAsyncRelayCommand EnableOnThisDeviceCommand { get; }
+    public IAsyncRelayCommand DisableOnThisDeviceCommand { get; }
+    public IAsyncRelayCommand InheritGlobalSettingCommand { get; }
+    public IAsyncRelayCommand OpenCapabilityCommand { get; }
+    public IRelayCommand BackToCatalogCommand { get; }
+
+    public Task EnsureInitializedAsync()
+    {
+        lock (initializationGate)
+            return initializationTask ??= InitializeCoreAsync();
+    }
+
+    partial void OnSelectedIntegrationChanged(ServiceIntegrationListItem? value)
+    {
+        RefreshCommandStates();
+    }
+
+    partial void OnSelectedCapabilityChanged(CapabilityPresentationViewModel? value)
+    {
+        RefreshCommandStates();
+    }
+
+    private async Task InitializeCoreAsync()
+    {
+        try
+        {
+            var device = await ensureCurrentDevice.GetOrCreateAsync(suggestedDeviceName);
+            CurrentDeviceIdentity = device.DeviceIdentity;
+            CurrentDeviceName = device.DisplayName;
+            await RefreshCoreAsync();
+        }
+        catch
+        {
+            StatusText = "WGT could not load its local state.";
+            throw;
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        await EnsureInitializedAsync();
+        await RefreshCoreAsync();
+    }
+
+    private async Task RefreshCoreAsync()
+    {
+        if (CurrentDeviceIdentity is null) return;
+        try
+        {
+            var results = await refreshPublications.RefreshAsync();
+            var failures = results.Where(x => x.Status != IntegrationRefreshStatus.Refreshed).ToArray();
+            StatusText = failures.Length == 0
+                ? "Ready"
+                : "Some integration publications could not be refreshed.";
+            await ReloadStateAsync();
+        }
+        catch
+        {
+            StatusText = "WGT could not refresh its local state.";
+            throw;
+        }
+    }
+
+    private async Task ReloadStateAsync()
+    {
+        if (CurrentDeviceIdentity is null) return;
+        var integrations = await listServiceIntegrations.ListAsync(CurrentDeviceIdentity);
+        Replace(Integrations, integrations);
+        SelectedIntegration = SelectedIntegration is not null
+            ? Integrations.FirstOrDefault(x => x.ServiceIdentity == SelectedIntegration.ServiceIdentity)
+            : Integrations.FirstOrDefault();
+
+        var entries = await resolveCapabilityCatalog.ResolveAsync(CurrentDeviceIdentity);
+        var selectedId = SelectedCapability?.CapabilityIdentity;
+        Replace(Capabilities, entries.Select(x => new CapabilityPresentationViewModel(x)));
+        SelectedCapability = selectedId is null
+            ? Capabilities.FirstOrDefault()
+            : Capabilities.FirstOrDefault(x => x.CapabilityIdentity == selectedId);
+        if (OpenedReferenceCapability is not null)
+            OpenedReferenceCapability = Capabilities.FirstOrDefault(x => x.CapabilityIdentity == OpenedReferenceCapability.CapabilityIdentity && x.CanOpen);
+        RefreshCommandStates();
+    }
+
+    private async Task EnableGloballyAsync() { if (SelectedIntegration is { } selected) { await setGlobalEnablement.EnableAsync(selected.ServiceIdentity); await ReloadStateAsync(); } }
+    private async Task DisableGloballyAsync() { if (SelectedIntegration is { } selected) { await setGlobalEnablement.DisableAsync(selected.ServiceIdentity); await ReloadStateAsync(); } }
+    private async Task EnableOnThisDeviceAsync() { if (SelectedIntegration is { } selected && CurrentDeviceIdentity is { } device) { await setDeviceOverride.SetAsync(selected.ServiceIdentity, device, true); await ReloadStateAsync(); } }
+    private async Task DisableOnThisDeviceAsync() { if (SelectedIntegration is { } selected && CurrentDeviceIdentity is { } device) { await setDeviceOverride.SetAsync(selected.ServiceIdentity, device, false); await ReloadStateAsync(); } }
+    private async Task InheritGlobalSettingAsync() { if (SelectedIntegration is { } selected && CurrentDeviceIdentity is { } device) { await clearDeviceOverride.ClearAsync(selected.ServiceIdentity, device); await ReloadStateAsync(); } }
+    private Task OpenCapabilityAsync() { if (SelectedCapability is { CanOpen: true } capability) OpenedReferenceCapability = capability; return Task.CompletedTask; }
+
+    private bool CanManageSelectedIntegration() => SelectedIntegration is not null && CurrentDeviceIdentity is not null;
+    private bool CanOpenSelectedCapability() => SelectedCapability?.CanOpen == true;
+    private void RefreshCommandStates()
+    {
+        EnableGloballyCommand.NotifyCanExecuteChanged();
+        DisableGloballyCommand.NotifyCanExecuteChanged();
+        EnableOnThisDeviceCommand.NotifyCanExecuteChanged();
+        DisableOnThisDeviceCommand.NotifyCanExecuteChanged();
+        InheritGlobalSettingCommand.NotifyCanExecuteChanged();
+        OpenCapabilityCommand.NotifyCanExecuteChanged();
+    }
+
+    private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> source)
+    {
+        target.Clear();
+        foreach (var item in source) target.Add(item);
+    }
+}

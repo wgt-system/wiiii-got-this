@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:WiiiiGotThis.Presentation" xmlns:app="using:WiiiiGotThis.Application" x:Class="WiiiiGotThis.Presentation.DesktopShellView" x:DataType="vm:ShellViewModel">
+  <Grid RowDefinitions="Auto,*" ColumnDefinitions="240,300,*" Margin="16">
+    <Grid Grid.ColumnSpan="3" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,16">
+      <StackPanel><TextBlock FontSize="26" FontWeight="Bold">Wiiii Got This</TextBlock><TextBlock Text="{Binding CurrentDeviceName}" /></StackPanel>
+      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="12,0" Text="{Binding StatusText}" />
+      <Button Grid.Column="2" Command="{Binding RefreshCommand}" Content="Refresh" MinWidth="90" />
+    </Grid>
+    <Border Grid.Row="1" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Padding="10" Margin="0,0,12,0">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,8">Integrations</TextBlock>
+        <ListBox ItemsSource="{Binding Integrations}" SelectedItem="{Binding SelectedIntegration, Mode=TwoWay}">
+          <ListBox.ItemTemplate><DataTemplate x:DataType="app:ServiceIntegrationListItem"><StackPanel Margin="0,4"><TextBlock Text="{Binding DisplayName}" /><TextBlock FontSize="11" Text="{Binding IsEffectivelyEnabled}" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+    </Border>
+    <Border Grid.Row="1" Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Padding="10" Margin="0,0,12,0">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,8">Capability Catalog</TextBlock>
+        <ListBox ItemsSource="{Binding Capabilities}" SelectedItem="{Binding SelectedCapability, Mode=TwoWay}">
+          <ListBox.ItemTemplate><DataTemplate x:DataType="vm:CapabilityPresentationViewModel"><StackPanel Margin="0,4"><TextBlock Text="{Binding CapabilityTitle}" /><TextBlock FontSize="11" Text="{Binding StatusText}" TextWrapping="Wrap" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+    </Border>
+    <Border Grid.Row="1" Grid.Column="2" BorderBrush="Gray" BorderThickness="1" Padding="14">
+      <StackPanel Spacing="8">
+        <TextBlock FontWeight="Bold">Integration management</TextBlock>
+        <WrapPanel><Button Command="{Binding EnableGloballyCommand}" Content="Enable globally" Margin="0,0,6,6" /><Button Command="{Binding DisableGloballyCommand}" Content="Disable globally" Margin="0,0,6,6" /></WrapPanel>
+        <WrapPanel><Button Command="{Binding EnableOnThisDeviceCommand}" Content="Enable on this device" Margin="0,0,6,6" /><Button Command="{Binding DisableOnThisDeviceCommand}" Content="Disable on this device" Margin="0,0,6,6" /></WrapPanel>
+        <Button Command="{Binding InheritGlobalSettingCommand}" Content="Inherit global setting" HorizontalAlignment="Left" />
+        <Separator Margin="0,8" />
+        <TextBlock FontWeight="Bold">Selected capability</TextBlock>
+        <TextBlock Text="{Binding SelectedCapability.CapabilityTitle}" FontSize="20" />
+        <TextBlock Text="{Binding SelectedCapability.ServiceDisplayName}" />
+        <TextBlock Text="{Binding SelectedCapability.CapabilityIdentity.Value}" />
+        <TextBlock Text="{Binding SelectedCapability.ContractVersion}" />
+        <TextBlock Text="{Binding SelectedCapability.StatusText}" TextWrapping="Wrap" />
+        <Button Command="{Binding OpenCapabilityCommand}" Content="Open" HorizontalAlignment="Left" />
+        <StackPanel Spacing="5" Margin="0,12,0,0">
+          <TextBlock FontWeight="Bold">Reference Capability</TextBlock>
+          <TextBlock Text="This reference capability is available through Wiiii Got This." TextWrapping="Wrap" />
+          <Button Command="{Binding BackToCatalogCommand}" Content="Back to catalog" HorizontalAlignment="Left" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

@@ -1,0 +1,92 @@
+using WiiiiGotThis.Contracts;
+using WiiiiGotThis.Domain;
+
+namespace WiiiiGotThis.Application;
+
+public sealed class EnsureCurrentDeviceUseCase(ILocalDeviceStore devices)
+{
+    public async ValueTask<LocalDeviceConfiguration> GetOrCreateAsync(string suggestedDisplayName, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(suggestedDisplayName);
+        var existing = await devices.LoadAsync(cancellationToken);
+        if (existing is not null) return existing;
+
+        var configuration = new LocalDeviceConfiguration(DeviceIdentity.New(), suggestedDisplayName.Trim());
+        await devices.SaveAsync(configuration, cancellationToken);
+        return configuration;
+    }
+}
+
+public sealed record ServiceIntegrationListItem(
+    ServiceIdentity ServiceIdentity,
+    string DisplayName,
+    bool IsGloballyEnabled,
+    bool? CurrentDeviceOverride,
+    bool IsEffectivelyEnabled);
+
+public sealed class ListServiceIntegrationsUseCase(
+    IServiceIntegrationStore integrations,
+    IIntegrationPublicationStore publications)
+{
+    public async ValueTask<IReadOnlyList<ServiceIntegrationListItem>> ListAsync(DeviceIdentity currentDevice, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(currentDevice);
+        var result = new List<ServiceIntegrationListItem>();
+        foreach (var integration in await integrations.LoadAllAsync(cancellationToken))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var publication = await publications.LoadAsync(integration.ServiceIdentity, cancellationToken);
+            var overrideValue = integration.DeviceOverrides.TryGetValue(currentDevice, out var value)
+                ? value == Enablement.Enabled
+                : (bool?)null;
+            result.Add(new(
+                integration.ServiceIdentity,
+                publication?.DisplayName ?? integration.ServiceIdentity.Value,
+                integration.GlobalEnablement == Enablement.Enabled,
+                overrideValue,
+                integration.GetEffectiveEnablement(currentDevice) == Enablement.Enabled));
+        }
+        return result;
+    }
+}
+
+public sealed class SetGlobalIntegrationEnablementUseCase(IServiceIntegrationStore integrations)
+{
+    public ValueTask EnableAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default) => SetAsync(serviceIdentity, true, cancellationToken);
+    public ValueTask DisableAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default) => SetAsync(serviceIdentity, false, cancellationToken);
+
+    private async ValueTask SetAsync(ServiceIdentity serviceIdentity, bool enabled, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(serviceIdentity);
+        var integration = await integrations.LoadAsync(serviceIdentity, cancellationToken)
+            ?? throw new InvalidOperationException($"Unknown Service Integration '{serviceIdentity.Value}'.");
+        if (enabled) integration.EnableGlobally(); else integration.DisableGlobally();
+        await integrations.SaveAsync(integration, cancellationToken);
+    }
+}
+
+public sealed class SetDeviceIntegrationOverrideUseCase(IServiceIntegrationStore integrations)
+{
+    public async ValueTask SetAsync(ServiceIdentity serviceIdentity, DeviceIdentity deviceIdentity, bool enabled, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceIdentity);
+        ArgumentNullException.ThrowIfNull(deviceIdentity);
+        var integration = await integrations.LoadAsync(serviceIdentity, cancellationToken)
+            ?? throw new InvalidOperationException($"Unknown Service Integration '{serviceIdentity.Value}'.");
+        integration.SetDeviceOverride(deviceIdentity, enabled ? Enablement.Enabled : Enablement.Disabled);
+        await integrations.SaveAsync(integration, cancellationToken);
+    }
+}
+
+public sealed class ClearDeviceIntegrationOverrideUseCase(IServiceIntegrationStore integrations)
+{
+    public async ValueTask ClearAsync(ServiceIdentity serviceIdentity, DeviceIdentity deviceIdentity, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceIdentity);
+        ArgumentNullException.ThrowIfNull(deviceIdentity);
+        var integration = await integrations.LoadAsync(serviceIdentity, cancellationToken)
+            ?? throw new InvalidOperationException($"Unknown Service Integration '{serviceIdentity.Value}'.");
+        integration.ClearDeviceOverride(deviceIdentity);
+        await integrations.SaveAsync(integration, cancellationToken);
+    }
+}
