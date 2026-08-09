@@ -25,10 +25,10 @@ internal sealed class AppDelegate : UIApplicationDelegate, IAvaloniaAppDelegate
     }
 
     public override void OnActivated(UIApplication application) =>
-        Activated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Unspecified));
+        Activated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Reopen));
 
-    public override void WillResignActive(UIApplication application) =>
-        Deactivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Unspecified));
+    public override void OnResignActivation(UIApplication application) =>
+        Deactivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
 
     private static ShellViewModel CreateShell()
     {
