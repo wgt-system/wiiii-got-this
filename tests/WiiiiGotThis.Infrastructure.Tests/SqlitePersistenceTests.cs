@@ -36,8 +36,8 @@ public sealed class SqlitePersistenceTests
         await db.Runner.ApplyAsync();
         await db.Runner.ApplyAsync();
         var tables = await db.TableNamesAsync();
-        Assert.Equal(["wgt_capability_publications", "wgt_integration_publications", "wgt_local_device", "wgt_schema_migrations", "wgt_service_integration_device_overrides", "wgt_service_integrations"], tables);
-        Assert.Equal([1, 2], await db.MigrationVersionsAsync());
+        Assert.Equal(["wgt_capability_publications", "wgt_integration_publications", "wgt_local_device", "wgt_publication_refresh_states", "wgt_schema_migrations", "wgt_service_integration_device_overrides", "wgt_service_integrations"], tables);
+        Assert.Equal([1, 2, 3], await db.MigrationVersionsAsync());
     }
 
     [Fact]
@@ -48,14 +48,14 @@ public sealed class SqlitePersistenceTests
         {
             await connection.OpenAsync();
             await using var command = connection.CreateCommand();
-            command.CommandText = "CREATE TABLE wgt_schema_migrations(version INTEGER PRIMARY KEY, applied_at_utc TEXT NOT NULL); INSERT INTO wgt_schema_migrations VALUES (1, '2026-08-09T00:00:00Z'); CREATE TABLE wgt_integration_publications(service_id TEXT PRIMARY KEY, display_name TEXT NOT NULL, published_at_utc TEXT NOT NULL);";
+            command.CommandText = "CREATE TABLE wgt_schema_migrations(version INTEGER PRIMARY KEY, applied_at_utc TEXT NOT NULL); INSERT INTO wgt_schema_migrations VALUES (1, '2026-08-09T00:00:00Z'); CREATE TABLE wgt_integration_publications(service_id TEXT PRIMARY KEY, display_name TEXT NOT NULL, published_at_utc TEXT NOT NULL); INSERT INTO wgt_integration_publications VALUES ('bootstrap-service', 'Existing', '2026-08-09T00:00:00Z');";
             await command.ExecuteNonQueryAsync();
         }
         await db.Runner.ApplyAsync();
-        Assert.Equal([1, 2], await db.MigrationVersionsAsync());
+        Assert.Equal([1, 2, 3], await db.MigrationVersionsAsync());
         var service = new ServiceIdentity("bootstrap-service");
-        await new SqliteIntegrationPublicationStore(db.Factory).SaveAsync(new ServicePublication(service, "Bootstrap", [], DateTimeOffset.UtcNow));
-        Assert.NotNull(await new SqliteIntegrationPublicationStore(db.Factory).LoadAsync(service));
+        var existing = await new SqliteIntegrationPublicationStore(db.Factory).LoadAsync(service);
+        Assert.Equal("Existing", existing.Publication!.DisplayName); Assert.False(existing.RefreshObservation.HasAttempted);
     }
 
     [Fact]
@@ -131,9 +131,9 @@ public sealed class SqlitePersistenceTests
     {
         await using var db = TestDatabase.Create(); await db.Runner.ApplyAsync(); var store = new SqliteIntegrationPublicationStore(db.Factory); var service = new ServiceIdentity("publication-service");
         var first = new ServicePublication(service, "First", [new(new CapabilityIdentity("two"), "Two", new Version(2, 0)), new(new CapabilityIdentity("one"), "One", new Version(1, 0))], DateTimeOffset.UtcNow);
-        await store.SaveAsync(first); var loaded = await store.LoadAsync(service); Assert.NotNull(loaded); Assert.Equal(["two", "one"], loaded!.Capabilities.Select(x => x.Id.Value)); Assert.Equal(first.PublishedAtUtc, loaded.PublishedAtUtc);
-        var second = new ServicePublication(service, "Second", [new(new CapabilityIdentity("one"), "Updated", new Version(3, 0))], first.PublishedAtUtc.AddMinutes(1)); await store.SaveAsync(second);
-        loaded = await store.LoadAsync(service); Assert.Equal("Second", loaded!.DisplayName); Assert.Single(loaded.Capabilities); Assert.Equal("Updated", loaded.Capabilities[0].Title); Assert.Equal(new Version(3, 0), loaded.Capabilities[0].ContractVersion);
+        await store.SaveAsync(new IntegrationPublicationState(service, first, PublicationRefreshObservation.Completed(first.PublishedAtUtc, IntegrationRefreshStatus.Refreshed, first.PublishedAtUtc))); var loaded = (await store.LoadAsync(service)).Publication; Assert.NotNull(loaded); Assert.Equal(["two", "one"], loaded!.Capabilities.Select(x => x.Id.Value)); Assert.Equal(first.PublishedAtUtc, loaded.PublishedAtUtc);
+        var second = new ServicePublication(service, "Second", [new(new CapabilityIdentity("one"), "Updated", new Version(3, 0))], first.PublishedAtUtc.AddMinutes(1)); await store.SaveAsync(new IntegrationPublicationState(service, second, PublicationRefreshObservation.Completed(second.PublishedAtUtc, IntegrationRefreshStatus.Refreshed, second.PublishedAtUtc)));
+        loaded = (await store.LoadAsync(service)).Publication; Assert.Equal("Second", loaded!.DisplayName); Assert.Single(loaded.Capabilities); Assert.Equal("Updated", loaded.Capabilities[0].Title); Assert.Equal(new Version(3, 0), loaded.Capabilities[0].ContractVersion);
     }
 
     [Fact]
@@ -141,10 +141,23 @@ public sealed class SqlitePersistenceTests
     {
         await using var db = TestDatabase.Create(); await db.Runner.ApplyAsync();
         var service = new ServiceIdentity("restart-publication");
-        await new SqliteIntegrationPublicationStore(db.Factory).SaveAsync(new ServicePublication(service, "Restart", [new(new CapabilityIdentity("cap"), "Capability", new Version(1, 2))], DateTimeOffset.UtcNow));
+        var publication = new ServicePublication(service, "Restart", [new(new CapabilityIdentity("cap"), "Capability", new Version(1, 2))], DateTimeOffset.UtcNow);
+        await new SqliteIntegrationPublicationStore(db.Factory).SaveAsync(new IntegrationPublicationState(service, publication, PublicationRefreshObservation.Completed(publication.PublishedAtUtc, IntegrationRefreshStatus.Refreshed, publication.PublishedAtUtc)));
         await using var restarted = db.Reopen(); await restarted.Runner.ApplyAsync();
-        var loaded = await new SqliteIntegrationPublicationStore(restarted.Factory).LoadAsync(service);
+        var loaded = (await new SqliteIntegrationPublicationStore(restarted.Factory).LoadAsync(service)).Publication;
         Assert.NotNull(loaded); Assert.Equal("Restart", loaded!.DisplayName); Assert.Equal("cap", loaded.Capabilities.Single().Id.Value);
+    }
+
+    [Fact]
+    public async Task Publication_and_refresh_metadata_survive_restart_and_failed_refresh_retains_snapshot()
+    {
+        await using var db = TestDatabase.Create(); await db.Runner.ApplyAsync(); var store = new SqliteIntegrationPublicationStore(db.Factory); var service = new ServiceIdentity("lifecycle-service"); var firstAt = DateTimeOffset.UtcNow;
+        var publication = new ServicePublication(service, "Retained", [new(new("cap"), "Capability", new(1, 0))], firstAt.AddMinutes(-1));
+        await store.SaveAsync(new IntegrationPublicationState(service, publication, PublicationRefreshObservation.Completed(firstAt, IntegrationRefreshStatus.Refreshed, firstAt)));
+        await using var restarted = db.Reopen(); await restarted.Runner.ApplyAsync(); var restartedStore = new SqliteIntegrationPublicationStore(restarted.Factory);
+        var loaded = await restartedStore.LoadAsync(service); Assert.Equal("Retained", loaded.Publication!.DisplayName); Assert.Equal(IntegrationRefreshStatus.Refreshed, loaded.RefreshObservation.LatestResult); Assert.Equal(firstAt, loaded.RefreshObservation.LastSuccessfulRefreshAtUtc);
+        var failedAt = firstAt.AddHours(1); await restartedStore.SaveAsync(new IntegrationPublicationState(service, null, PublicationRefreshObservation.Completed(failedAt, IntegrationRefreshStatus.AdapterFailed, firstAt)));
+        loaded = await restartedStore.LoadAsync(service); Assert.Equal("Retained", loaded.Publication!.DisplayName); Assert.Equal(IntegrationRefreshStatus.AdapterFailed, loaded.RefreshObservation.LatestResult); Assert.Equal(firstAt, loaded.RefreshObservation.LastSuccessfulRefreshAtUtc);
     }
 
     [Fact]
@@ -152,9 +165,21 @@ public sealed class SqlitePersistenceTests
     {
         await using var db = TestDatabase.Create(); await db.Runner.ApplyAsync(); var store = new SqliteIntegrationPublicationStore(db.Factory);
         var a = new ServiceIdentity("a"); var b = new ServiceIdentity("b"); var timestamp = DateTimeOffset.UtcNow;
-        await store.SaveAsync(new ServicePublication(a, "A", [new(new CapabilityIdentity("a-cap"), "A", new Version(1, 0))], timestamp)); await store.SaveAsync(new ServicePublication(b, "B", [new(new CapabilityIdentity("b-cap"), "B", new Version(1, 0))], timestamp));
-        await store.SaveAsync(new ServicePublication(a, "A2", [], timestamp.AddDays(1)));
-        Assert.Single((await store.LoadAsync(b))!.Capabilities); Assert.Equal("B", (await store.LoadAsync(b))!.DisplayName);
+        await store.SaveAsync(new IntegrationPublicationState(a, new ServicePublication(a, "A", [new(new CapabilityIdentity("a-cap"), "A", new Version(1, 0))], timestamp), PublicationRefreshObservation.Completed(timestamp, IntegrationRefreshStatus.Refreshed, timestamp))); await store.SaveAsync(new IntegrationPublicationState(b, new ServicePublication(b, "B", [new(new CapabilityIdentity("b-cap"), "B", new Version(1, 0))], timestamp), PublicationRefreshObservation.Completed(timestamp, IntegrationRefreshStatus.Refreshed, timestamp)));
+        await store.SaveAsync(new IntegrationPublicationState(a, new ServicePublication(a, "A2", [], timestamp.AddDays(1)), PublicationRefreshObservation.Completed(timestamp.AddDays(1), IntegrationRefreshStatus.Refreshed, timestamp.AddDays(1))));
+        Assert.Single((await store.LoadAsync(b)).Publication!.Capabilities); Assert.Equal("B", (await store.LoadAsync(b)).Publication!.DisplayName);
+    }
+
+    [Fact]
+    public async Task Failed_publication_replacement_rolls_back_header_and_capability_changes()
+    {
+        await using var db = TestDatabase.Create(); await db.Runner.ApplyAsync(); var store = new SqliteIntegrationPublicationStore(db.Factory); var service = new ServiceIdentity("transactional-service"); var timestamp = DateTimeOffset.UtcNow;
+        var original = new ServicePublication(service, "Original", [new(new("original"), "Original", new(1, 0))], timestamp);
+        await store.SaveAsync(new IntegrationPublicationState(service, original, PublicationRefreshObservation.Completed(timestamp, IntegrationRefreshStatus.Refreshed, timestamp)));
+        var invalid = new ServicePublication(service, "Should Roll Back", [new(new("duplicate"), "One", new(1, 0)), new(new("duplicate"), "Two", new(1, 0))], timestamp.AddMinutes(1));
+        var saveInvalid = new IntegrationPublicationState(service, invalid, PublicationRefreshObservation.Completed(timestamp.AddMinutes(1), IntegrationRefreshStatus.Refreshed, timestamp.AddMinutes(1)));
+        await Assert.ThrowsAsync<SqliteException>(() => store.SaveAsync(saveInvalid).AsTask());
+        var retained = (await store.LoadAsync(service)).Publication!; Assert.Equal("Original", retained.DisplayName); Assert.Equal("original", retained.Capabilities.Single().Id.Value);
     }
 
     private sealed class TestDatabase : IAsyncDisposable

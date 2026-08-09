@@ -34,9 +34,9 @@ public sealed class ReferenceIntegrationSqliteTests
                 var publication = await new SqliteIntegrationPublicationStore(reopened.Factory).LoadAsync(ReferenceIntegrationAdapter.StableServiceIdentity);
                 Assert.NotNull(integration);
                 Assert.Equal(Enablement.Disabled, integration!.GlobalEnablement);
-                Assert.NotNull(publication);
-                Assert.Equal(4, publication!.Capabilities.Count);
-                Assert.Equal(["reference.available", "reference.unsupported", "reference.unavailable", "reference.version-mismatch"], publication.Capabilities.Select(x => x.Id.Value));
+                Assert.NotNull(publication.Publication);
+                Assert.Equal(4, publication.Publication!.Capabilities.Count);
+                Assert.Equal(["reference.available", "reference.unsupported", "reference.unavailable", "reference.version-mismatch"], publication.Publication.Capabilities.Select(x => x.Id.Value));
             }
         }
         finally { if (File.Exists(path)) File.Delete(path); }

@@ -50,7 +50,7 @@ public sealed class ListServiceIntegrationsUseCase(
         foreach (var integration in await integrations.LoadAllAsync(cancellationToken))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var publication = await publications.LoadAsync(integration.ServiceIdentity, cancellationToken);
+            var publication = (await publications.LoadAsync(integration.ServiceIdentity, cancellationToken)).Publication;
             var overrideValue = integration.DeviceOverrides.TryGetValue(currentDevice, out var value)
                 ? value == Enablement.Enabled
                 : (bool?)null;

@@ -24,7 +24,7 @@ public sealed class IntegrationManagementTests
         var service = new ServiceIdentity("service");
         var integration = new ServiceIntegration(service); integration.EnableGlobally(); integration.SetDeviceOverride(device, Enablement.Disabled);
         var integrations = new MemoryIntegrationStore(integration);
-        var publications = new MemoryPublicationStore(new ServicePublication(service, "Published name", [], DateTimeOffset.UtcNow));
+        var publications = new MemoryPublicationStore(new IntegrationPublicationState(service, new ServicePublication(service, "Published name", [], DateTimeOffset.UtcNow), PublicationRefreshObservation.NotAttempted));
         var item = (await new ListServiceIntegrationsUseCase(integrations, publications).ListAsync(device)).Single();
         Assert.True(item.IsGloballyEnabled); Assert.False(item.CurrentDeviceOverride); Assert.False(item.IsEffectivelyEnabled); Assert.Equal("Published name", item.DisplayName);
 
@@ -69,10 +69,10 @@ public sealed class IntegrationManagementTests
         public ValueTask SaveAsync(ServiceIntegration integration, CancellationToken cancellationToken = default) { values[integration.ServiceIdentity] = integration; return ValueTask.CompletedTask; }
     }
 
-    private sealed class MemoryPublicationStore(params ServicePublication[] initial) : IIntegrationPublicationStore
+    private sealed class MemoryPublicationStore(params IntegrationPublicationState[] initial) : IIntegrationPublicationStore
     {
-        private readonly Dictionary<ServiceIdentity, ServicePublication> values = initial.ToDictionary(x => x.ServiceId);
-        public ValueTask SaveAsync(ServicePublication publication, CancellationToken cancellationToken = default) { values[publication.ServiceId] = publication; return ValueTask.CompletedTask; }
-        public ValueTask<ServicePublication?> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default) => ValueTask.FromResult(values.GetValueOrDefault(serviceIdentity));
+        private readonly Dictionary<ServiceIdentity, IntegrationPublicationState> values = initial.ToDictionary(x => x.ServiceIdentity);
+        public ValueTask SaveAsync(IntegrationPublicationState state, CancellationToken cancellationToken = default) { values[state.ServiceIdentity] = state; return ValueTask.CompletedTask; }
+        public ValueTask<IntegrationPublicationState> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default) => ValueTask.FromResult(values.GetValueOrDefault(serviceIdentity) ?? new IntegrationPublicationState(serviceIdentity, null, PublicationRefreshObservation.NotAttempted));
     }
 }

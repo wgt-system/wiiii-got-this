@@ -95,8 +95,8 @@ public sealed class ShellViewModelTests
     }
     private sealed class MemoryPublicationStore : IIntegrationPublicationStore
     {
-        private readonly Dictionary<ServiceIdentity, ServicePublication> values = [];
-        public ValueTask SaveAsync(ServicePublication publication, CancellationToken cancellationToken = default) { values[publication.ServiceId] = publication; return ValueTask.CompletedTask; }
-        public ValueTask<ServicePublication?> LoadAsync(ServiceIdentity id, CancellationToken cancellationToken = default) => ValueTask.FromResult(values.GetValueOrDefault(id));
+        private readonly Dictionary<ServiceIdentity, IntegrationPublicationState> values = [];
+        public ValueTask SaveAsync(IntegrationPublicationState state, CancellationToken cancellationToken = default) { values[state.ServiceIdentity] = state; return ValueTask.CompletedTask; }
+        public ValueTask<IntegrationPublicationState> LoadAsync(ServiceIdentity id, CancellationToken cancellationToken = default) => ValueTask.FromResult(values.GetValueOrDefault(id) ?? new IntegrationPublicationState(id, null, PublicationRefreshObservation.NotAttempted));
     }
 }

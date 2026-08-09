@@ -135,7 +135,7 @@ public sealed class ReferenceIntegrationTests
         var loaded = await integrations.LoadAsync(adapter.ServiceId);
         Assert.Equal(Enablement.Enabled, loaded!.GlobalEnablement);
         Assert.Equal(Enablement.Disabled, loaded.GetEffectiveEnablement(device));
-        Assert.Equal(4, (await publications.LoadAsync(adapter.ServiceId))!.Capabilities.Count);
+        Assert.Equal(4, (await publications.LoadAsync(adapter.ServiceId)).Publication!.Capabilities.Count);
     }
 
     [Fact]
@@ -147,8 +147,8 @@ public sealed class ReferenceIntegrationTests
         var integrations = new MemoryIntegrationStore(); var publications = new MemoryPublicationStore();
         var results = await new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([invalid, failing, healthy]), publications).RefreshAsync();
         Assert.Equal([IntegrationRefreshStatus.InvalidPublication, IntegrationRefreshStatus.AdapterFailed, IntegrationRefreshStatus.Refreshed], results.Select(x => x.Status));
-        Assert.Null(await publications.LoadAsync(invalid.ServiceId));
-        Assert.NotNull(await publications.LoadAsync(healthy.ServiceId));
+        Assert.Null((await publications.LoadAsync(invalid.ServiceId)).Publication);
+        Assert.NotNull((await publications.LoadAsync(healthy.ServiceId)).Publication);
     }
 
     [Fact]
@@ -160,7 +160,68 @@ public sealed class ReferenceIntegrationTests
         await Refresh(adapter, integrations, publications);
         adapter.PublicationException = new InvalidOperationException();
         Assert.Equal(IntegrationRefreshStatus.AdapterFailed, (await Refresh(adapter, integrations, publications)).Single().Status);
-        Assert.Equal("First", (await publications.LoadAsync(identity))!.DisplayName);
+        Assert.Equal("First", (await publications.LoadAsync(identity)).Publication!.DisplayName);
+    }
+
+    [Fact]
+    public async Task First_success_persists_snapshot_and_refresh_observation()
+    {
+        var service = new ServiceIdentity("successful-service");
+        var at = new DateTimeOffset(2026, 8, 9, 10, 0, 0, TimeSpan.Zero);
+        var publication = new ServicePublication(service, "Published", [], at.AddMinutes(-1));
+        var store = new MemoryPublicationStore();
+        var result = await new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([new TestAdapter(service, publication)]), store, new FixedTimeProvider(at)).RefreshAsync();
+        var state = await store.LoadAsync(service);
+        Assert.Equal(IntegrationRefreshStatus.Refreshed, result.Single().Status);
+        Assert.Equal("Published", state.Publication!.DisplayName);
+        Assert.Equal(at, state.RefreshObservation.LastAttemptedAtUtc);
+        Assert.Equal(at, state.RefreshObservation.LastSuccessfulRefreshAtUtc);
+    }
+
+    [Fact]
+    public async Task First_failures_persist_bounded_metadata_without_publication()
+    {
+        var service = new ServiceIdentity("failed-service"); var at = new DateTimeOffset(2026, 8, 9, 11, 0, 0, TimeSpan.Zero); var store = new MemoryPublicationStore();
+        var adapter = new TestAdapter(service, publicationException: new InvalidOperationException());
+        var useCase = new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([adapter]), store, new FixedTimeProvider(at));
+        Assert.Equal(IntegrationRefreshStatus.AdapterFailed, (await useCase.RefreshAsync()).Single().Status);
+        var state = await store.LoadAsync(service); Assert.Null(state.Publication); Assert.True(state.RefreshObservation.HasAttempted); Assert.Equal(IntegrationRefreshStatus.AdapterFailed, state.RefreshObservation.LatestResult); Assert.Null(state.RefreshObservation.LastSuccessfulRefreshAtUtc);
+
+        var invalidService = new ServiceIdentity("invalid-service"); var invalidStore = new MemoryPublicationStore();
+        var invalid = new TestAdapter(invalidService, new ServicePublication(new("other"), "Invalid", [], at));
+        var invalidUseCase = new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([invalid]), invalidStore, new FixedTimeProvider(at));
+        Assert.Equal(IntegrationRefreshStatus.InvalidPublication, (await invalidUseCase.RefreshAsync()).Single().Status);
+        var invalidState = await invalidStore.LoadAsync(invalidService); Assert.Null(invalidState.Publication); Assert.Equal(IntegrationRefreshStatus.InvalidPublication, invalidState.RefreshObservation.LatestResult);
+    }
+
+    [Fact]
+    public async Task Failed_and_invalid_refreshes_retain_snapshot_and_last_success_time()
+    {
+        var service = new ServiceIdentity("retained-service"); var firstAt = new DateTimeOffset(2026, 8, 9, 12, 0, 0, TimeSpan.Zero); var failedAt = firstAt.AddHours(1); var store = new MemoryPublicationStore();
+        var capability = new CapabilityPublication(new("capability"), "Original", new(1, 0)); var adapter = new TestAdapter(service, new ServicePublication(service, "First", [capability], firstAt));
+        var clock = new FixedTimeProvider(firstAt, failedAt, failedAt.AddHours(1)); var useCase = new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([adapter]), store, clock);
+        await useCase.RefreshAsync(); adapter.PublicationException = new InvalidOperationException(); await useCase.RefreshAsync();
+        var afterFailure = await store.LoadAsync(service); Assert.Equal("First", afterFailure.Publication!.DisplayName); Assert.Equal("capability", afterFailure.Publication.Capabilities.Single().Id.Value); Assert.Equal(firstAt, afterFailure.RefreshObservation.LastSuccessfulRefreshAtUtc);
+        adapter.PublicationException = null; adapter.Publication = new ServicePublication(new("other"), "Invalid", [], failedAt); await useCase.RefreshAsync();
+        var afterInvalid = await store.LoadAsync(service); Assert.Equal("First", afterInvalid.Publication!.DisplayName); Assert.Equal(firstAt, afterInvalid.RefreshObservation.LastSuccessfulRefreshAtUtc);
+    }
+
+    [Fact]
+    public async Task Successful_refresh_reconciles_added_removed_title_and_version_changes()
+    {
+        var service = new ServiceIdentity("reconciled-service"); var firstAt = new DateTimeOffset(2026, 8, 9, 13, 0, 0, TimeSpan.Zero); var secondAt = firstAt.AddHours(1); var store = new MemoryPublicationStore();
+        var adapter = new TestAdapter(service, new ServicePublication(service, "First", [new(new("a"), "A", new(1, 0)), new(new("removed"), "Removed", new(1, 0))], firstAt));
+        var useCase = new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([adapter]), store, new FixedTimeProvider(firstAt, secondAt)); await useCase.RefreshAsync();
+        adapter.Publication = new ServicePublication(service, "Second", [new(new("a"), "Changed", new(2, 0)), new(new("b"), "Added", new(1, 0))], secondAt); await useCase.RefreshAsync();
+        var publication = (await store.LoadAsync(service)).Publication!; Assert.Equal(["a", "b"], publication.Capabilities.Select(x => x.Id.Value)); Assert.Equal("Changed", publication.Capabilities[0].Title); Assert.Equal(new Version(2, 0), publication.Capabilities[0].ContractVersion); Assert.Equal(secondAt, (await store.LoadAsync(service)).RefreshObservation.LastSuccessfulRefreshAtUtc);
+    }
+
+    [Fact]
+    public async Task Refresh_failure_for_one_service_does_not_affect_another()
+    {
+        var first = new ServiceIdentity("first-service"); var second = new ServiceIdentity("second-service"); var at = new DateTimeOffset(2026, 8, 9, 14, 0, 0, TimeSpan.Zero); var store = new MemoryPublicationStore();
+        var useCase = new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([new TestAdapter(first, publicationException: new InvalidOperationException()), new TestAdapter(second, new ServicePublication(second, "Healthy", [], at))]), store, new FixedTimeProvider(at, at));
+        var results = await useCase.RefreshAsync(); Assert.Equal([IntegrationRefreshStatus.AdapterFailed, IntegrationRefreshStatus.Refreshed], results.Select(x => x.Status)); Assert.Equal("Healthy", (await store.LoadAsync(second)).Publication!.DisplayName); Assert.Equal(IntegrationRefreshStatus.AdapterFailed, (await store.LoadAsync(first)).RefreshObservation.LatestResult);
     }
 
     [Fact]
@@ -224,7 +285,7 @@ public sealed class ReferenceIntegrationTests
 
         adapter.Publication = new ServicePublication(service, "Second", [secondCapability], DateTimeOffset.UtcNow.AddMinutes(1));
         var secondResult = (await Refresh(adapter, integrations, publications)).Single();
-        var snapshot = await publications.LoadAsync(service);
+        var snapshot = (await publications.LoadAsync(service)).Publication;
         var preservedIntegration = await integrations.LoadAsync(service);
         Assert.Equal(IntegrationRefreshStatus.Refreshed, secondResult.Status);
         Assert.Equal("Second", snapshot!.DisplayName);
@@ -261,9 +322,9 @@ public sealed class ReferenceIntegrationTests
     }
     private sealed class MemoryPublicationStore : IIntegrationPublicationStore
     {
-        private readonly Dictionary<ServiceIdentity, ServicePublication> values = [];
-        public ValueTask SaveAsync(ServicePublication publication, CancellationToken cancellationToken = default) { values[publication.ServiceId] = publication; return ValueTask.CompletedTask; }
-        public ValueTask<ServicePublication?> LoadAsync(ServiceIdentity id, CancellationToken cancellationToken = default) => ValueTask.FromResult(values.GetValueOrDefault(id));
+        private readonly Dictionary<ServiceIdentity, IntegrationPublicationState> values = [];
+        public ValueTask SaveAsync(IntegrationPublicationState state, CancellationToken cancellationToken = default) { values[state.ServiceIdentity] = state; return ValueTask.CompletedTask; }
+        public ValueTask<IntegrationPublicationState> LoadAsync(ServiceIdentity id, CancellationToken cancellationToken = default) => ValueTask.FromResult(values.GetValueOrDefault(id) ?? new IntegrationPublicationState(id, null, PublicationRefreshObservation.NotAttempted));
     }
     private sealed class TestAdapter(ServiceIdentity serviceId, ServicePublication? publication = null, Exception? publicationException = null) : IIntegrationAdapter
     {
@@ -277,5 +338,11 @@ public sealed class ReferenceIntegrationTests
         public ServiceIdentity ServiceId => inner.ServiceId; public int ObservationCount { get; private set; } public bool ThrowOnObservation { get; set; }
         public ValueTask<ServicePublication> GetPublicationAsync(CancellationToken cancellationToken = default) => inner.GetPublicationAsync(cancellationToken);
         public ValueTask<CapabilityResolutionFacts> ObserveCapabilityAsync(CapabilityPublication capability, CancellationToken cancellationToken = default) { ObservationCount++; if (ThrowOnObservation) throw new InvalidOperationException(); return inner.ObserveCapabilityAsync(capability, cancellationToken); }
+    }
+
+    private sealed class FixedTimeProvider(params DateTimeOffset[] times) : TimeProvider
+    {
+        private int index;
+        public override DateTimeOffset GetUtcNow() => times[Math.Min(index++, times.Length - 1)];
     }
 }

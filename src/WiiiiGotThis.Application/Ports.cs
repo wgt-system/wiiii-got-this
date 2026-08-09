@@ -5,8 +5,8 @@ namespace WiiiiGotThis.Application;
 
 public interface IIntegrationPublicationStore
 {
-    ValueTask SaveAsync(ServicePublication publication, CancellationToken cancellationToken = default);
-    ValueTask<ServicePublication?> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default);
+    ValueTask SaveAsync(IntegrationPublicationState state, CancellationToken cancellationToken = default);
+    ValueTask<IntegrationPublicationState> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default);
 }
 
 public sealed class LocalDeviceConfiguration
@@ -63,14 +63,40 @@ public enum IntegrationRefreshStatus { Refreshed, AdapterFailed, InvalidPublicat
 
 public sealed record IntegrationRefreshResult(ServiceIdentity ServiceIdentity, IntegrationRefreshStatus Status);
 
-public sealed class RefreshPublicationsUseCase(IIntegrationAdapterCatalog adapters, IIntegrationPublicationStore publications)
+public sealed record PublicationRefreshObservation(
+    DateTimeOffset? LastAttemptedAtUtc,
+    IntegrationRefreshStatus? LatestResult,
+    DateTimeOffset? LastSuccessfulRefreshAtUtc)
 {
+    public bool HasAttempted => LastAttemptedAtUtc is not null;
+    public static PublicationRefreshObservation NotAttempted { get; } = new(null, null, null);
+
+    public static PublicationRefreshObservation Completed(
+        DateTimeOffset attemptedAtUtc,
+        IntegrationRefreshStatus result,
+        DateTimeOffset? lastSuccessfulRefreshAtUtc) =>
+        new(attemptedAtUtc, result, lastSuccessfulRefreshAtUtc);
+}
+
+public sealed record IntegrationPublicationState(
+    ServiceIdentity ServiceIdentity,
+    ServicePublication? Publication,
+    PublicationRefreshObservation RefreshObservation);
+
+public sealed class RefreshPublicationsUseCase(
+    IIntegrationAdapterCatalog adapters,
+    IIntegrationPublicationStore publications,
+    TimeProvider? timeProvider = null)
+{
+    private readonly TimeProvider clock = timeProvider ?? TimeProvider.System;
+
     public async ValueTask<IReadOnlyList<IntegrationRefreshResult>> RefreshAsync(CancellationToken cancellationToken = default)
     {
         var results = new List<IntegrationRefreshResult>(adapters.Adapters.Count);
         foreach (var adapter in adapters.Adapters)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var attemptedAtUtc = clock.GetUtcNow();
             ServicePublication publication;
             try
             {
@@ -79,25 +105,45 @@ public sealed class RefreshPublicationsUseCase(IIntegrationAdapterCatalog adapte
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
+                await SaveObservationAsync(adapter.ServiceId, IntegrationRefreshStatus.AdapterFailed, attemptedAtUtc, cancellationToken);
                 results.Add(new(adapter.ServiceId, IntegrationRefreshStatus.AdapterFailed));
                 continue;
             }
             catch (Exception) when (!cancellationToken.IsCancellationRequested)
             {
+                await SaveObservationAsync(adapter.ServiceId, IntegrationRefreshStatus.AdapterFailed, attemptedAtUtc, cancellationToken);
                 results.Add(new(adapter.ServiceId, IntegrationRefreshStatus.AdapterFailed));
                 continue;
             }
 
             if (!PublicationValidator.IsValid(adapter, publication))
             {
+                await SaveObservationAsync(adapter.ServiceId, IntegrationRefreshStatus.InvalidPublication, attemptedAtUtc, cancellationToken);
                 results.Add(new(adapter.ServiceId, IntegrationRefreshStatus.InvalidPublication));
                 continue;
             }
 
-            await publications.SaveAsync(publication, cancellationToken);
+            await publications.SaveAsync(new IntegrationPublicationState(
+                adapter.ServiceId,
+                publication,
+                PublicationRefreshObservation.Completed(attemptedAtUtc, IntegrationRefreshStatus.Refreshed, attemptedAtUtc)), cancellationToken);
             results.Add(new(adapter.ServiceId, IntegrationRefreshStatus.Refreshed));
         }
         return results;
+    }
+
+    private async ValueTask SaveObservationAsync(
+        ServiceIdentity serviceIdentity,
+        IntegrationRefreshStatus result,
+        DateTimeOffset attemptedAtUtc,
+        CancellationToken cancellationToken)
+    {
+        var current = await publications.LoadAsync(serviceIdentity, cancellationToken);
+        var lastSuccessful = current.RefreshObservation.LastSuccessfulRefreshAtUtc;
+        await publications.SaveAsync(new IntegrationPublicationState(
+            serviceIdentity,
+            current.Publication,
+            PublicationRefreshObservation.Completed(attemptedAtUtc, result, lastSuccessful)), cancellationToken);
     }
 }
 
@@ -136,7 +182,7 @@ public sealed class ResolveCapabilityCatalogUseCase(
         {
             cancellationToken.ThrowIfCancellationRequested();
             var integration = await integrations.LoadAsync(adapter.ServiceId, cancellationToken);
-            var publication = await publications.LoadAsync(adapter.ServiceId, cancellationToken);
+            var publication = (await publications.LoadAsync(adapter.ServiceId, cancellationToken)).Publication;
             if (integration is null || publication is null) continue;
             foreach (var capability in publication.Capabilities)
             {

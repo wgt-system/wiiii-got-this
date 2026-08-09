@@ -92,7 +92,8 @@ public sealed class MigrationRunner
         public static MigrationScript[] Create() =>
         [
             new("0001_initial.sql", Read("WiiiiGotThis.Infrastructure.Migrations.0001_initial.sql")),
-            new("0002_core_integration_state.sql", Read("WiiiiGotThis.Infrastructure.Migrations.0002_core_integration_state.sql"))
+            new("0002_core_integration_state.sql", Read("WiiiiGotThis.Infrastructure.Migrations.0002_core_integration_state.sql")),
+            new("0003_publication_refresh_state.sql", Read("WiiiiGotThis.Infrastructure.Migrations.0003_publication_refresh_state.sql"))
         ];
 
         private static string Read(string resourceName)
@@ -201,32 +202,66 @@ public sealed class SqliteServiceIntegrationStore(SqliteConnectionFactory connec
 
 public sealed class SqliteIntegrationPublicationStore(SqliteConnectionFactory connectionFactory) : IIntegrationPublicationStore
 {
-    public async ValueTask SaveAsync(ServicePublication publication, CancellationToken cancellationToken = default)
+    public async ValueTask SaveAsync(IntegrationPublicationState state, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(publication);
+        ArgumentNullException.ThrowIfNull(state);
+        ArgumentNullException.ThrowIfNull(state.RefreshObservation);
         await using var connection = connectionFactory.Create(); await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
         try
         {
-            await Exec(connection, transaction, "INSERT INTO wgt_integration_publications(service_id, display_name, published_at_utc) VALUES ($id, $name, $published) ON CONFLICT(service_id) DO UPDATE SET display_name = excluded.display_name, published_at_utc = excluded.published_at_utc;", cancellationToken, ("$id", publication.ServiceId.Value), ("$name", publication.DisplayName), ("$published", publication.PublishedAtUtc.ToString("O")));
-            await Exec(connection, transaction, "DELETE FROM wgt_capability_publications WHERE service_id = $id;", cancellationToken, ("$id", publication.ServiceId.Value));
-            for (var ordinal = 0; ordinal < publication.Capabilities.Count; ordinal++) { var capability = publication.Capabilities[ordinal]; await Exec(connection, transaction, "INSERT INTO wgt_capability_publications(service_id, capability_id, title, contract_version, ordinal) VALUES ($service, $capability, $title, $version, $ordinal);", cancellationToken, ("$service", publication.ServiceId.Value), ("$capability", capability.Id.Value), ("$title", capability.Title), ("$version", capability.ContractVersion.ToString()), ("$ordinal", ordinal)); }
+            var serviceIdentity = state.ServiceIdentity;
+            if (state.Publication is not null)
+            {
+                if (state.Publication.ServiceId != serviceIdentity) throw new ArgumentException("Publication belongs to another service.", nameof(state));
+                await Exec(connection, transaction, "INSERT INTO wgt_integration_publications(service_id, display_name, published_at_utc) VALUES ($id, $name, $published) ON CONFLICT(service_id) DO UPDATE SET display_name = excluded.display_name, published_at_utc = excluded.published_at_utc;", cancellationToken, ("$id", serviceIdentity.Value), ("$name", state.Publication.DisplayName), ("$published", state.Publication.PublishedAtUtc.ToString("O")));
+                await Exec(connection, transaction, "DELETE FROM wgt_capability_publications WHERE service_id = $id;", cancellationToken, ("$id", serviceIdentity.Value));
+                for (var ordinal = 0; ordinal < state.Publication.Capabilities.Count; ordinal++) { var capability = state.Publication.Capabilities[ordinal]; await Exec(connection, transaction, "INSERT INTO wgt_capability_publications(service_id, capability_id, title, contract_version, ordinal) VALUES ($service, $capability, $title, $version, $ordinal);", cancellationToken, ("$service", serviceIdentity.Value), ("$capability", capability.Id.Value), ("$title", capability.Title), ("$version", capability.ContractVersion.ToString()), ("$ordinal", ordinal)); }
+            }
+            await Exec(connection, transaction, "INSERT INTO wgt_publication_refresh_states(service_id, last_attempted_at_utc, latest_result, last_successful_refresh_at_utc) VALUES ($service, $attempted, $result, $successful) ON CONFLICT(service_id) DO UPDATE SET last_attempted_at_utc = excluded.last_attempted_at_utc, latest_result = excluded.latest_result, last_successful_refresh_at_utc = excluded.last_successful_refresh_at_utc;", cancellationToken, ("$service", serviceIdentity.Value), ("$attempted", state.RefreshObservation.LastAttemptedAtUtc?.ToString("O") ?? throw new InvalidOperationException("Attempt timestamp is required.")), ("$result", ResultToStorage(state.RefreshObservation.LatestResult ?? throw new InvalidOperationException("Refresh result is required."))), ("$successful", (object?)state.RefreshObservation.LastSuccessfulRefreshAtUtc?.ToString("O") ?? DBNull.Value));
             await transaction.CommitAsync(cancellationToken);
         }
         catch { await transaction.RollbackAsync(CancellationToken.None); throw; }
     }
 
-    public async ValueTask<ServicePublication?> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default)
+    public async ValueTask<IntegrationPublicationState> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceIdentity); await using var connection = connectionFactory.Create(); await connection.OpenAsync(cancellationToken);
         await using var header = connection.CreateCommand(); header.CommandText = "SELECT display_name, published_at_utc FROM wgt_integration_publications WHERE service_id = $id;"; header.Parameters.AddWithValue("$id", serviceIdentity.Value);
-        await using var reader = await header.ExecuteReaderAsync(cancellationToken); if (!await reader.ReadAsync(cancellationToken)) return null;
-        var displayName = reader.GetString(0); if (!DateTimeOffset.TryParse(reader.GetString(1), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out var publishedAt)) throw new InvalidDataException("Invalid publication timestamp.");
-        await reader.DisposeAsync();
-        await using var capabilities = connection.CreateCommand(); capabilities.CommandText = "SELECT capability_id, title, contract_version FROM wgt_capability_publications WHERE service_id = $id ORDER BY ordinal;"; capabilities.Parameters.AddWithValue("$id", serviceIdentity.Value);
-        var list = new List<CapabilityPublication>(); await using var capabilityReader = await capabilities.ExecuteReaderAsync(cancellationToken); while (await capabilityReader.ReadAsync(cancellationToken)) list.Add(new CapabilityPublication(PersistenceMapping.Capability(capabilityReader.GetString(0)), capabilityReader.GetString(1), PersistenceMapping.Version(capabilityReader.GetString(2))));
-        return new ServicePublication(serviceIdentity, displayName, list, publishedAt);
+        ServicePublication? publication = null;
+        string? displayName = null;
+        DateTimeOffset publishedAt = default;
+        await using (var reader = await header.ExecuteReaderAsync(cancellationToken))
+        {
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                displayName = reader.GetString(0); if (!DateTimeOffset.TryParse(reader.GetString(1), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out publishedAt)) throw new InvalidDataException("Invalid publication timestamp.");
+            }
+        }
+        if (displayName is not null)
+        {
+            await using var capabilities = connection.CreateCommand(); capabilities.CommandText = "SELECT capability_id, title, contract_version FROM wgt_capability_publications WHERE service_id = $id ORDER BY ordinal;"; capabilities.Parameters.AddWithValue("$id", serviceIdentity.Value);
+            var list = new List<CapabilityPublication>(); await using var capabilityReader = await capabilities.ExecuteReaderAsync(cancellationToken); while (await capabilityReader.ReadAsync(cancellationToken)) list.Add(new CapabilityPublication(PersistenceMapping.Capability(capabilityReader.GetString(0)), capabilityReader.GetString(1), PersistenceMapping.Version(capabilityReader.GetString(2))));
+            publication = new ServicePublication(serviceIdentity, displayName, list, publishedAt);
+        }
+
+        await using var refresh = connection.CreateCommand(); refresh.CommandText = "SELECT last_attempted_at_utc, latest_result, last_successful_refresh_at_utc FROM wgt_publication_refresh_states WHERE service_id = $id;"; refresh.Parameters.AddWithValue("$id", serviceIdentity.Value);
+        var observation = PublicationRefreshObservation.NotAttempted;
+        await using (var reader = await refresh.ExecuteReaderAsync(cancellationToken))
+        {
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                var attempted = ParseTimestamp(reader.GetString(0));
+                DateTimeOffset? successful = reader.IsDBNull(2) ? null : ParseTimestamp(reader.GetString(2));
+                observation = PublicationRefreshObservation.Completed(attempted, ResultFromStorage(reader.GetString(1)), successful);
+            }
+        }
+        return new IntegrationPublicationState(serviceIdentity, publication, observation);
     }
+
+    private static string ResultToStorage(IntegrationRefreshStatus result) => result switch { IntegrationRefreshStatus.Refreshed => "refreshed", IntegrationRefreshStatus.AdapterFailed => "adapter_failed", IntegrationRefreshStatus.InvalidPublication => "invalid_publication", _ => throw new ArgumentOutOfRangeException(nameof(result)) };
+    private static IntegrationRefreshStatus ResultFromStorage(string value) => value switch { "refreshed" => IntegrationRefreshStatus.Refreshed, "adapter_failed" => IntegrationRefreshStatus.AdapterFailed, "invalid_publication" => IntegrationRefreshStatus.InvalidPublication, _ => throw new InvalidDataException($"Unknown refresh result '{value}'.") };
+    private static DateTimeOffset ParseTimestamp(string value) => DateTimeOffset.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.RoundtripKind, out var timestamp) ? timestamp : throw new InvalidDataException("Invalid refresh timestamp.");
 
     private static async Task Exec(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, CancellationToken cancellationToken, params (string Name, object Value)[] values) { await using var command = connection.CreateCommand(); command.Transaction = (SqliteTransaction)transaction; command.CommandText = sql; foreach (var (name, value) in values) command.Parameters.AddWithValue(name, value); await command.ExecuteNonQueryAsync(cancellationToken); }
 }
