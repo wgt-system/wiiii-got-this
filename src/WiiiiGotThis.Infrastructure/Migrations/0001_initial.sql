@@ -1,1 +1,2 @@
--- Historical bootstrap migration. Do not rewrite this migration.
+-- Reserved as the WGT-owned ordered migration source for bootstrap.
+-- The runner owns execution and records version 1 in wgt_schema_migrations.
