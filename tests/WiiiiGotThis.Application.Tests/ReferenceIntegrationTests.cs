@@ -8,6 +8,17 @@ namespace WiiiiGotThis.Application.Tests;
 public sealed class ReferenceIntegrationTests
 {
     [Fact]
+    public void Local_device_configuration_validates_and_trims_only_its_display_name()
+    {
+        var identity = DeviceIdentity.New();
+        var configuration = new LocalDeviceConfiguration(identity, "  Windows PC  ");
+        Assert.Equal(identity, configuration.DeviceIdentity);
+        Assert.Equal("Windows PC", configuration.DisplayName);
+        Assert.Throws<ArgumentException>(() => new LocalDeviceConfiguration(identity, " \t "));
+        Assert.Throws<ArgumentNullException>(() => new LocalDeviceConfiguration(null!, "name"));
+    }
+
+    [Fact]
     public async Task Reference_publication_has_stable_identity_and_distinct_states()
     {
         var publication = await new ReferenceIntegrationAdapter().GetPublicationAsync();

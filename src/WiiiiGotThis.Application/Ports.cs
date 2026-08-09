@@ -9,6 +9,33 @@ public interface IIntegrationPublicationStore
     ValueTask<ServicePublication?> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default);
 }
 
+public sealed class LocalDeviceConfiguration
+{
+    public LocalDeviceConfiguration(DeviceIdentity deviceIdentity, string displayName)
+    {
+        ArgumentNullException.ThrowIfNull(deviceIdentity);
+        ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
+        DeviceIdentity = deviceIdentity;
+        DisplayName = displayName.Trim();
+    }
+
+    public DeviceIdentity DeviceIdentity { get; }
+    public string DisplayName { get; }
+}
+
+public interface ILocalDeviceStore
+{
+    ValueTask<LocalDeviceConfiguration?> LoadAsync(CancellationToken cancellationToken = default);
+    ValueTask SaveAsync(LocalDeviceConfiguration configuration, CancellationToken cancellationToken = default);
+}
+
+public interface IServiceIntegrationStore
+{
+    ValueTask<ServiceIntegration?> LoadAsync(ServiceIdentity serviceIdentity, CancellationToken cancellationToken = default);
+    ValueTask<IReadOnlyList<ServiceIntegration>> LoadAllAsync(CancellationToken cancellationToken = default);
+    ValueTask SaveAsync(ServiceIntegration integration, CancellationToken cancellationToken = default);
+}
+
 public interface IIntegrationAdapterCatalog
 {
     IReadOnlyList<IIntegrationAdapter> Adapters { get; }
