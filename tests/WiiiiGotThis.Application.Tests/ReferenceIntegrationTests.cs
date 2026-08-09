@@ -128,6 +128,56 @@ public sealed class ReferenceIntegrationTests
     }
 
     [Fact]
+    public async Task Catalog_respects_device_override_and_observes_only_the_enabled_device()
+    {
+        var adapter = new CountingAdapter(new ReferenceIntegrationAdapter());
+        var integrations = new MemoryIntegrationStore(); var publications = new MemoryPublicationStore();
+        var deviceA = DeviceIdentity.New(); var deviceB = DeviceIdentity.New();
+        var integration = new ServiceIntegration(adapter.ServiceId);
+        integration.EnableGlobally(); integration.SetDeviceOverride(deviceA, Enablement.Disabled);
+        await integrations.SaveAsync(integration);
+        await Refresh(adapter, integrations, publications);
+        var catalog = new ResolveCapabilityCatalogUseCase(new StaticIntegrationAdapterCatalog([adapter]), integrations, publications);
+
+        var deviceAEntries = await catalog.ResolveAsync(deviceA);
+        Assert.Equal(4, deviceAEntries.Count);
+        Assert.All(deviceAEntries, entry => Assert.Equal(AvailabilityReason.Disabled, entry.Resolution.Availability.Reason));
+        Assert.Equal(0, adapter.ObservationCount);
+
+        var deviceBEntries = await catalog.ResolveAsync(deviceB);
+        Assert.Equal(["reference.available", "reference.unsupported", "reference.unavailable", "reference.version-mismatch"], deviceBEntries.Select(entry => entry.CapabilityIdentity.Value));
+        Assert.True(deviceBEntries[0].Resolution.Availability.IsAvailable);
+        Assert.Equal([AvailabilityReason.Unsupported, AvailabilityReason.Unreachable, AvailabilityReason.Incompatible], deviceBEntries.Skip(1).Select(entry => entry.Resolution.Availability.Reason));
+        Assert.Equal(4, adapter.ObservationCount);
+    }
+
+    [Fact]
+    public async Task Successful_refresh_replaces_publication_without_changing_integration_configuration()
+    {
+        var service = new ServiceIdentity("replaceable-service");
+        var deviceA = DeviceIdentity.New();
+        var integration = new ServiceIntegration(service);
+        integration.EnableGlobally(); integration.SetDeviceOverride(deviceA, Enablement.Disabled);
+        var integrations = new MemoryIntegrationStore(); var publications = new MemoryPublicationStore();
+        await integrations.SaveAsync(integration);
+        var firstCapability = new CapabilityPublication(new("capability-a"), "Capability A", new(1, 0));
+        var secondCapability = new CapabilityPublication(new("capability-b"), "Capability B", new(1, 0));
+        var adapter = new TestAdapter(service, new ServicePublication(service, "First", [firstCapability], DateTimeOffset.UtcNow));
+        Assert.Equal(IntegrationRefreshStatus.Refreshed, (await Refresh(adapter, integrations, publications)).Single().Status);
+
+        adapter.Publication = new ServicePublication(service, "Second", [secondCapability], DateTimeOffset.UtcNow.AddMinutes(1));
+        var secondResult = (await Refresh(adapter, integrations, publications)).Single();
+        var snapshot = await publications.LoadAsync(service);
+        var preservedIntegration = await integrations.LoadAsync(service);
+        Assert.Equal(IntegrationRefreshStatus.Refreshed, secondResult.Status);
+        Assert.Equal("Second", snapshot!.DisplayName);
+        Assert.DoesNotContain(snapshot.Capabilities, capability => capability.Id == firstCapability.Id);
+        Assert.Contains(snapshot.Capabilities, capability => capability.Id == secondCapability.Id);
+        Assert.Equal(Enablement.Enabled, preservedIntegration!.GlobalEnablement);
+        Assert.Equal(Enablement.Disabled, preservedIntegration.GetEffectiveEnablement(deviceA));
+    }
+
+    [Fact]
     public async Task Observation_failure_becomes_unknown_without_blocking_other_adapter()
     {
         var failing = new CountingAdapter(new ReferenceIntegrationAdapter()) { ThrowOnObservation = true };
@@ -158,7 +208,7 @@ public sealed class ReferenceIntegrationTests
     }
     private sealed class TestAdapter(ServiceIdentity serviceId, ServicePublication? publication = null, Exception? publicationException = null) : IIntegrationAdapter
     {
-        public ServiceIdentity ServiceId { get; } = serviceId; public ServicePublication? Publication { get; } = publication; public Exception? PublicationException { get; set; } = publicationException;
+        public ServiceIdentity ServiceId { get; } = serviceId; public ServicePublication? Publication { get; set; } = publication; public Exception? PublicationException { get; set; } = publicationException;
         public ValueTask<ServicePublication> GetPublicationAsync(CancellationToken cancellationToken = default) { cancellationToken.ThrowIfCancellationRequested(); if (PublicationException is not null) throw PublicationException; return ValueTask.FromResult(Publication ?? new ServicePublication(ServiceId, "Test", [], DateTimeOffset.UtcNow)); }
         public ValueTask<CapabilityResolutionFacts> ObserveCapabilityAsync(CapabilityPublication capability, CancellationToken cancellationToken = default) => ValueTask.FromResult(new CapabilityResolutionFacts(ProviderReachability.Reachable, ContractCompatibility.Compatible, CurrentContextSupport.Supported, PrerequisiteState.Satisfied, PresentationInvocationSupport.Supported));
     }
