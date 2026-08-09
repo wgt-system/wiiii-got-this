@@ -391,3 +391,21 @@ Before implementing real Vocation or Illumination integration, read:
 - the provider's accepted integration ADRs and Published Contracts.
 
 Do not implement a WGT-side foreign contract from an earlier speculative WGT document if the provider repository has since accepted a different boundary.
+
+## Local Worktrees
+
+Canonical local worktrees:
+
+P:\wiiii-got-this
+→ main
+→ stable milestone/release state
+P:\wiiii-got-this\.worktrees\dev
+→ dev
+→ active development
+
+Rules:
+
+* implementation agents work in P:\wiiii-got-this\.worktrees\dev unless explicitly instructed otherwise;
+* P:\wiiii-got-this is not used for ordinary feature implementation;
+* release integration to main happens only on explicit Control-Plane instruction;
+* agents must verify repository root and branch before modifying files.
