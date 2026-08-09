@@ -1,4 +1,3 @@
-using System.Reflection;
 using Microsoft.Data.Sqlite;
 using WiiiiGotThis.Application;
 using WiiiiGotThis.Contracts;
@@ -9,7 +8,11 @@ namespace WiiiiGotThis.Infrastructure;
 public sealed class SqliteConnectionFactory(string connectionString)
 {
     static SqliteConnectionFactory() => SQLitePCL.Batteries_V2.Init();
-    public SqliteConnection Create() => new(connectionString);
+    public SqliteConnection Create()
+    {
+        var builder = new SqliteConnectionStringBuilder(connectionString) { ForeignKeys = true };
+        return new SqliteConnection(builder.ToString());
+    }
 }
 
 public sealed record MigrationScript(string FileName, string Sql);
@@ -20,7 +23,7 @@ public sealed class MigrationRunner
     private readonly MigrationScript[] migrations;
 
     public MigrationRunner(SqliteConnectionFactory connectionFactory)
-        : this(connectionFactory, LoadEmbeddedMigrations()) { }
+        : this(connectionFactory, BuiltInMigrations.Create()) { }
 
     public MigrationRunner(SqliteConnectionFactory connectionFactory, IEnumerable<MigrationScript> migrations)
     {
@@ -84,20 +87,20 @@ public sealed class MigrationRunner
         return version;
     }
 
-    private static MigrationScript[] LoadEmbeddedMigrations()
+    private static class BuiltInMigrations
     {
-        var assembly = typeof(MigrationRunner).Assembly;
-        return assembly.GetManifestResourceNames()
-            .Where(x => x.Contains(".Migrations.", StringComparison.Ordinal) && x.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
-            .Select(x => new MigrationScript(x[(x.IndexOf(".Migrations.", StringComparison.Ordinal) + ".Migrations.".Length)..], ReadResource(assembly, x)))
-            .ToArray();
-    }
+        public static MigrationScript[] Create() =>
+        [
+            new("0001_initial.sql", Read("WiiiiGotThis.Infrastructure.Migrations.0001_initial.sql")),
+            new("0002_core_integration_state.sql", Read("WiiiiGotThis.Infrastructure.Migrations.0002_core_integration_state.sql"))
+        ];
 
-    private static string ReadResource(Assembly assembly, string name)
-    {
-        using var stream = assembly.GetManifestResourceStream(name) ?? throw new InvalidOperationException($"Migration resource not found: {name}");
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
+        private static string Read(string resourceName)
+        {
+            using var stream = typeof(MigrationRunner).Assembly.GetManifestResourceStream(resourceName) ?? throw new InvalidOperationException($"Migration resource not found: {resourceName}");
+            using var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
+        }
     }
 }
 
@@ -126,8 +129,15 @@ public sealed class SqliteLocalDeviceStore(SqliteConnectionFactory connectionFac
     {
         ArgumentNullException.ThrowIfNull(configuration);
         await using var connection = await OpenAsync(cancellationToken);
+        await using (var existing = connection.CreateCommand())
+        {
+            existing.CommandText = "SELECT device_identity FROM wgt_local_device WHERE singleton_key = 1;";
+            var storedIdentity = await existing.ExecuteScalarAsync(cancellationToken);
+            if (storedIdentity is string value && !StringComparer.Ordinal.Equals(value, configuration.DeviceIdentity.Value.ToString("D")))
+                throw new InvalidOperationException("The current local Device Identity cannot be replaced.");
+        }
         await using var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO wgt_local_device(singleton_key, device_identity, display_name) VALUES (1, $device, $name) ON CONFLICT(singleton_key) DO UPDATE SET device_identity = excluded.device_identity, display_name = excluded.display_name;";
+        command.CommandText = "INSERT INTO wgt_local_device(singleton_key, device_identity, display_name) VALUES (1, $device, $name) ON CONFLICT(singleton_key) DO UPDATE SET display_name = excluded.display_name;";
         command.Parameters.AddWithValue("$device", configuration.DeviceIdentity.Value.ToString("D"));
         command.Parameters.AddWithValue("$name", configuration.DisplayName);
         await command.ExecuteNonQueryAsync(cancellationToken);
@@ -165,10 +175,10 @@ public sealed class SqliteServiceIntegrationStore(SqliteConnectionFactory connec
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
         try
         {
-            await ExecuteAsync(connection, transaction, "INSERT INTO wgt_service_integrations(service_id, global_enablement) VALUES ($service, $enablement) ON CONFLICT(service_id) DO UPDATE SET global_enablement = excluded.global_enablement;", ("$service", integration.ServiceIdentity.Value), ("$enablement", PersistenceMapping.ToStorage(integration.GlobalEnablement)), cancellationToken);
-            await ExecuteAsync(connection, transaction, "DELETE FROM wgt_service_integration_device_overrides WHERE service_id = $service;", ("$service", integration.ServiceIdentity.Value), cancellationToken);
+            await ExecuteAsync(connection, transaction, "INSERT INTO wgt_service_integrations(service_id, global_enablement) VALUES ($service, $enablement) ON CONFLICT(service_id) DO UPDATE SET global_enablement = excluded.global_enablement;", cancellationToken, ("$service", integration.ServiceIdentity.Value), ("$enablement", PersistenceMapping.ToStorage(integration.GlobalEnablement)));
+            await ExecuteAsync(connection, transaction, "DELETE FROM wgt_service_integration_device_overrides WHERE service_id = $service;", cancellationToken, ("$service", integration.ServiceIdentity.Value));
             foreach (var pair in integration.DeviceOverrides)
-                await ExecuteAsync(connection, transaction, "INSERT INTO wgt_service_integration_device_overrides(service_id, device_identity, enablement) VALUES ($service, $device, $enablement);", ("$service", integration.ServiceIdentity.Value), ("$device", pair.Key.Value.ToString("D")), ("$enablement", PersistenceMapping.ToStorage(pair.Value)), cancellationToken);
+                await ExecuteAsync(connection, transaction, "INSERT INTO wgt_service_integration_device_overrides(service_id, device_identity, enablement) VALUES ($service, $device, $enablement);", cancellationToken, ("$service", integration.ServiceIdentity.Value), ("$device", pair.Key.Value.ToString("D")), ("$enablement", PersistenceMapping.ToStorage(pair.Value)));
             await transaction.CommitAsync(cancellationToken);
         }
         catch { await transaction.RollbackAsync(CancellationToken.None); throw; }
@@ -192,10 +202,7 @@ public sealed class SqliteServiceIntegrationStore(SqliteConnectionFactory connec
     }
 
     private async Task<SqliteConnection> OpenAsync(CancellationToken token) { var c = connectionFactory.Create(); await c.OpenAsync(token); return c; }
-    private static async Task ExecuteAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, params (string Name, object Value)[] values) { await using var command = connection.CreateCommand(); command.Transaction = (SqliteTransaction)transaction; command.CommandText = sql; foreach (var (name, value) in values) command.Parameters.AddWithValue(name, value); await command.ExecuteNonQueryAsync(); }
-    private static Task ExecuteAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, (string Name, object Value) value, CancellationToken _) => ExecuteAsync(connection, transaction, sql, [value]);
-    private static Task ExecuteAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, (string Name, object Value) a, (string Name, object Value) b, CancellationToken _) => ExecuteAsync(connection, transaction, sql, [a, b]);
-    private static Task ExecuteAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, (string Name, object Value) a, (string Name, object Value) b, (string Name, object Value) c, CancellationToken _) => ExecuteAsync(connection, transaction, sql, [a, b, c]);
+    private static async Task ExecuteAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, CancellationToken cancellationToken, params (string Name, object Value)[] values) { await using var command = connection.CreateCommand(); command.Transaction = (SqliteTransaction)transaction; command.CommandText = sql; foreach (var (name, value) in values) command.Parameters.AddWithValue(name, value); await command.ExecuteNonQueryAsync(cancellationToken); }
 }
 
 public sealed class SqliteIntegrationPublicationStore(SqliteConnectionFactory connectionFactory) : IIntegrationPublicationStore
@@ -207,9 +214,9 @@ public sealed class SqliteIntegrationPublicationStore(SqliteConnectionFactory co
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
         try
         {
-            await Exec(connection, transaction, "INSERT INTO wgt_integration_publications(service_id, display_name, published_at_utc) VALUES ($id, $name, $published) ON CONFLICT(service_id) DO UPDATE SET display_name = excluded.display_name, published_at_utc = excluded.published_at_utc;", ("$id", publication.ServiceId.Value), ("$name", publication.DisplayName), ("$published", publication.PublishedAtUtc.ToString("O")), cancellationToken);
-            await Exec(connection, transaction, "DELETE FROM wgt_capability_publications WHERE service_id = $id;", ("$id", publication.ServiceId.Value), cancellationToken);
-            for (var ordinal = 0; ordinal < publication.Capabilities.Count; ordinal++) { var capability = publication.Capabilities[ordinal]; await Exec(connection, transaction, "INSERT INTO wgt_capability_publications(service_id, capability_id, title, contract_version, ordinal) VALUES ($service, $capability, $title, $version, $ordinal);", ("$service", publication.ServiceId.Value), ("$capability", capability.Id.Value), ("$title", capability.Title), ("$version", capability.ContractVersion.ToString()), ("$ordinal", ordinal), cancellationToken); }
+            await Exec(connection, transaction, "INSERT INTO wgt_integration_publications(service_id, display_name, published_at_utc) VALUES ($id, $name, $published) ON CONFLICT(service_id) DO UPDATE SET display_name = excluded.display_name, published_at_utc = excluded.published_at_utc;", cancellationToken, ("$id", publication.ServiceId.Value), ("$name", publication.DisplayName), ("$published", publication.PublishedAtUtc.ToString("O")));
+            await Exec(connection, transaction, "DELETE FROM wgt_capability_publications WHERE service_id = $id;", cancellationToken, ("$id", publication.ServiceId.Value));
+            for (var ordinal = 0; ordinal < publication.Capabilities.Count; ordinal++) { var capability = publication.Capabilities[ordinal]; await Exec(connection, transaction, "INSERT INTO wgt_capability_publications(service_id, capability_id, title, contract_version, ordinal) VALUES ($service, $capability, $title, $version, $ordinal);", cancellationToken, ("$service", publication.ServiceId.Value), ("$capability", capability.Id.Value), ("$title", capability.Title), ("$version", capability.ContractVersion.ToString()), ("$ordinal", ordinal)); }
             await transaction.CommitAsync(cancellationToken);
         }
         catch { await transaction.RollbackAsync(CancellationToken.None); throw; }
@@ -227,9 +234,5 @@ public sealed class SqliteIntegrationPublicationStore(SqliteConnectionFactory co
         return new ServicePublication(serviceIdentity, displayName, list, publishedAt);
     }
 
-    private static async Task Exec(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, (string Name, object Value) value, params (string Name, object Value)[] rest) { await using var command = connection.CreateCommand(); command.Transaction = (SqliteTransaction)transaction; command.CommandText = sql; command.Parameters.AddWithValue(value.Name, value.Value); foreach (var item in rest) command.Parameters.AddWithValue(item.Name, item.Value); await command.ExecuteNonQueryAsync(); }
-    private static Task Exec(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, (string Name, object Value) value, CancellationToken _) => Exec(connection, transaction, sql, value);
-    private static Task Exec(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, (string Name, object Value) a, (string Name, object Value) b, CancellationToken _) => Exec(connection, transaction, sql, a, b);
-    private static Task Exec(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, (string Name, object Value) a, (string Name, object Value) b, (string Name, object Value) c, CancellationToken _) => Exec(connection, transaction, sql, a, b, c);
-    private static Task Exec(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, (string Name, object Value) a, (string Name, object Value) b, (string Name, object Value) c, (string Name, object Value) d, (string Name, object Value) e, CancellationToken _) => Exec(connection, transaction, sql, a, b, c, d, e);
+    private static async Task Exec(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string sql, CancellationToken cancellationToken, params (string Name, object Value)[] values) { await using var command = connection.CreateCommand(); command.Transaction = (SqliteTransaction)transaction; command.CommandText = sql; foreach (var (name, value) in values) command.Parameters.AddWithValue(name, value); await command.ExecuteNonQueryAsync(cancellationToken); }
 }

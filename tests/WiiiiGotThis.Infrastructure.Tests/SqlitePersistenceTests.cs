@@ -9,6 +9,27 @@ namespace WiiiiGotThis.Infrastructure.Tests;
 public sealed class SqlitePersistenceTests
 {
     [Fact]
+    public async Task Factory_enables_foreign_keys_on_every_connection()
+    {
+        await using var db = TestDatabase.Create();
+        await using var connection = db.Factory.Create();
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA foreign_keys;";
+        Assert.Equal(1L, (long)(await command.ExecuteScalarAsync())!);
+    }
+
+    [Fact]
+    public async Task Foreign_key_rejects_orphan_capability_publication()
+    {
+        await using var db = TestDatabase.Create(); await db.Runner.ApplyAsync();
+        await using var connection = db.Factory.Create(); await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = "INSERT INTO wgt_capability_publications(service_id, capability_id, title, contract_version, ordinal) VALUES ('missing', 'capability', 'Capability', '1.0', 0);";
+        await Assert.ThrowsAsync<SqliteException>(() => command.ExecuteNonQueryAsync());
+    }
+
+    [Fact]
     public async Task Fresh_migrations_are_idempotent_and_create_only_wgt_tables()
     {
         await using var db = TestDatabase.Create();
@@ -62,6 +83,17 @@ public sealed class SqlitePersistenceTests
     }
 
     [Fact]
+    public async Task Local_device_identity_cannot_be_replaced()
+    {
+        await using var db = TestDatabase.Create(); await db.Runner.ApplyAsync(); var store = new SqliteLocalDeviceStore(db.Factory);
+        var identity = DeviceIdentity.New(); var replacement = DeviceIdentity.New();
+        await store.SaveAsync(new LocalDeviceConfiguration(identity, "First"));
+        await store.SaveAsync(new LocalDeviceConfiguration(identity, "Renamed"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => store.SaveAsync(new LocalDeviceConfiguration(replacement, "Replacement")).AsTask());
+        var loaded = await store.LoadAsync(); Assert.NotNull(loaded); Assert.Equal(identity, loaded!.DeviceIdentity); Assert.Equal("Renamed", loaded.DisplayName);
+    }
+
+    [Fact]
     public async Task Service_integration_round_trips_global_state_and_overrides_atomically()
     {
         await using var db = TestDatabase.Create(); await db.Runner.ApplyAsync();
@@ -73,6 +105,17 @@ public sealed class SqlitePersistenceTests
         Assert.NotNull(loaded); Assert.Equal(Enablement.Enabled, loaded!.GlobalEnablement); Assert.Equal(Enablement.Disabled, loaded.GetEffectiveEnablement(deviceA)); Assert.Equal(Enablement.Enabled, loaded.GetEffectiveEnablement(deviceB));
         service.ClearDeviceOverride(deviceA); await store.SaveAsync(service);
         Assert.Equal(Enablement.Enabled, (await store.LoadAsync(service.ServiceIdentity))!.GetEffectiveEnablement(deviceA));
+    }
+
+    [Fact]
+    public async Task Service_integration_global_disabled_round_trips()
+    {
+        await using var db = TestDatabase.Create(); await db.Runner.ApplyAsync();
+        var service = new ServiceIntegration(new ServiceIdentity("disabled-service"));
+        await new SqliteServiceIntegrationStore(db.Factory).SaveAsync(service);
+        await using var restarted = db.Reopen();
+        var loaded = await new SqliteServiceIntegrationStore(restarted.Factory).LoadAsync(service.ServiceIdentity);
+        Assert.NotNull(loaded); Assert.Equal(Enablement.Disabled, loaded!.GlobalEnablement);
     }
 
     [Fact]
