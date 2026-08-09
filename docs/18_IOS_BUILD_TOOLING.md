@@ -8,6 +8,8 @@ The product stack is already accepted as C# / .NET 10 + Avalonia 12 with Windows
 
 This document does not choose a specific Mac hardware purchase, hosting vendor, Apple Developer membership, or CI provider.
 
+The official .NET iOS workload is installed on the Windows development machine, and the `net10.0-ios` target compiles successfully there. Actual simulator/device runtime validation has not yet been performed. Signing, provisioning, and runtime execution still require Mac/Xcode infrastructure.
+
 ## 1. Development Workstation
 
 The primary development workstation remains Windows.
@@ -87,6 +89,19 @@ Suggested progression:
 The project must nevertheless create and exercise the iOS target early enough that cross-platform assumptions are not left until the end.
 
 ## 7. Early iPhone Smoke Slice
+
+Before accepting the first real Vocation or Illumination integration into WGT, perform a real iOS smoke validation covering at least:
+
+1. WGT launches through the real iOS host;
+2. shared Avalonia `MobileShellView` renders;
+3. the WGT SQLite database opens successfully;
+4. migrations execute;
+5. current Device configuration persists;
+6. the Reference Integration is resolved;
+7. the available Reference Capability can be opened;
+8. integration enablement and Device override persist across application restart.
+
+This is a mandatory gate and remains outstanding until it is executed on appropriate Apple tooling. It must not be treated as completed based on shared-code tests or successful compilation alone.
 
 Before substantial WGT UI/integration work accumulates, create a small iPhone smoke slice that verifies:
 

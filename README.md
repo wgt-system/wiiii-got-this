@@ -8,11 +8,17 @@ Its purpose is to provide a coherent user experience across devices while preser
 
 ## Current project status
 
-The project is in specification phase.
+The repository contains the first implemented Wiiii Got This vertical baseline:
 
-No implementation repository, runtime architecture, deployment topology, persistence technology, client framework, service protocol, or plugin mechanism has been selected yet.
+- Domain/Application baseline,
+- WGT-owned SQLite persistence,
+- Reference Integration,
+- Avalonia Desktop/mobile presentation,
+- Windows host,
+- iOS host,
+- successful `net10.0-ios` compilation on Windows.
 
-Implementation must not begin before the first coherent domain and architecture specification exists.
+Physical-device and simulator iOS runtime validation has not yet been performed.
 
 ## Product direction
 
