@@ -295,6 +295,41 @@ When repository documentation conflicts:
 - determine which decision is newer or explicitly authoritative where possible,
 - do not choose based solely on implementation convenience.
 
+## Agent Delegation Policy
+
+Implementation agents execute the narrowly scoped task assigned by the control-plane chat.
+
+Do not spawn, delegate to, or invoke additional subagents unless the current task explicitly authorizes it.
+
+In particular, do not independently create or use:
+
+* explorer subagents,
+* implementation subagents,
+* reviewer subagents,
+* parallel Luna/Codex workers,
+* background agent tasks.
+
+Perform repository inspection, implementation, testing, and reporting directly within the current agent session.
+
+The control-plane chat owns:
+
+* task decomposition,
+* architecture decisions,
+* sequencing,
+* parallelization decisions,
+* cross-area coordination.
+
+If the assigned task is too broad or requires an unresolved architectural decision, report the boundary instead of delegating the problem to another agent.
+
+## GitHub Milestones and Issues
+
+* Milestones heißen ausschließlich `v0.1.0`, `v0.2.0`, `v0.3.0`, … ohne beschreibenden Zusatz.
+* GitHub Issues sind die dauerhaften konkreten Arbeitspakete innerhalb eines Milestones.
+* keine unnötige Issue-Zerlegung für Kleinständerungen.
+* Luna-Chatnamen sind nur Ausführungskontexte und ersetzen Milestones/Issues nicht.
+* Milestone-Scope, Issue-Scope, Reihenfolge und Parallelisierung werden vom Control-Plane-Chat festgelegt.
+* Implementation Agents erzeugen oder erweitern Milestones/Issues nicht eigenmächtig.
+
 ## Codex / Luna workflow
 
 Codex or Luna implementation work begins only after the relevant specification, contracts, architecture decisions, and acceptance criteria are stable enough to implement without inventing product behavior.

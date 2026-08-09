@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><IsPackable>false</IsPackable><IsTestProject>true</IsTestProject><NoWarn>$(NoWarn);CA1707;xUnit1051</NoWarn></PropertyGroup>
+  <ItemGroup><ProjectReference Include="..\..\src\WiiiiGotThis.Application\WiiiiGotThis.Application.csproj" /><ProjectReference Include="..\..\src\WiiiiGotThis.Integrations.Reference\WiiiiGotThis.Integrations.Reference.csproj" /><PackageReference Include="Microsoft.NET.Test.Sdk" /><PackageReference Include="xunit.v3" /><PackageReference Include="xunit.runner.visualstudio" /></ItemGroup>
+</Project>

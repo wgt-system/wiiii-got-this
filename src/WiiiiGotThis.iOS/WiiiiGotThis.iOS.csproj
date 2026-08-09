@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>WiiiiGotThis.iOS</RootNamespace>
+    <AssemblyName>WiiiiGotThis.iOS</AssemblyName>
+    <!-- Windows CI can build the iOS project structurally; pass -p:BuildiOS=true on a Mac/iOS workload host. -->
+    <TargetFramework Condition="'$(BuildiOS)' == 'true'">net10.0-ios</TargetFramework>
+    <TargetFramework Condition="'$(BuildiOS)' != 'true'">net10.0</TargetFramework>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WiiiiGotThis.Application\WiiiiGotThis.Application.csproj" />
+    <ProjectReference Include="..\WiiiiGotThis.Infrastructure\WiiiiGotThis.Infrastructure.csproj" />
+    <ProjectReference Include="..\WiiiiGotThis.Integrations.Reference\WiiiiGotThis.Integrations.Reference.csproj" />
+    <ProjectReference Include="..\WiiiiGotThis.Presentation\WiiiiGotThis.Presentation.csproj" />
+    <PackageReference Include="Avalonia.iOS" Condition="'$(BuildiOS)' == 'true'" />
+  </ItemGroup>
+</Project>

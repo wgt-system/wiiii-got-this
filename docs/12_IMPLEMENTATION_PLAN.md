@@ -18,6 +18,10 @@ The exact pre-1.0 milestone count is not predetermined.
 
 `v1.0.0` should represent a coherent first stable Wiiii Got This product baseline rather than merely the first runnable shell.
 
+### GitHub Milestones and Issues
+
+Milestones heißen ausschließlich `v0.1.0`, `v0.2.0`, `v0.3.0`, … ohne beschreibenden Zusatz. GitHub Issues sind die dauerhaften konkreten Arbeitspakete innerhalb eines Milestones; unnötige Issue-Zerlegung für Kleinständerungen ist zu vermeiden. Luna-Chatnamen sind nur Ausführungskontexte und ersetzen Milestones/Issues nicht. Milestone-Scope, Issue-Scope, Reihenfolge und Parallelisierung werden vom Control-Plane-Chat festgelegt. Implementation Agents erzeugen oder erweitern Milestones/Issues nicht eigenmächtig.
+
 ## 2. Pre-Implementation Gates
 
 Before creating implementation issues:

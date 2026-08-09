@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><RootNamespace>WiiiiGotThis.Domain</RootNamespace><AssemblyName>WiiiiGotThis.Domain</AssemblyName></PropertyGroup>
+</Project>

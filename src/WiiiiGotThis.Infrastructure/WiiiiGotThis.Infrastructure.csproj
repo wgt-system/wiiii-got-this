@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><RootNamespace>WiiiiGotThis.Infrastructure</RootNamespace><AssemblyName>WiiiiGotThis.Infrastructure</AssemblyName></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WiiiiGotThis.Application\WiiiiGotThis.Application.csproj" />
+    <ProjectReference Include="..\WiiiiGotThis.Domain\WiiiiGotThis.Domain.csproj" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" />
+  </ItemGroup>
+  <ItemGroup><EmbeddedResource Include="Migrations\*.sql" /></ItemGroup>
+</Project>

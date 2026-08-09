@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><RootNamespace>WiiiiGotThis.Contracts</RootNamespace><AssemblyName>WiiiiGotThis.Contracts</AssemblyName></PropertyGroup>
+  <ItemGroup><ProjectReference Include="..\WiiiiGotThis.Domain\WiiiiGotThis.Domain.csproj" /></ItemGroup>
+</Project>

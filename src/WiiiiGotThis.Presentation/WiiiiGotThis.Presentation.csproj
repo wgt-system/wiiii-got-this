@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><RootNamespace>WiiiiGotThis.Presentation</RootNamespace><AssemblyName>WiiiiGotThis.Presentation</AssemblyName><AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WiiiiGotThis.Application\WiiiiGotThis.Application.csproj" />
+    <ProjectReference Include="..\WiiiiGotThis.Contracts\WiiiiGotThis.Contracts.csproj" />
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+</Project>
