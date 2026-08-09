@@ -6,6 +6,7 @@
     <!-- Windows CI can build the iOS project structurally; pass -p:BuildiOS=true on a Mac/iOS workload host. -->
     <TargetFramework Condition="'$(BuildiOS)' == 'true'">net10.0-ios</TargetFramework>
     <TargetFramework Condition="'$(BuildiOS)' != 'true'">net10.0</TargetFramework>
+    <DefineConstants Condition="'$(BuildiOS)' == 'true'">$(DefineConstants);WGT_IOS</DefineConstants>
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
