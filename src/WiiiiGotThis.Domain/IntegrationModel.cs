@@ -2,27 +2,39 @@ using System.Collections.ObjectModel;
 
 namespace WiiiiGotThis.Domain;
 
-public readonly record struct ServiceIdentity
+public sealed class ServiceIdentity : IEquatable<ServiceIdentity>
 {
     public ServiceIdentity(string value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Service identity is required.", nameof(value));
         Value = value.Trim();
     }
     public string Value { get; }
+    public bool Equals(ServiceIdentity? other) => other is not null && StringComparer.Ordinal.Equals(Value, other.Value);
+    public override bool Equals(object? obj) => obj is ServiceIdentity other && Equals(other);
+    public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(Value);
+    public static bool operator ==(ServiceIdentity? left, ServiceIdentity? right) => left is null ? right is null : left.Equals(right);
+    public static bool operator !=(ServiceIdentity? left, ServiceIdentity? right) => !(left == right);
 }
 
-public readonly record struct CapabilityIdentity
+public sealed class CapabilityIdentity : IEquatable<CapabilityIdentity>
 {
     public CapabilityIdentity(string value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Capability identity is required.", nameof(value));
         Value = value.Trim();
     }
     public string Value { get; }
+    public bool Equals(CapabilityIdentity? other) => other is not null && StringComparer.Ordinal.Equals(Value, other.Value);
+    public override bool Equals(object? obj) => obj is CapabilityIdentity other && Equals(other);
+    public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(Value);
+    public static bool operator ==(CapabilityIdentity? left, CapabilityIdentity? right) => left is null ? right is null : left.Equals(right);
+    public static bool operator !=(CapabilityIdentity? left, CapabilityIdentity? right) => !(left == right);
 }
 
-public readonly record struct DeviceIdentity
+public sealed class DeviceIdentity : IEquatable<DeviceIdentity>
 {
     public DeviceIdentity(Guid value)
     {
@@ -31,6 +43,11 @@ public readonly record struct DeviceIdentity
     }
     public Guid Value { get; }
     public static DeviceIdentity New() => new(Guid.NewGuid());
+    public bool Equals(DeviceIdentity? other) => other is not null && Value == other.Value;
+    public override bool Equals(object? obj) => obj is DeviceIdentity other && Equals(other);
+    public override int GetHashCode() => Value.GetHashCode();
+    public static bool operator ==(DeviceIdentity? left, DeviceIdentity? right) => left is null ? right is null : left.Equals(right);
+    public static bool operator !=(DeviceIdentity? left, DeviceIdentity? right) => !(left == right);
 }
 
 public enum Enablement { Enabled, Disabled }
@@ -41,6 +58,7 @@ public sealed class ServiceIntegration
 
     public ServiceIntegration(ServiceIdentity serviceIdentity)
     {
+        ArgumentNullException.ThrowIfNull(serviceIdentity);
         ServiceIdentity = serviceIdentity;
         GlobalEnablement = Enablement.Disabled;
     }
@@ -55,7 +73,19 @@ public sealed class ServiceIntegration
     public Enablement GetEffectiveEnablement(DeviceIdentity device) => deviceOverrides.TryGetValue(device, out var value) ? value : GlobalEnablement;
 }
 
-public readonly record struct CapabilityDescriptor(ServiceIdentity ServiceIdentity, CapabilityIdentity CapabilityIdentity);
+public sealed class CapabilityDescriptor
+{
+    public CapabilityDescriptor(ServiceIdentity serviceIdentity, CapabilityIdentity capabilityIdentity)
+    {
+        ArgumentNullException.ThrowIfNull(serviceIdentity);
+        ArgumentNullException.ThrowIfNull(capabilityIdentity);
+        ServiceIdentity = serviceIdentity;
+        CapabilityIdentity = capabilityIdentity;
+    }
+
+    public ServiceIdentity ServiceIdentity { get; }
+    public CapabilityIdentity CapabilityIdentity { get; }
+}
 
 public enum ProviderReachability { Unknown, Reachable, Unreachable }
 public enum ContractCompatibility { Unknown, Compatible, Incompatible }
@@ -72,7 +102,7 @@ public sealed record CapabilityResolutionFacts(
 
 public enum AvailabilityReason { Disabled, Unknown, Unreachable, Incompatible, Unsupported, MissingPrerequisite }
 
-public readonly record struct Availability
+public sealed class Availability : IEquatable<Availability>
 {
     private Availability(bool isAvailable, AvailabilityReason? reason)
     {
@@ -83,8 +113,11 @@ public readonly record struct Availability
     }
     public bool IsAvailable { get; }
     public AvailabilityReason? Reason { get; }
-    public static Availability Available => new(true, null);
+    public static Availability Available { get; } = new(true, null);
     public static Availability Unavailable(AvailabilityReason reason) => new(false, reason);
+    public bool Equals(Availability? other) => other is not null && IsAvailable == other.IsAvailable && Reason == other.Reason;
+    public override bool Equals(object? obj) => obj is Availability other && Equals(other);
+    public override int GetHashCode() => HashCode.Combine(IsAvailable, Reason);
 }
 
 public readonly record struct CapabilityResolutionResult(CapabilityIdentity CapabilityIdentity, Enablement EffectiveEnablement, Availability Availability);

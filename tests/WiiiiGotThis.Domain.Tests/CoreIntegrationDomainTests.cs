@@ -7,6 +7,13 @@ public sealed class CoreIntegrationDomainTests
     [Fact] public void Empty_service_identity_is_rejected() => Assert.Throws<ArgumentException>(() => new ServiceIdentity("  "));
     [Fact] public void Empty_capability_identity_is_rejected() => Assert.Throws<ArgumentException>(() => new CapabilityIdentity(" "));
     [Fact] public void Empty_device_identity_is_rejected() => Assert.Throws<ArgumentException>(() => new DeviceIdentity(Guid.Empty));
+    [Fact] public void Null_required_identities_are_rejected() {
+        Assert.Throws<ArgumentNullException>(() => new ServiceIdentity(null!));
+        Assert.Throws<ArgumentNullException>(() => new CapabilityIdentity(null!));
+        Assert.Throws<ArgumentNullException>(() => new ServiceIntegration(null!));
+        Assert.Throws<ArgumentNullException>(() => new CapabilityDescriptor(null!, new CapabilityIdentity("capability")));
+        Assert.Throws<ArgumentNullException>(() => new CapabilityDescriptor(new ServiceIdentity("provider"), null!));
+    }
 
     [Fact]
     public void Identities_are_trimmed_and_case_sensitive()
@@ -72,6 +79,15 @@ public sealed class CoreIntegrationDomainTests
     [Fact] public void Unsupported_presentation_is_unsupported() => Assert.Equal(AvailabilityReason.Unsupported, Resolve(EnabledIntegration(), new(ProviderReachability.Reachable, ContractCompatibility.Compatible, CurrentContextSupport.Supported, PrerequisiteState.Satisfied, PresentationInvocationSupport.Unsupported)).Availability.Reason);
     [Fact] public void Unknown_without_failure_is_unknown() => Assert.Equal(AvailabilityReason.Unknown, Resolve(EnabledIntegration(), new(ProviderReachability.Unknown, ContractCompatibility.Compatible, CurrentContextSupport.Supported, PrerequisiteState.Satisfied, PresentationInvocationSupport.Supported)).Availability.Reason);
     [Fact] public void All_positive_facts_are_available() => Assert.True(Resolve(EnabledIntegration(), new(ProviderReachability.Reachable, ContractCompatibility.Compatible, CurrentContextSupport.Supported, PrerequisiteState.Satisfied, PresentationInvocationSupport.Supported)).Availability.IsAvailable);
+
+    [Fact]
+    public void Resolver_uses_explicit_failure_priority()
+    {
+        var facts = new CapabilityResolutionFacts(ProviderReachability.Unreachable, ContractCompatibility.Incompatible, CurrentContextSupport.Unsupported, PrerequisiteState.Missing, PresentationInvocationSupport.Unsupported);
+        Assert.Equal(AvailabilityReason.Incompatible, Resolve(EnabledIntegration(), facts).Availability.Reason);
+        Assert.Equal(AvailabilityReason.Unsupported, Resolve(EnabledIntegration(), facts with { ContractCompatibility = ContractCompatibility.Compatible }).Availability.Reason);
+        Assert.Equal(AvailabilityReason.MissingPrerequisite, Resolve(EnabledIntegration(), facts with { ContractCompatibility = ContractCompatibility.Compatible, CurrentContextSupport = CurrentContextSupport.Supported, PresentationInvocationSupport = PresentationInvocationSupport.Supported }).Availability.Reason);
+    }
 
     [Fact]
     public void Foreign_service_descriptor_is_rejected()
