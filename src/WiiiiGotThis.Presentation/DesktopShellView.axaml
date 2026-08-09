@@ -28,15 +28,22 @@
         <WrapPanel><Button Command="{Binding EnableOnThisDeviceCommand}" Content="Enable on this device" Margin="0,0,6,6" /><Button Command="{Binding DisableOnThisDeviceCommand}" Content="Disable on this device" Margin="0,0,6,6" /></WrapPanel>
         <Button Command="{Binding InheritGlobalSettingCommand}" Content="Inherit global setting" HorizontalAlignment="Left" />
         <Separator Margin="0,8" />
-        <TextBlock FontWeight="Bold">Selected capability</TextBlock>
-        <TextBlock Text="{Binding SelectedCapability.CapabilityTitle}" FontSize="20" />
-        <TextBlock Text="{Binding SelectedCapability.ServiceDisplayName}" />
-        <TextBlock Text="{Binding SelectedCapability.CapabilityIdentity.Value}" />
-        <TextBlock Text="{Binding SelectedCapability.ContractVersion}" />
-        <TextBlock Text="{Binding SelectedCapability.StatusText}" TextWrapping="Wrap" />
-        <Button Command="{Binding OpenCapabilityCommand}" Content="Open" HorizontalAlignment="Left" />
-        <StackPanel Spacing="5" Margin="0,12,0,0">
+        <StackPanel IsVisible="{Binding IsCapabilityDetailsVisible}" Spacing="8">
+          <TextBlock FontWeight="Bold">Selected capability</TextBlock>
+          <TextBlock Text="{Binding SelectedCapability.CapabilityTitle}" FontSize="20" />
+          <TextBlock Text="{Binding SelectedCapability.ServiceDisplayName}" />
+          <TextBlock Text="{Binding SelectedCapability.CapabilityIdentity.Value}" />
+          <TextBlock Text="{Binding SelectedCapability.ContractVersion}" />
+          <TextBlock Text="{Binding SelectedCapability.StatusText}" TextWrapping="Wrap" />
+          <Button Command="{Binding OpenCapabilityCommand}" Content="Open" HorizontalAlignment="Left" />
+        </StackPanel>
+        <StackPanel IsVisible="{Binding IsReferenceCapabilityOpen}" Spacing="8">
           <TextBlock FontWeight="Bold">Reference Capability</TextBlock>
+          <TextBlock Text="{Binding OpenedReferenceCapability.CapabilityTitle}" FontSize="20" />
+          <TextBlock Text="{Binding OpenedReferenceCapability.ServiceDisplayName}" />
+          <TextBlock Text="{Binding OpenedReferenceCapability.CapabilityIdentity.Value}" />
+          <TextBlock Text="{Binding OpenedReferenceCapability.ContractVersion}" />
+          <TextBlock Text="Available" />
           <TextBlock Text="This reference capability is available through Wiiii Got This." TextWrapping="Wrap" />
           <Button Command="{Binding BackToCatalogCommand}" Content="Back to catalog" HorizontalAlignment="Left" />
         </StackPanel>

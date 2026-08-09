@@ -65,6 +65,8 @@ public sealed partial class ShellViewModel : ObservableObject
     public IAsyncRelayCommand InheritGlobalSettingCommand { get; }
     public IAsyncRelayCommand OpenCapabilityCommand { get; }
     public IRelayCommand BackToCatalogCommand { get; }
+    public bool IsReferenceCapabilityOpen => OpenedReferenceCapability is not null;
+    public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen;
 
     public Task EnsureInitializedAsync()
     {
@@ -80,6 +82,12 @@ public sealed partial class ShellViewModel : ObservableObject
     partial void OnSelectedCapabilityChanged(CapabilityPresentationViewModel? value)
     {
         RefreshCommandStates();
+    }
+
+    partial void OnOpenedReferenceCapabilityChanged(CapabilityPresentationViewModel? value)
+    {
+        OnPropertyChanged(nameof(IsReferenceCapabilityOpen));
+        OnPropertyChanged(nameof(IsCapabilityDetailsVisible));
     }
 
     private async Task InitializeCoreAsync()

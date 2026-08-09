@@ -33,8 +33,10 @@ public sealed class ShellViewModelTests
     public async Task Only_available_reference_capability_can_open()
     {
         var shell = CreateShell(); await shell.EnsureInitializedAsync(); await shell.EnableGloballyCommand.ExecuteAsync(null);
+        Assert.False(shell.IsReferenceCapabilityOpen); Assert.True(shell.IsCapabilityDetailsVisible);
         var available = shell.Capabilities[0]; shell.SelectedCapability = available;
-        Assert.True(available.CanOpen); await shell.OpenCapabilityCommand.ExecuteAsync(null); Assert.Same(available, shell.OpenedReferenceCapability);
+        Assert.True(available.CanOpen); await shell.OpenCapabilityCommand.ExecuteAsync(null); Assert.Same(available, shell.OpenedReferenceCapability); Assert.True(shell.IsReferenceCapabilityOpen); Assert.False(shell.IsCapabilityDetailsVisible);
+        shell.BackToCatalogCommand.Execute(null); Assert.Null(shell.OpenedReferenceCapability); Assert.False(shell.IsReferenceCapabilityOpen); Assert.True(shell.IsCapabilityDetailsVisible);
         shell.SelectedCapability = shell.Capabilities[1]; Assert.False(shell.SelectedCapability.CanOpen); Assert.False(shell.OpenCapabilityCommand.CanExecute(null));
     }
 
