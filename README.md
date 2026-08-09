@@ -16,7 +16,11 @@ The repository contains the first implemented Wiiii Got This vertical baseline:
 - Avalonia Desktop/mobile presentation,
 - Windows host,
 - iOS host,
-- successful `net10.0-ios` compilation on Windows.
+- successful `net10.0-ios` compilation on Windows,
+- explicit known-integration registration,
+- publication refresh observations with last-known publication retention,
+- deterministic Capability snapshot reconciliation,
+- per-integration publication refresh diagnostics.
 
 Physical-device and simulator iOS runtime validation has not yet been performed.
 

@@ -2,9 +2,11 @@
 
 ## Status
 
-Specification baseline through domain/application architecture.
+Historical planning baseline through domain/application architecture. The implementation-ready technology and architecture decisions were accepted before repository bootstrap.
 
-Implementation must not begin until the first architecture/technology decisions are explicitly accepted.
+The v0.1.0 baseline and the v0.2.0 registration/publication lifecycle baseline are implemented in the repository. The real Vocation and Illumination integrations, production synchronization, and the real iOS runtime smoke remain future gates.
+
+The milestone shape below preserves the original planning sequence for context; it is not a statement that repository implementation has not started.
 
 ## 1. Release Model
 
@@ -279,18 +281,13 @@ Each implementation slice should satisfy:
 
 ## 12. Immediate Next Step
 
-Do not create implementation code yet.
+Current progression after the v0.2.0 registration/publication lifecycle baseline:
 
-Next:
-
-1. decide first target client/platform scope,
-2. evaluate language/runtime and UI strategies against that scope,
-3. select and record technology through ADRs,
-4. finalize V1 architecture baseline,
-5. create the initial repository package/ZIP,
-6. create repository,
-7. create narrow implementation issues,
-8. begin Codex/Luna orchestration.
+1. review and accept the v0.2.0 hardening results;
+2. preserve the durable iOS runtime smoke gate before the first real Vocation or Illumination integration;
+3. select the first real provider only after an accepted, consumer-ready Published Contract exists;
+4. implement one narrow provider Capability without introducing foreign domain ownership;
+5. define synchronization only when a concrete provider flow establishes its state, authority, and merge semantics.
 
 
 ## 14. Repository Bootstrap
