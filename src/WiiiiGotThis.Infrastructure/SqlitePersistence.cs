@@ -129,18 +129,12 @@ public sealed class SqliteLocalDeviceStore(SqliteConnectionFactory connectionFac
     {
         ArgumentNullException.ThrowIfNull(configuration);
         await using var connection = await OpenAsync(cancellationToken);
-        await using (var existing = connection.CreateCommand())
-        {
-            existing.CommandText = "SELECT device_identity FROM wgt_local_device WHERE singleton_key = 1;";
-            var storedIdentity = await existing.ExecuteScalarAsync(cancellationToken);
-            if (storedIdentity is string value && !StringComparer.Ordinal.Equals(value, configuration.DeviceIdentity.Value.ToString("D")))
-                throw new InvalidOperationException("The current local Device Identity cannot be replaced.");
-        }
         await using var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO wgt_local_device(singleton_key, device_identity, display_name) VALUES (1, $device, $name) ON CONFLICT(singleton_key) DO UPDATE SET display_name = excluded.display_name;";
+        command.CommandText = "INSERT INTO wgt_local_device(singleton_key, device_identity, display_name) VALUES (1, $device, $name) ON CONFLICT(singleton_key) DO UPDATE SET display_name = excluded.display_name WHERE wgt_local_device.device_identity = excluded.device_identity;";
         command.Parameters.AddWithValue("$device", configuration.DeviceIdentity.Value.ToString("D"));
         command.Parameters.AddWithValue("$name", configuration.DisplayName);
-        await command.ExecuteNonQueryAsync(cancellationToken);
+        if (await command.ExecuteNonQueryAsync(cancellationToken) == 0)
+            throw new InvalidOperationException("The current local Device Identity cannot be replaced.");
     }
 
     private async Task<SqliteConnection> OpenAsync(CancellationToken token) { var c = connectionFactory.Create(); await c.OpenAsync(token); return c; }
