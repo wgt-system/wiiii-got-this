@@ -66,7 +66,63 @@ public sealed class ReferenceIntegrationTests
     }
 
     [Fact]
-    public async Task Refresh_registers_without_enabling_and_preserves_configuration()
+    public async Task Registration_creates_disabled_integrations_without_contacting_providers()
+    {
+        var failing = new TestAdapter(new("service-a"), publicationException: new InvalidOperationException());
+        var healthy = new TestAdapter(new("service-b"));
+        var integrations = new MemoryIntegrationStore();
+        await new RegisterKnownIntegrationsUseCase(new StaticIntegrationAdapterCatalog([failing, healthy]), integrations).RegisterAsync();
+
+        Assert.Equal(Enablement.Disabled, (await integrations.LoadAsync(failing.ServiceId))!.GlobalEnablement);
+        Assert.Equal(Enablement.Disabled, (await integrations.LoadAsync(healthy.ServiceId))!.GlobalEnablement);
+        Assert.Equal(0, failing.PublicationCalls + healthy.PublicationCalls);
+        Assert.Equal(0, failing.ObservationCalls + healthy.ObservationCalls);
+
+        var refreshResults = await new RefreshPublicationsUseCase(
+            new StaticIntegrationAdapterCatalog([failing, healthy]),
+            new MemoryPublicationStore()).RefreshAsync();
+        Assert.Equal([IntegrationRefreshStatus.AdapterFailed, IntegrationRefreshStatus.Refreshed], refreshResults.Select(result => result.Status));
+        Assert.NotNull(await integrations.LoadAsync(failing.ServiceId));
+        Assert.NotNull(await integrations.LoadAsync(healthy.ServiceId));
+    }
+
+    [Fact]
+    public async Task Registration_is_idempotent_and_preserves_enablement_and_device_overrides()
+    {
+        var adapter = new TestAdapter(new("configured-service"));
+        var device = DeviceIdentity.New();
+        var integration = new ServiceIntegration(adapter.ServiceId);
+        integration.EnableGlobally(); integration.SetDeviceOverride(device, Enablement.Disabled);
+        var integrations = new MemoryIntegrationStore(); await integrations.SaveAsync(integration);
+
+        var registration = new RegisterKnownIntegrationsUseCase(new StaticIntegrationAdapterCatalog([adapter]), integrations);
+        await registration.RegisterAsync(); await registration.RegisterAsync();
+        var preserved = await integrations.LoadAsync(adapter.ServiceId);
+        Assert.Equal(Enablement.Enabled, preserved!.GlobalEnablement);
+        Assert.Equal(Enablement.Disabled, preserved.GetEffectiveEnablement(device));
+        Assert.Equal(0, adapter.PublicationCalls);
+    }
+
+    [Fact]
+    public async Task Publication_refresh_alone_does_not_register_an_integration()
+    {
+        var adapter = new TestAdapter(new("refresh-only-service"));
+        var integrations = new MemoryIntegrationStore(); var publications = new MemoryPublicationStore();
+        Assert.Equal(IntegrationRefreshStatus.Refreshed, (await new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([adapter]), publications).RefreshAsync()).Single().Status);
+        Assert.Null(await integrations.LoadAsync(adapter.ServiceId));
+    }
+
+    [Fact]
+    public async Task Registration_cancellation_is_propagated()
+    {
+        using var cancellation = new CancellationTokenSource(); cancellation.Cancel();
+        await Assert.ThrowsAsync<OperationCanceledException>(() => new RegisterKnownIntegrationsUseCase(
+            new StaticIntegrationAdapterCatalog([new TestAdapter(new("cancelled-service"))]),
+            new MemoryIntegrationStore()).RegisterAsync(cancellation.Token).AsTask());
+    }
+
+    [Fact]
+    public async Task Refresh_preserves_existing_configuration_without_registering()
     {
         var adapter = new ReferenceIntegrationAdapter();
         var integrations = new MemoryIntegrationStore();
@@ -89,7 +145,7 @@ public sealed class ReferenceIntegrationTests
         var failing = new TestAdapter(new("service-failing"), publicationException: new InvalidOperationException());
         var healthy = new ReferenceIntegrationAdapter();
         var integrations = new MemoryIntegrationStore(); var publications = new MemoryPublicationStore();
-        var results = await new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([invalid, failing, healthy]), integrations, publications).RefreshAsync();
+        var results = await new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([invalid, failing, healthy]), publications).RefreshAsync();
         Assert.Equal([IntegrationRefreshStatus.InvalidPublication, IntegrationRefreshStatus.AdapterFailed, IntegrationRefreshStatus.Refreshed], results.Select(x => x.Status));
         Assert.Null(await publications.LoadAsync(invalid.ServiceId));
         Assert.NotNull(await publications.LoadAsync(healthy.ServiceId));
@@ -119,6 +175,7 @@ public sealed class ReferenceIntegrationTests
     {
         var adapter = new CountingAdapter(new ReferenceIntegrationAdapter());
         var integrations = new MemoryIntegrationStore(); var publications = new MemoryPublicationStore();
+        await Register(adapter, integrations);
         await Refresh(adapter, integrations, publications);
         var entries = await new ResolveCapabilityCatalogUseCase(new StaticIntegrationAdapterCatalog([adapter]), integrations, publications).ResolveAsync(DeviceIdentity.New());
         Assert.Equal(4, entries.Count); Assert.Equal(0, adapter.ObservationCount); Assert.All(entries, x => Assert.Equal(AvailabilityReason.Disabled, x.Resolution.Availability.Reason));
@@ -184,6 +241,7 @@ public sealed class ReferenceIntegrationTests
         var healthyIdentity = new ServiceIdentity("healthy-service");
         var healthy = new TestAdapter(healthyIdentity, new ServicePublication(healthyIdentity, "Healthy", [new(new("healthy-capability"), "Healthy", new(1, 0))], DateTimeOffset.UtcNow));
         var integrations = new MemoryIntegrationStore(); var publications = new MemoryPublicationStore();
+        await Register(failing, integrations); await Register(healthy, integrations);
         await Refresh(failing, integrations, publications); await Refresh(healthy, integrations, publications);
         foreach (var integration in await integrations.LoadAllAsync()) { integration.EnableGlobally(); await integrations.SaveAsync(integration); }
         var entries = await new ResolveCapabilityCatalogUseCase(new StaticIntegrationAdapterCatalog([failing, healthy]), integrations, publications).ResolveAsync(DeviceIdentity.New());
@@ -191,7 +249,8 @@ public sealed class ReferenceIntegrationTests
         Assert.Null(entries[4].Resolution.Availability.Reason);
     }
 
-    private static ValueTask<IReadOnlyList<IntegrationRefreshResult>> Refresh(IIntegrationAdapter adapter, MemoryIntegrationStore integrations, MemoryPublicationStore publications, CancellationToken token = default) => new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([adapter]), integrations, publications).RefreshAsync(token);
+    private static ValueTask<IReadOnlyList<IntegrationRefreshResult>> Refresh(IIntegrationAdapter adapter, MemoryIntegrationStore integrations, MemoryPublicationStore publications, CancellationToken token = default) => new RefreshPublicationsUseCase(new StaticIntegrationAdapterCatalog([adapter]), publications).RefreshAsync(token);
+    private static ValueTask Register(IIntegrationAdapter adapter, MemoryIntegrationStore integrations, CancellationToken token = default) => new RegisterKnownIntegrationsUseCase(new StaticIntegrationAdapterCatalog([adapter]), integrations).RegisterAsync(token);
 
     private sealed class MemoryIntegrationStore : IServiceIntegrationStore
     {
@@ -209,8 +268,9 @@ public sealed class ReferenceIntegrationTests
     private sealed class TestAdapter(ServiceIdentity serviceId, ServicePublication? publication = null, Exception? publicationException = null) : IIntegrationAdapter
     {
         public ServiceIdentity ServiceId { get; } = serviceId; public ServicePublication? Publication { get; set; } = publication; public Exception? PublicationException { get; set; } = publicationException;
-        public ValueTask<ServicePublication> GetPublicationAsync(CancellationToken cancellationToken = default) { cancellationToken.ThrowIfCancellationRequested(); if (PublicationException is not null) throw PublicationException; return ValueTask.FromResult(Publication ?? new ServicePublication(ServiceId, "Test", [], DateTimeOffset.UtcNow)); }
-        public ValueTask<CapabilityResolutionFacts> ObserveCapabilityAsync(CapabilityPublication capability, CancellationToken cancellationToken = default) => ValueTask.FromResult(new CapabilityResolutionFacts(ProviderReachability.Reachable, ContractCompatibility.Compatible, CurrentContextSupport.Supported, PrerequisiteState.Satisfied, PresentationInvocationSupport.Supported));
+        public int PublicationCalls { get; private set; } public int ObservationCalls { get; private set; }
+        public ValueTask<ServicePublication> GetPublicationAsync(CancellationToken cancellationToken = default) { PublicationCalls++; cancellationToken.ThrowIfCancellationRequested(); if (PublicationException is not null) throw PublicationException; return ValueTask.FromResult(Publication ?? new ServicePublication(ServiceId, "Test", [], DateTimeOffset.UtcNow)); }
+        public ValueTask<CapabilityResolutionFacts> ObserveCapabilityAsync(CapabilityPublication capability, CancellationToken cancellationToken = default) { ObservationCalls++; return ValueTask.FromResult(new CapabilityResolutionFacts(ProviderReachability.Reachable, ContractCompatibility.Compatible, CurrentContextSupport.Supported, PrerequisiteState.Satisfied, PresentationInvocationSupport.Supported)); }
     }
     private sealed class CountingAdapter(IIntegrationAdapter inner) : IIntegrationAdapter
     {

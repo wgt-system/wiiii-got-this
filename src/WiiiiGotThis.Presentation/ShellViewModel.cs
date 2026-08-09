@@ -9,6 +9,7 @@ namespace WiiiiGotThis.Presentation;
 public sealed partial class ShellViewModel : ObservableObject
 {
     private readonly EnsureCurrentDeviceUseCase ensureCurrentDevice;
+    private readonly RegisterKnownIntegrationsUseCase registerKnownIntegrations;
     private readonly RefreshPublicationsUseCase refreshPublications;
     private readonly ListServiceIntegrationsUseCase listServiceIntegrations;
     private readonly SetGlobalIntegrationEnablementUseCase setGlobalEnablement;
@@ -28,6 +29,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
     public ShellViewModel(
         EnsureCurrentDeviceUseCase ensureCurrentDevice,
+        RegisterKnownIntegrationsUseCase registerKnownIntegrations,
         RefreshPublicationsUseCase refreshPublications,
         ListServiceIntegrationsUseCase listServiceIntegrations,
         SetGlobalIntegrationEnablementUseCase setGlobalEnablement,
@@ -37,6 +39,7 @@ public sealed partial class ShellViewModel : ObservableObject
         string suggestedDeviceName)
     {
         this.ensureCurrentDevice = ensureCurrentDevice;
+        this.registerKnownIntegrations = registerKnownIntegrations;
         this.refreshPublications = refreshPublications;
         this.listServiceIntegrations = listServiceIntegrations;
         this.setGlobalEnablement = setGlobalEnablement;
@@ -97,6 +100,7 @@ public sealed partial class ShellViewModel : ObservableObject
             var device = await ensureCurrentDevice.GetOrCreateAsync(suggestedDeviceName);
             CurrentDeviceIdentity = device.DeviceIdentity;
             CurrentDeviceName = device.DisplayName;
+            await registerKnownIntegrations.RegisterAsync();
             await RefreshCoreAsync();
         }
         catch

@@ -46,7 +46,8 @@ internal sealed class AppDelegate : UIApplicationDelegate, IAvaloniaAppDelegate
         var publicationStore = new SqliteIntegrationPublicationStore(connectionFactory);
         var adapters = new StaticIntegrationAdapterCatalog([new ReferenceIntegrationAdapter()]);
         var ensureDevice = new EnsureCurrentDeviceUseCase(deviceStore);
-        var refresh = new RefreshPublicationsUseCase(adapters, integrationStore, publicationStore);
+        var register = new RegisterKnownIntegrationsUseCase(adapters, integrationStore);
+        var refresh = new RefreshPublicationsUseCase(adapters, publicationStore);
         var list = new ListServiceIntegrationsUseCase(integrationStore, publicationStore);
         var global = new SetGlobalIntegrationEnablementUseCase(integrationStore);
         var deviceOverride = new SetDeviceIntegrationOverrideUseCase(integrationStore);
@@ -55,6 +56,7 @@ internal sealed class AppDelegate : UIApplicationDelegate, IAvaloniaAppDelegate
 
         return new ShellViewModel(
             ensureDevice,
+            register,
             refresh,
             list,
             global,

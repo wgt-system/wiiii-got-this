@@ -17,6 +17,21 @@ public sealed class EnsureCurrentDeviceUseCase(ILocalDeviceStore devices)
     }
 }
 
+public sealed class RegisterKnownIntegrationsUseCase(
+    IIntegrationAdapterCatalog adapters,
+    IServiceIntegrationStore integrations)
+{
+    public async ValueTask RegisterAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var adapter in adapters.Adapters)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (await integrations.LoadAsync(adapter.ServiceId, cancellationToken) is null)
+                await integrations.SaveAsync(new ServiceIntegration(adapter.ServiceId), cancellationToken);
+        }
+    }
+}
+
 public sealed record ServiceIntegrationListItem(
     ServiceIdentity ServiceIdentity,
     string DisplayName,

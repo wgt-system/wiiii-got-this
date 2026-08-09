@@ -63,7 +63,7 @@ public enum IntegrationRefreshStatus { Refreshed, AdapterFailed, InvalidPublicat
 
 public sealed record IntegrationRefreshResult(ServiceIdentity ServiceIdentity, IntegrationRefreshStatus Status);
 
-public sealed class RefreshPublicationsUseCase(IIntegrationAdapterCatalog adapters, IServiceIntegrationStore integrations, IIntegrationPublicationStore publications)
+public sealed class RefreshPublicationsUseCase(IIntegrationAdapterCatalog adapters, IIntegrationPublicationStore publications)
 {
     public async ValueTask<IReadOnlyList<IntegrationRefreshResult>> RefreshAsync(CancellationToken cancellationToken = default)
     {
@@ -71,10 +71,6 @@ public sealed class RefreshPublicationsUseCase(IIntegrationAdapterCatalog adapte
         foreach (var adapter in adapters.Adapters)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var integration = await integrations.LoadAsync(adapter.ServiceId, cancellationToken);
-            if (integration is null)
-                await integrations.SaveAsync(new ServiceIntegration(adapter.ServiceId), cancellationToken);
-
             ServicePublication publication;
             try
             {

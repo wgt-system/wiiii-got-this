@@ -71,7 +71,8 @@ public sealed class ShellViewModelTests
         var integrations = new MemoryIntegrationStore(); var publications = new MemoryPublicationStore();
         return new ShellViewModel(
             new EnsureCurrentDeviceUseCase(new MemoryDeviceStore()),
-            new RefreshPublicationsUseCase(adapters, integrations, publications),
+            new RegisterKnownIntegrationsUseCase(adapters, integrations),
+            new RefreshPublicationsUseCase(adapters, publications),
             new ListServiceIntegrationsUseCase(integrations, publications),
             new SetGlobalIntegrationEnablementUseCase(integrations),
             new SetDeviceIntegrationOverrideUseCase(integrations),

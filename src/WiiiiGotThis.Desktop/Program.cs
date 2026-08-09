@@ -22,13 +22,14 @@ internal static class Program
         var publicationStore = new SqliteIntegrationPublicationStore(connectionFactory);
         var adapters = new StaticIntegrationAdapterCatalog([new ReferenceIntegrationAdapter()]);
         var ensureDevice = new EnsureCurrentDeviceUseCase(deviceStore);
-        var refresh = new RefreshPublicationsUseCase(adapters, integrationStore, publicationStore);
+        var register = new RegisterKnownIntegrationsUseCase(adapters, integrationStore);
+        var refresh = new RefreshPublicationsUseCase(adapters, publicationStore);
         var list = new ListServiceIntegrationsUseCase(integrationStore, publicationStore);
         var global = new SetGlobalIntegrationEnablementUseCase(integrationStore);
         var deviceOverride = new SetDeviceIntegrationOverrideUseCase(integrationStore);
         var clearOverride = new ClearDeviceIntegrationOverrideUseCase(integrationStore);
         var catalog = new ResolveCapabilityCatalogUseCase(adapters, integrationStore, publicationStore);
-        var shell = new ShellViewModel(ensureDevice, refresh, list, global, deviceOverride, clearOverride, catalog, "Windows PC");
+        var shell = new ShellViewModel(ensureDevice, register, refresh, list, global, deviceOverride, clearOverride, catalog, "Windows PC");
 
         BuildAvaloniaApp(shell).StartWithClassicDesktopLifetime(args);
     }

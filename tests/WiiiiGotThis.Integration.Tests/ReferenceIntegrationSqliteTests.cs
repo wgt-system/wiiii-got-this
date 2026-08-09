@@ -17,9 +17,12 @@ public sealed class ReferenceIntegrationSqliteTests
             {
                 await first.Runner.ApplyAsync();
                 var adapter = new ReferenceIntegrationAdapter();
+                var adapters = new StaticIntegrationAdapterCatalog([adapter]);
+                await new RegisterKnownIntegrationsUseCase(
+                    adapters,
+                    new SqliteServiceIntegrationStore(first.Factory)).RegisterAsync();
                 var refresh = new RefreshPublicationsUseCase(
-                    new StaticIntegrationAdapterCatalog([adapter]),
-                    new SqliteServiceIntegrationStore(first.Factory),
+                    adapters,
                     new SqliteIntegrationPublicationStore(first.Factory));
                 Assert.Equal(IntegrationRefreshStatus.Refreshed, (await refresh.RefreshAsync()).Single().Status);
             }
