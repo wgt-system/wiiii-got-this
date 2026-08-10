@@ -16,6 +16,7 @@ public sealed partial class ShellViewModel : ObservableObject
     private readonly SetDeviceIntegrationOverrideUseCase setDeviceOverride;
     private readonly ClearDeviceIntegrationOverrideUseCase clearDeviceOverride;
     private readonly ResolveCapabilityCatalogUseCase resolveCapabilityCatalog;
+    private readonly GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview;
     private readonly string suggestedDeviceName;
     private readonly object initializationGate = new();
     private Task? initializationTask;
@@ -25,6 +26,7 @@ public sealed partial class ShellViewModel : ObservableObject
     [ObservableProperty] private ServiceIntegrationPresentationViewModel? selectedIntegration;
     [ObservableProperty] private CapabilityPresentationViewModel? selectedCapability;
     [ObservableProperty] private CapabilityPresentationViewModel? openedReferenceCapability;
+    [ObservableProperty] private VocationOpportunityOverviewViewModel? openedVocationOpportunityOverview;
     [ObservableProperty] private string statusText = "Starting…";
 
     public ShellViewModel(
@@ -36,7 +38,8 @@ public sealed partial class ShellViewModel : ObservableObject
         SetDeviceIntegrationOverrideUseCase setDeviceOverride,
         ClearDeviceIntegrationOverrideUseCase clearDeviceOverride,
         ResolveCapabilityCatalogUseCase resolveCapabilityCatalog,
-        string suggestedDeviceName)
+        string suggestedDeviceName,
+        GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview = null)
     {
         this.ensureCurrentDevice = ensureCurrentDevice;
         this.registerKnownIntegrations = registerKnownIntegrations;
@@ -46,6 +49,7 @@ public sealed partial class ShellViewModel : ObservableObject
         this.setDeviceOverride = setDeviceOverride;
         this.clearDeviceOverride = clearDeviceOverride;
         this.resolveCapabilityCatalog = resolveCapabilityCatalog;
+        this.readVocationOpportunityOverview = readVocationOpportunityOverview;
         this.suggestedDeviceName = suggestedDeviceName;
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
@@ -55,7 +59,7 @@ public sealed partial class ShellViewModel : ObservableObject
         DisableOnThisDeviceCommand = new AsyncRelayCommand(DisableOnThisDeviceAsync, CanManageSelectedIntegration);
         InheritGlobalSettingCommand = new AsyncRelayCommand(InheritGlobalSettingAsync, CanManageSelectedIntegration);
         OpenCapabilityCommand = new AsyncRelayCommand(OpenCapabilityAsync, CanOpenSelectedCapability);
-        BackToCatalogCommand = new RelayCommand(() => OpenedReferenceCapability = null);
+        BackToCatalogCommand = new RelayCommand(() => { OpenedReferenceCapability = null; OpenedVocationOpportunityOverview = null; });
     }
 
     public ObservableCollection<ServiceIntegrationPresentationViewModel> Integrations { get; } = [];
@@ -69,7 +73,8 @@ public sealed partial class ShellViewModel : ObservableObject
     public IAsyncRelayCommand OpenCapabilityCommand { get; }
     public IRelayCommand BackToCatalogCommand { get; }
     public bool IsReferenceCapabilityOpen => OpenedReferenceCapability is not null;
-    public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen;
+    public bool IsVocationOpportunityOverviewOpen => OpenedVocationOpportunityOverview is not null;
+    public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen && !IsVocationOpportunityOverviewOpen;
 
     public Task EnsureInitializedAsync()
     {
@@ -90,6 +95,12 @@ public sealed partial class ShellViewModel : ObservableObject
     partial void OnOpenedReferenceCapabilityChanged(CapabilityPresentationViewModel? value)
     {
         OnPropertyChanged(nameof(IsReferenceCapabilityOpen));
+        OnPropertyChanged(nameof(IsCapabilityDetailsVisible));
+    }
+
+    partial void OnOpenedVocationOpportunityOverviewChanged(VocationOpportunityOverviewViewModel? value)
+    {
+        OnPropertyChanged(nameof(IsVocationOpportunityOverviewOpen));
         OnPropertyChanged(nameof(IsCapabilityDetailsVisible));
     }
 
@@ -161,10 +172,31 @@ public sealed partial class ShellViewModel : ObservableObject
     private async Task EnableOnThisDeviceAsync() { if (SelectedIntegration is { } selected && CurrentDeviceIdentity is { } device) { await setDeviceOverride.SetAsync(selected.ServiceIdentity, device, true); await ReloadStateAsync(); } }
     private async Task DisableOnThisDeviceAsync() { if (SelectedIntegration is { } selected && CurrentDeviceIdentity is { } device) { await setDeviceOverride.SetAsync(selected.ServiceIdentity, device, false); await ReloadStateAsync(); } }
     private async Task InheritGlobalSettingAsync() { if (SelectedIntegration is { } selected && CurrentDeviceIdentity is { } device) { await clearDeviceOverride.ClearAsync(selected.ServiceIdentity, device); await ReloadStateAsync(); } }
-    private Task OpenCapabilityAsync() { if (SelectedCapability is { CanOpen: true } capability) OpenedReferenceCapability = capability; return Task.CompletedTask; }
+    private async Task OpenCapabilityAsync()
+    {
+        if (SelectedCapability is not { CanOpen: true } capability) return;
+        if (string.Equals(capability.CapabilityIdentity.Value, "reference.available", StringComparison.Ordinal))
+        {
+            OpenedVocationOpportunityOverview = null;
+            OpenedReferenceCapability = capability;
+            return;
+        }
+
+        if (string.Equals(capability.CapabilityIdentity.Value, "vocation.opportunity_overview", StringComparison.Ordinal) && readVocationOpportunityOverview is not null)
+        {
+            OpenedReferenceCapability = null;
+            var viewModel = new VocationOpportunityOverviewViewModel(readVocationOpportunityOverview);
+            OpenedVocationOpportunityOverview = viewModel;
+            await viewModel.RefreshAsync();
+        }
+    }
 
     private bool CanManageSelectedIntegration() => SelectedIntegration is not null && CurrentDeviceIdentity is not null;
-    private bool CanOpenSelectedCapability() => SelectedCapability?.CanOpen == true;
+    private bool CanOpenSelectedCapability()
+    {
+        var selected = SelectedCapability;
+        return selected?.CanOpen == true && (!string.Equals(selected.CapabilityIdentity.Value, "vocation.opportunity_overview", StringComparison.Ordinal) || readVocationOpportunityOverview is not null);
+    }
     private void RefreshCommandStates()
     {
         EnableGloballyCommand.NotifyCanExecuteChanged();

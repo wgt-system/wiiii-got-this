@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:v="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.VocationOpportunityOverviewView" x:DataType="v:VocationOpportunityOverviewViewModel">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="16" Margin="4">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Opportunity Overview" FontSize="24" FontWeight="Bold" />
+        <TextBlock Text="Vocation · Jobs" Opacity="0.72" />
+        <TextBlock Text="{Binding StateText}" TextWrapping="Wrap" />
+        <TextBlock Text="{Binding GeneratedAtText}" FontSize="11" Opacity="0.65" />
+      </StackPanel>
+      <Button Command="{Binding RefreshCommand}" Content="Refresh opportunities" HorizontalAlignment="Left" />
+      <ItemsControl ItemsSource="{Binding Opportunities}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="v:VocationOpportunityItemViewModel">
+            <Border Padding="0,8,0,12" BorderBrush="#33000000" BorderThickness="0,0,0,1">
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding CompanyName}" FontWeight="Medium" />
+                <TextBlock Text="{Binding WorkLocationsText}" Opacity="0.78" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding PostingCountText}" Opacity="0.78" />
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

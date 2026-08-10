@@ -54,6 +54,10 @@
           <TextBlock Text="This reference capability is available through Wiiii Got This." TextWrapping="Wrap" />
           <Button Command="{Binding BackToCatalogCommand}" Content="Back to catalog" HorizontalAlignment="Left" />
         </StackPanel>
+        <StackPanel IsVisible="{Binding IsVocationOpportunityOverviewOpen}" Spacing="8">
+          <p:VocationOpportunityOverviewView DataContext="{Binding OpenedVocationOpportunityOverview}" />
+          <Button Command="{Binding BackToCatalogCommand}" Content="Back to catalog" HorizontalAlignment="Left" />
+        </StackPanel>
       </StackPanel>
     </Border>
   </Grid>

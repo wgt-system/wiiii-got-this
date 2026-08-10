@@ -21,5 +21,5 @@ public sealed class CapabilityPresentationViewModel(CapabilityCatalogEntry entry
         AvailabilityReason.MissingPrerequisite => "A required prerequisite is missing.",
         _ => "Current availability could not be determined."
     };
-    public bool CanOpen => IsAvailable && string.Equals(CapabilityIdentity.Value, "reference.available", StringComparison.Ordinal);
+    public bool CanOpen => IsAvailable && (string.Equals(CapabilityIdentity.Value, "reference.available", StringComparison.Ordinal) || string.Equals(CapabilityIdentity.Value, "vocation.opportunity_overview", StringComparison.Ordinal));
 }
