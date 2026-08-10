@@ -45,13 +45,11 @@ These require threat modeling together with the first real synchronized Service.
 
 ## 3. First Vocation WGT Contract
 
-Vocation already defines mobile-oriented read-model direction (`MobileOpportunitySummary`, `MobileMapProjection`, `DataSnapshotMetadata`) but its production Mobile/WGT Read Contract is a later implementation slice and is not yet provider-ready.
+Vocation's `Published Opportunity Overview 1.0` is implemented on its `dev` branch and is a valid consumer-ready first WGT integration candidate. Its canonical schema is `schemas/published-opportunity-overview-v1.schema.json`, and its local read-only endpoint is `/published/v1/opportunity-overview`.
 
-Likely read-oriented candidates include:
+It is client-neutral, versioned, and read-only. It excludes personal state, Availability/Freshness, URLs/navigation, maps, comparison, and opportunity detail. It is not a Vocation database, domain-class, or internal React API dependency.
 
-- opportunity overview,
-- opportunity detail,
-- selected status/assessment projection.
+Later Vocation contracts remain separate and deferred, including Opportunity Detail, Groups/Waves, Availability/Freshness, and Map.
 
 Do not build a generic Vocation API inside WGT.
 

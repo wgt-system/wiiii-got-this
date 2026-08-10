@@ -111,6 +111,8 @@ Expected integration mechanisms may include:
 
 Provider-specific transport and deployment are allowed. The V1 host/composition and registration baselines are accepted; concrete foreign-Service contracts remain service-specific.
 
+WGT owns coherent native presentation for integrated capabilities. Contract-driven remote/read integrations may later be added without forcing a new WGT build when existing platform capabilities suffice; this does not introduce arbitrary downloaded executable plugins.
+
 ## Presentation
 
 Wiiii Got This is a product and bounded context, not a single specific client application.

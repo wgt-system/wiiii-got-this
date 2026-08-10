@@ -225,7 +225,9 @@ Those possibilities are not V1 requirements.
 
 ## 11. Adding a New Service in V1
 
-Initially, adding support for a completely new Service may require a WGT release containing a new Integration Adapter.
+The current V1 implementation may require a WGT release containing a new Integration Adapter for a completely new Service family.
+
+The accepted longer-term target is that an ordinary compatible remote/read Service can be added through an existing contract-driven WGT integration, invocation, and presentation capability without requiring a new WGT/iOS build merely because the Service was added. This is a target property, not a claim that v0.2.0 supports arbitrary runtime registration.
 
 That is acceptable for the first product because:
 
@@ -235,6 +237,8 @@ That is acceptable for the first product because:
 - security and dynamic-code loading would otherwise expand scope substantially.
 
 Enable/disable remains runtime configuration once the adapter exists.
+
+See `docs/adr/0009-wgt-owned-presentation-and-contract-driven-service-integration.md`.
 
 ## 12. Contract Isolation
 

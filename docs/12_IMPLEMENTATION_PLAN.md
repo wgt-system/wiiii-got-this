@@ -283,11 +283,12 @@ Each implementation slice should satisfy:
 
 Current progression after the v0.2.0 registration/publication lifecycle baseline:
 
-1. review and accept the v0.2.0 hardening results;
-2. preserve the durable iOS runtime smoke gate before the first real Vocation or Illumination integration;
-3. select the first real provider only after an accepted, consumer-ready Published Contract exists;
-4. implement one narrow provider Capability without introducing foreign domain ownership;
-5. define synchronization only when a concrete provider flow establishes its state, authority, and merge semantics.
+1. architecture alignment is accepted;
+2. use Vocation Published Opportunity Overview 1.0 as the first real WGT integration contract;
+3. implement WGT Windows consumption of the local Vocation Published Contract and render it WGT-natively;
+4. later use Conveyance to transport the same semantic contract for offline/cross-device iPhone read;
+5. keep iPhone acceptance behind the real Apple runtime smoke gate;
+6. generalize service discovery/presentation only after concrete integration pressure proves the required primitives.
 
 
 ## 14. Repository Bootstrap

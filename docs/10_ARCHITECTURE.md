@@ -180,13 +180,15 @@ if concrete requirements justify that topology.
 
 ## 7A. V1 Client Host Topology
 
-Each V1 WGT client is one primary application host with statically shipped Integration Adapters.
+Each V1 WGT client is one primary application host. The current V1 implementation uses statically shipped Integration Adapters.
 
 A foreign capability runtime may be hosted in-process, locally out-of-process, or remotely without changing its bounded-context ownership.
 
 WGT itself has no mandatory V1 server.
 
 See `docs/adr/0007-v1-client-host-composition-topology.md`.
+
+The accepted target is contract-driven extension for ordinary compatible remote/read Services: adding such a Service should not inherently require a new WGT/iOS build when existing WGT invocation and presentation capabilities suffice. This target does not make arbitrary runtime registration or downloaded executable plugins part of the current V1 implementation. See `docs/adr/0009-wgt-owned-presentation-and-contract-driven-service-integration.md`.
 
 ## 8. Persistence
 
@@ -461,7 +463,8 @@ Before WGT relies on local Illumination iPhone execution, Illumination must prov
 
 - standalone Python/FastAPI + React/TypeScript application remains valid.
 - WGT consumes versioned read contracts rather than Vocation internals.
-- mobile read-model direction exists, but the concrete production Mobile/WGT Read Contract remains a future Vocation implementation slice.
+- `Published Opportunity Overview 1.0` is implemented on Vocation `dev` with canonical schema `schemas/published-opportunity-overview-v1.schema.json` and local endpoint `/published/v1/opportunity-overview`.
+- later Vocation contracts remain provider-specific and are not implied by that overview contract.
 
 WGT Core does not wait for either provider.
 

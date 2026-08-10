@@ -2,12 +2,13 @@
 
 ## Status
 
-Repository-grounded alignment baseline as of 2026-08-09.
+Repository-grounded alignment baseline as of 2026-08-10.
 
 Sources of truth reviewed:
 
 - `Wiiii90/illumination` branch `dev`
 - `Wiiii90/vocation` branch `dev`
+- `Wiiii90/conveyance` branch `dev`
 
 This document records only integration facts already accepted or explicitly planned by the owning bounded contexts.
 
@@ -164,19 +165,36 @@ This is compatible with WGT's provider-specific transport strategy.
 
 There is no requirement to port Vocation to .NET.
 
-## 9. Vocation Mobile Read Direction
+## 9. Vocation Published Opportunity Overview
 
-Vocation already defines read-model direction including:
+Vocation has implemented `Published Opportunity Overview 1.0` on `dev`.
 
-- `MobileOpportunitySummary`,
-- `MobileMapProjection`,
-- `DataSnapshotMetadata`.
+Its canonical schema is:
 
-However, the production mobile/WGT contract is **not yet implemented** in the current development milestone.
+```text
+schemas/published-opportunity-overview-v1.schema.json
+```
 
-Vocation's implementation plan places the versioned Mobile Read Contract in a later slice.
+Its local read-only publication endpoint is:
 
-Therefore WGT must treat these read models as provider-side design pressure, not as a callable public contract yet.
+```text
+/published/v1/opportunity-overview
+```
+
+The contract is client-neutral, versioned, and read-only. It intentionally excludes:
+
+- personal state,
+- Availability/Freshness,
+- URLs/navigation,
+- maps,
+- comparison,
+- opportunity detail.
+
+It can be consumed without accessing Vocation's database, domain classes, or internal React API. It is therefore a valid concrete first WGT integration candidate.
+
+This contract does not include later Vocation contracts such as Opportunity Detail, Groups/Waves, Availability/Freshness, or Map.
+
+The endpoint remains outside Vocation's internal React/OpenAPI surface and does not implement relay, authentication, remote persistence, or cross-device writes.
 
 ## 10. Vocation Synchronization Direction
 
@@ -213,9 +231,43 @@ Avoid duplicating every Vocation standalone screen inside WGT.
 
 A concrete Capability is added to WGT only when the cross-device/integrated use case justifies its own WGT-native view.
 
-## 12. First Real Integration Ordering
+## 12. Conveyance Alignment
 
-The previous WGT plan preferred Vocation first because a read-only integration is conceptually lower risk.
+Conveyance is the independently developed Synchronization/Relay bounded context for generic durable delivery.
+
+Conveyance owns:
+
+- generic durable delivery,
+- transport/relay mechanics,
+- opaque Current Object storage and delivery,
+- later security/trust transport mechanisms as separately accepted.
+
+Conveyance does not own:
+
+- Vocation semantics,
+- Illumination semantics,
+- WGT presentation,
+- foreign merge/reconciliation rules.
+
+Its current V1 path is:
+
+```text
+Vocation
+  ↓ Published Opportunity Overview 1.0
+WGT Windows
+  ↓ protect/publish
+Conveyance
+  ↓ retrieve
+WGT iPhone
+  ↓ verify/decrypt/validate
+WGT-native Vocation presentation
+```
+
+Conveyance currently implements the generic Current Object delivery mode. Production authentication/cryptography interoperability and the foreign-context integration path are not claimed complete by WGT.
+
+## 13. First Real Integration Ordering
+
+Vocation Published Opportunity Overview 1.0 is currently the strongest first real WGT integration candidate because it is an accepted, versioned, consumer-ready read-only contract.
 
 Repository reality now adds an important condition:
 
@@ -223,13 +275,13 @@ Repository reality now adds an important condition:
 
 Therefore:
 
-- Vocation remains a strong first candidate once its Mobile/WGT Read Contract exists.
+- Vocation is currently the strongest first candidate through Published Opportunity Overview 1.0.
 - Illumination may become first if its WGT Integration Surface becomes contract-ready earlier.
 - WGT Core/reference-provider development does not wait for either project.
 
 Do not couple WGT bootstrap progress to foreign contract scheduling.
 
-## 13. Shared Findings
+## 14. Shared Findings
 
 Both foreign contexts agree with WGT on these invariants:
 
@@ -242,7 +294,7 @@ Both foreign contexts agree with WGT on these invariants:
 7. server/Docker infrastructure is optional and must not silently change data ownership,
 8. synchronization mechanics and domain merge semantics are separate concerns.
 
-## 14. WGT Consequence
+## 15. WGT Consequence
 
 No WGT architecture reversal is required.
 
@@ -254,7 +306,7 @@ The WGT repository can be bootstrapped now using:
 
 Real provider integration work begins only when the owning provider has accepted the relevant contract.
 
-## 15. Provider Readiness Checklist
+## 16. Provider Readiness Checklist
 
 Before adding a real Service Integration Adapter:
 
@@ -278,7 +330,7 @@ Before adding a real Service Integration Adapter:
 - WGT-side contract tests,
 - no foreign domain/persistence dependency.
 
-## 16. Current Readiness
+## 17. Current Readiness
 
 ### Illumination
 
@@ -296,11 +348,19 @@ Architecture relationship: **accepted**
 
 Standalone runtime/UI: **implemented direction remains valid**
 
-Mobile/WGT read-model direction: **specified**
+Published Opportunity Overview 1.0: **implemented on `dev`, consumer-ready candidate**
 
-Concrete production Mobile/WGT Read Contract: **future slice / not yet provider-ready**
+Later Opportunity Detail, Groups/Waves, Availability/Freshness, and Map contracts: **not part of Published Opportunity Overview 1.0**
 
-## 17. Rule
+### Conveyance
+
+Architecture relationship: **accepted as separate Synchronization/Relay bounded context**
+
+V1 Current Object delivery: **implemented direction/contract available on `dev`**
+
+Production security interoperability and WGT foreign-context integration: **not yet complete**
+
+## 18. Rule
 
 Foreign repository state outranks earlier WGT assumptions about foreign implementation details.
 
