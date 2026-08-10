@@ -9,9 +9,11 @@ namespace WiiiiGotThis.Integrations.Vocation;
 
 public static class VocationIntegrationMetadata
 {
+    public const string OpportunityOverviewCapabilityValue = "vocation.opportunity_overview";
+    public const string OpportunityOverviewContractVersionValue = "1.0";
     public static readonly ServiceIdentity ServiceId = new("vocation");
     public const string ServiceDisplayName = "Vocation";
-    public static readonly CapabilityIdentity OpportunityOverviewCapability = new("vocation.opportunity_overview");
+    public static readonly CapabilityIdentity OpportunityOverviewCapability = new(OpportunityOverviewCapabilityValue);
     public const string OpportunityOverviewTitle = "Opportunity Overview";
     public static readonly Version OpportunityOverviewContractVersion = new(1, 0);
 }
@@ -77,11 +79,11 @@ public sealed class VocationOpportunityOverviewContractReader
     {
         var properties = ObjectProperties(root, "capability", "contract_version", "publication", "opportunities");
         var capability = RequiredString(properties, "capability");
-        if (!string.Equals(capability, "vocation.opportunity_overview", StringComparison.Ordinal))
+        if (!string.Equals(capability, VocationIntegrationMetadata.OpportunityOverviewCapabilityValue, StringComparison.Ordinal))
             throw new VocationPublishedContractValidationException(VocationContractFailureKind.UnexpectedCapability, "The publication contains an unexpected capability.");
 
         var contractVersion = RequiredString(properties, "contract_version");
-        if (!string.Equals(contractVersion, "1.0", StringComparison.Ordinal))
+        if (!string.Equals(contractVersion, VocationIntegrationMetadata.OpportunityOverviewContractVersionValue, StringComparison.Ordinal))
             throw new VocationPublishedContractValidationException(VocationContractFailureKind.UnsupportedContractVersion, "The Vocation contract version is not supported.", contractVersion);
 
         var publication = ReadPublication(properties["publication"]);
@@ -228,9 +230,9 @@ public sealed class VocationOpportunityOverviewContractReader
         return !negative;
     }
 
-    private static bool TryParseRfc3339(string value, out DateTimeOffset normalized)
+    private static bool TryParseRfc3339(string value, out DateTimeOffset? normalizedUtc)
     {
-        normalized = default;
+        normalizedUtc = null;
         if (value.Length < 20 || !Digits(value, 0, 4) || value[4] != '-' || !Digits(value, 5, 2) || value[7] != '-' || !Digits(value, 8, 2) || (value[10] is not ('T' or 't')) || !Digits(value, 11, 2) || value[13] != ':' || !Digits(value, 14, 2) || value[16] != ':' || !Digits(value, 17, 2)) return false;
         var fractionStart = 19;
         var fractionLength = 0;
@@ -246,27 +248,75 @@ public sealed class VocationOpportunityOverviewContractReader
         else
         {
             if (timezoneStart + 6 != value.Length || value[timezoneStart] is not ('+' or '-') || value[timezoneStart + 3] != ':' || !Digits(value, timezoneStart + 1, 2) || !Digits(value, timezoneStart + 4, 2)) return false;
-            var offsetHours = Number(value, timezoneStart + 1, 2); var offsetMinutes = Number(value, timezoneStart + 4, 2);
-            if (offsetHours > 23 || offsetMinutes > 59) return false;
-            offset = new TimeSpan(offsetHours, offsetMinutes, 0);
+            var offsetHours = Number(value, timezoneStart + 1, 2); var zoneMinutes = Number(value, timezoneStart + 4, 2);
+            if (offsetHours > 23 || zoneMinutes > 59) return false;
+            offset = new TimeSpan(offsetHours, zoneMinutes, 0);
             if (value[timezoneStart] == '-') offset = -offset;
         }
 
         var year = Number(value, 0, 4); var month = Number(value, 5, 2); var day = Number(value, 8, 2);
         var hour = Number(value, 11, 2); var minute = Number(value, 14, 2); var second = Number(value, 17, 2);
-        if (hour > 23 || minute > 59 || second > 60) return false;
+        if (month is < 1 or > 12 || day < 1 || day > DaysInMonth(year, month) || hour > 23 || minute > 59 || second > 60) return false;
+        var offsetMinutes = (int)offset.TotalMinutes;
+        AddMinutesToUtc(year, month, day, hour, minute, -offsetMinutes, out var utcYear, out var utcMonth, out var utcDay, out var utcHour, out var utcMinute);
+        if (second == 60 && (!IsKnownLeapSecondDate(utcYear, utcMonth, utcDay) || utcHour != 23 || utcMinute != 59)) return false;
         var ticks = 0L;
         for (var index = 0; index < Math.Min(fractionLength, 7); index++) ticks = ticks * 10 + (value[fractionStart + index] - '0');
         for (var index = fractionLength; index < 7; index++) ticks *= 10;
+        if (utcYear is < 1 or > 9999) return true;
         try
         {
             var baseSecond = second == 60 ? 59 : second;
-            normalized = new DateTimeOffset(year, month, day, hour, minute, baseSecond, offset).AddTicks(ticks);
+            var normalized = new DateTimeOffset(utcYear, utcMonth, utcDay, utcHour, utcMinute, baseSecond, TimeSpan.Zero).AddTicks(ticks);
             if (second == 60) normalized = normalized.AddSeconds(1);
+            normalizedUtc = normalized;
             return true;
         }
         catch (ArgumentOutOfRangeException) { return false; }
     }
+
+    private static int DaysInMonth(int year, int month) => month switch
+    {
+        2 => IsLeapYear(year) ? 29 : 28,
+        4 or 6 or 9 or 11 => 30,
+        _ => 31
+    };
+
+    private static bool IsLeapYear(int year) => year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
+
+    private static void AddMinutesToUtc(int year, int month, int day, int hour, int minute, int deltaMinutes, out int utcYear, out int utcMonth, out int utcDay, out int utcHour, out int utcMinute)
+    {
+        var totalMinutes = hour * 60 + minute + deltaMinutes;
+        while (totalMinutes < 0) { totalMinutes += 1440; PreviousDay(ref year, ref month, ref day); }
+        while (totalMinutes >= 1440) { totalMinutes -= 1440; NextDay(ref year, ref month, ref day); }
+        utcYear = year; utcMonth = month; utcDay = day; utcHour = totalMinutes / 60; utcMinute = totalMinutes % 60;
+    }
+
+    private static void PreviousDay(ref int year, ref int month, ref int day)
+    {
+        if (--day >= 1) return;
+        if (--month < 1) { month = 12; year--; }
+        day = DaysInMonth(year, month);
+    }
+
+    private static void NextDay(ref int year, ref int month, ref int day)
+    {
+        if (++day <= DaysInMonth(year, month)) return;
+        day = 1;
+        if (++month > 12) { month = 1; year++; }
+    }
+
+    private static bool IsKnownLeapSecondDate(int year, int month, int day) =>
+        LeapSecondDates.Contains((year, month, day));
+
+    private static readonly HashSet<(int Year, int Month, int Day)> LeapSecondDates =
+    [
+        (1972, 6, 30), (1972, 12, 31), (1973, 12, 31), (1974, 12, 31), (1975, 12, 31), (1976, 12, 31),
+        (1977, 12, 31), (1978, 12, 31), (1979, 12, 31), (1981, 6, 30), (1982, 6, 30), (1983, 6, 30),
+        (1985, 6, 30), (1987, 12, 31), (1989, 12, 31), (1990, 12, 31), (1992, 6, 30), (1993, 6, 30),
+        (1994, 6, 30), (1995, 12, 31), (1997, 6, 30), (1998, 12, 31), (2005, 12, 31), (2008, 12, 31),
+        (2012, 6, 30), (2015, 6, 30), (2016, 12, 31)
+    ];
 
     private static bool Digits(string value, int start, int count)
     {

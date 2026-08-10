@@ -23,7 +23,7 @@ public sealed class VocationOpportunityOverviewContractTests
         var opportunity = Assert.Single(overview.Opportunities);
         var location = Assert.Single(opportunity.WorkLocations);
         Assert.Equal("publication-α", overview.PublicationRef);
-        Assert.Equal(DateTimeOffset.Parse("2026-08-10T12:34:56Z", System.Globalization.CultureInfo.InvariantCulture), overview.GeneratedAt.Normalized);
+        Assert.Equal(DateTimeOffset.Parse("2026-08-10T12:34:56Z", System.Globalization.CultureInfo.InvariantCulture), overview.GeneratedAt.NormalizedUtc);
         Assert.Equal("opportunity/α", opportunity.OpportunityRef);
         Assert.Equal("Senior Role", opportunity.Title);
         Assert.Equal("company/α", opportunity.Company.CompanyRef);
@@ -89,13 +89,37 @@ public sealed class VocationOpportunityOverviewContractTests
     [Fact]
     public void Generated_at_accepts_rfc3339_case_offset_and_high_precision_forms()
     {
-        foreach (var timestamp in new[] { "2026-08-10T02:00:00Z", "2026-08-10t02:00:00z", "2026-08-10T02:00:00+02:00", "2026-08-10T02:00:00.123456789Z" })
+        foreach (var timestamp in new[] { "2026-08-10T02:00:00Z", "2026-08-10t02:00:00z", "2026-08-10T02:00:00+02:00", "2026-08-10T02:00:00+14:00", "2026-08-10T02:00:00+15:00", "2026-08-10T02:00:00-15:00", "2026-08-10T02:00:00+23:59", "2026-08-10T02:00:00.123456789Z" })
         {
             var overview = VocationOpportunityOverviewContractReader.Read(CanonicalJson.Replace("2026-08-10T12:34:56Z", timestamp, StringComparison.Ordinal));
             Assert.Equal(timestamp, overview.GeneratedAt.RawValue);
+            Assert.NotNull(overview.GeneratedAt.NormalizedUtc);
+            Assert.Equal(TimeSpan.Zero, overview.GeneratedAt.NormalizedUtc!.Value.Offset);
         }
         AssertMalformed(CanonicalJson.Replace("2026-08-10T12:34:56Z", "2026-02-30T02:00:00Z", StringComparison.Ordinal));
         AssertMalformed(CanonicalJson.Replace("2026-08-10T12:34:56Z", "2026-08-10T02:00:00+24:00", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Leap_seconds_are_accepted_only_at_known_utc_positions()
+    {
+        foreach (var timestamp in new[] { "1990-12-31T23:59:60Z", "1990-12-31T15:59:60-08:00" })
+        {
+            var overview = VocationOpportunityOverviewContractReader.Read(CanonicalJson.Replace("2026-08-10T12:34:56Z", timestamp, StringComparison.Ordinal));
+            Assert.Equal(timestamp, overview.GeneratedAt.RawValue);
+            Assert.NotNull(overview.GeneratedAt.NormalizedUtc);
+        }
+        foreach (var timestamp in new[] { "1990-12-31T12:00:60Z", "1990-12-30T23:59:60Z", "1990-11-30T23:59:60Z", "2026-08-10T02:00:60Z" })
+            AssertMalformed(CanonicalJson.Replace("2026-08-10T12:34:56Z", timestamp, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Year_zero_is_validated_independently_of_DateTimeOffset()
+    {
+        var overview = VocationOpportunityOverviewContractReader.Read(CanonicalJson.Replace("2026-08-10T12:34:56Z", "0000-02-29T00:00:00Z", StringComparison.Ordinal));
+        Assert.Equal("0000-02-29T00:00:00Z", overview.GeneratedAt.RawValue);
+        Assert.Null(overview.GeneratedAt.NormalizedUtc);
+        AssertMalformed(CanonicalJson.Replace("2026-08-10T12:34:56Z", "0000-02-30T00:00:00Z", StringComparison.Ordinal));
     }
 
     [Fact]

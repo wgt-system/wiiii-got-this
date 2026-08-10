@@ -7,7 +7,7 @@ public sealed record VocationOpportunityOverview(
     VocationContractTimestamp GeneratedAt,
     IReadOnlyList<VocationOpportunity> Opportunities);
 
-public sealed record VocationContractTimestamp(string RawValue, DateTimeOffset Normalized);
+public sealed record VocationContractTimestamp(string RawValue, DateTimeOffset? NormalizedUtc);
 
 public sealed record VocationOpportunity(
     string OpportunityRef,
