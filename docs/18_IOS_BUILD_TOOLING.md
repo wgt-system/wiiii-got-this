@@ -90,7 +90,7 @@ The project must nevertheless create and exercise the iOS target early enough th
 
 ## 7. Early iPhone Smoke Slice
 
-Before accepting the first real Vocation or Illumination integration into WGT, perform a real iOS smoke validation covering at least:
+Before accepting the first real Vocation or Illumination provider integration on iPhone, perform the real iOS smoke validation covering at least:
 
 1. WGT launches through the real iOS host;
 2. shared Avalonia `MobileShellView` renders;
@@ -102,6 +102,8 @@ Before accepting the first real Vocation or Illumination integration into WGT, p
 8. integration enablement and Device override persist across application restart.
 
 This is a mandatory gate and remains outstanding until it is executed on appropriate Apple tooling. It must not be treated as completed based on shared-code tests or successful compilation alone.
+
+Successful Windows `net10.0-ios` compilation is not runtime validation. Windows/Desktop may implement, validate and release a real provider integration before this smoke, but such a Windows-first milestone must not wire or claim the real provider as accepted for iPhone. Until the smoke succeeds, iPhone composition must remain limited to already validated/reference behavior rather than claiming production provider readiness. This gate does not waive signing, provisioning or device-runtime requirements. Illumination's separate local-runtime/persistence proof remains required before local Illumination execution is accepted on iPhone.
 
 Before substantial WGT UI/integration work accumulates, create a small iPhone smoke slice that verifies:
 
