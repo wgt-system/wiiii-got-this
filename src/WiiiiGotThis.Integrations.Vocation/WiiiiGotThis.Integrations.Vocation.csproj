@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><RootNamespace>WiiiiGotThis.Integrations.Vocation</RootNamespace><AssemblyName>WiiiiGotThis.Integrations.Vocation</AssemblyName></PropertyGroup>
+  <ItemGroup><ProjectReference Include="..\WiiiiGotThis.Application\WiiiiGotThis.Application.csproj" /><ProjectReference Include="..\WiiiiGotThis.Contracts\WiiiiGotThis.Contracts.csproj" /></ItemGroup>
+</Project>
