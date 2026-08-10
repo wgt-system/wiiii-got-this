@@ -4,7 +4,7 @@
 
 Historical planning baseline through domain/application architecture. The implementation-ready technology and architecture decisions were accepted before repository bootstrap.
 
-The v0.1.0 baseline and the v0.2.0 registration/publication lifecycle baseline are implemented in the repository. The real Vocation and Illumination integrations, production synchronization, and the real iOS runtime smoke remain future gates.
+The v0.1.0 baseline, the v0.2.0 registration/publication lifecycle baseline, and the Windows-first Vocation Published Opportunity Overview 1.0 integration are implemented on `dev` as the v0.3.0 release-candidate baseline. Control-Plane release approval, production synchronization, and the real iOS runtime smoke remain outstanding gates.
 
 The milestone shape below preserves the original planning sequence for context; it is not a statement that repository implementation has not started.
 
@@ -173,11 +173,11 @@ It must not become a hidden sample business domain inside WGT.
 
 The first real provider integration is selected by **actual Published Contract readiness**, not by a permanently fixed provider order.
 
-Vocation remains an attractive low-risk candidate because its expected first WGT use is read-oriented, but its production Mobile/WGT Read Contract is still a later Vocation implementation slice.
+Vocation Published Opportunity Overview 1.0 is the implemented first Windows integration candidate because its accepted WGT use is read-oriented. Its iPhone provider acceptance remains behind the real Apple runtime smoke gate.
 
 Illumination has already accepted WGT as its primary Windows/iPhone presentation, but its concrete WGT interaction contract is also intentionally deferred until the relevant application capabilities are stable.
 
-Whichever provider first supplies an accepted, versioned, consumer-ready contract can become the first real integration.
+Whichever later provider first supplies an accepted, versioned, consumer-ready contract can become the next real integration.
 
 That first integration should validate:
 
@@ -284,8 +284,8 @@ Each implementation slice should satisfy:
 Current progression after the v0.2.0 registration/publication lifecycle baseline:
 
 1. architecture alignment is accepted;
-2. use Vocation Published Opportunity Overview 1.0 as the first real WGT integration contract;
-3. implement WGT Windows consumption of the local Vocation Published Contract and render it WGT-natively;
+2. harden the implemented Vocation Published Opportunity Overview 1.0 Windows integration;
+3. obtain Control-Plane approval before merging or tagging v0.3.0;
 4. later use Conveyance to transport the same semantic contract for offline/cross-device iPhone read;
 5. keep iPhone acceptance behind the real Apple runtime smoke gate;
 6. generalize service discovery/presentation only after concrete integration pressure proves the required primitives.

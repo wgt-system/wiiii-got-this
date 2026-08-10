@@ -190,7 +190,7 @@ The contract is client-neutral, versioned, and read-only. It intentionally exclu
 - comparison,
 - opportunity detail.
 
-It can be consumed without accessing Vocation's database, domain classes, or internal React API. It is therefore a valid concrete first WGT integration candidate.
+It can be consumed without accessing Vocation's database, domain classes, or internal React API. It is therefore the concrete contract consumed by WGT's first Windows integration.
 
 This contract does not include later Vocation contracts such as Opportunity Detail, Groups/Waves, Availability/Freshness, or Map.
 
@@ -267,7 +267,7 @@ Conveyance currently implements the generic Current Object delivery mode. Produc
 
 ## 13. First Real Integration Ordering
 
-Vocation Published Opportunity Overview 1.0 is currently the strongest first real WGT integration candidate because it is an accepted, versioned, consumer-ready read-only contract.
+Vocation Published Opportunity Overview 1.0 is the implemented first real WGT Windows integration because it is an accepted, versioned, consumer-ready read-only contract. The current `dev` baseline consumes it through the local HTTP adapter and presents it WGT-natively.
 
 Repository reality now adds an important condition:
 
@@ -275,7 +275,7 @@ Repository reality now adds an important condition:
 
 Therefore:
 
-- Vocation is currently the strongest first candidate through Published Opportunity Overview 1.0.
+- Vocation is the current first Windows integration through Published Opportunity Overview 1.0; its iPhone provider acceptance remains gated by the real Apple runtime smoke.
 - Illumination may become first if its WGT Integration Surface becomes contract-ready earlier.
 - WGT Core/reference-provider development does not wait for either project.
 
@@ -304,7 +304,7 @@ The WGT repository can be bootstrapped now using:
 - fake/reference contracts,
 - accepted WGT Domain/Application semantics.
 
-Real provider integration work begins only when the owning provider has accepted the relevant contract.
+Further real provider integration work begins only when the owning provider has accepted the relevant contract. The Vocation Windows integration is already implemented on `dev`; this does not claim iPhone acceptance or v0.3.0 release approval.
 
 ## 16. Provider Readiness Checklist
 
@@ -348,7 +348,7 @@ Architecture relationship: **accepted**
 
 Standalone runtime/UI: **implemented direction remains valid**
 
-Published Opportunity Overview 1.0: **implemented on `dev`, consumer-ready candidate**
+Published Opportunity Overview 1.0: **implemented on `dev`, consumed by WGT's Windows release-candidate baseline**
 
 Later Opportunity Detail, Groups/Waves, Availability/Freshness, and Map contracts: **not part of Published Opportunity Overview 1.0**
 

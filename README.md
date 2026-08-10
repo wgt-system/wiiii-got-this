@@ -8,7 +8,7 @@ Its purpose is to provide a coherent user experience across devices while preser
 
 ## Current project status
 
-The repository contains the first implemented Wiiii Got This vertical baseline:
+The repository contains the implemented v0.3.0 release-candidate baseline on `dev`:
 
 - Domain/Application baseline,
 - WGT-owned SQLite persistence,
@@ -20,9 +20,12 @@ The repository contains the first implemented Wiiii Got This vertical baseline:
 - explicit known-integration registration,
 - publication refresh observations with last-known publication retention,
 - deterministic Capability snapshot reconciliation,
-- per-integration publication refresh diagnostics.
+- per-integration publication refresh diagnostics,
+- the Vocation Published Opportunity Overview 1.0 consumer and local Windows HTTP adapter,
+- WGT-native Windows Opportunity Overview presentation with explicit provider failure states.
 
 Physical-device and simulator iOS runtime validation has not yet been performed.
+The Vocation provider is not wired into iOS; the real Apple runtime smoke remains a release gate.
 
 ## Product direction
 
