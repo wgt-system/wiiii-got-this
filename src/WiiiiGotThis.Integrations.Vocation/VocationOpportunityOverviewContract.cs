@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Numerics;
 using System.Text.Json;
+using System.Text;
 using WiiiiGotThis.Application;
 using WiiiiGotThis.Domain;
 
@@ -48,9 +50,9 @@ public sealed class VocationOpportunityOverviewContractReader
         {
             throw;
         }
-        catch (JsonException exception)
+        catch (JsonException)
         {
-            throw Malformed("The Vocation publication is not valid JSON.", exception);
+            throw Malformed("The Vocation publication is not valid JSON.");
         }
     }
 
@@ -65,9 +67,9 @@ public sealed class VocationOpportunityOverviewContractReader
         {
             throw;
         }
-        catch (JsonException exception)
+        catch (JsonException)
         {
-            throw Malformed("The Vocation publication is not valid JSON.", exception);
+            throw Malformed("The Vocation publication is not valid JSON.");
         }
     }
 
@@ -87,14 +89,14 @@ public sealed class VocationOpportunityOverviewContractReader
         return new(publication.PublicationRef, publication.GeneratedAt, opportunities);
     }
 
-    private static (string PublicationRef, DateTimeOffset GeneratedAt) ReadPublication(JsonElement value)
+    private static (string PublicationRef, VocationContractTimestamp GeneratedAt) ReadPublication(JsonElement value)
     {
         var properties = ObjectProperties(value, "publication_ref", "generated_at");
         var publicationRef = OpaqueRef(properties, "publication_ref");
         var generatedAtText = RequiredString(properties, "generated_at");
-        if (!IsJsonSchemaDateTime(generatedAtText) || !DateTimeOffset.TryParse(generatedAtText, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var generatedAt))
+        if (!TryParseRfc3339(generatedAtText, out var generatedAt))
             throw Malformed("The publication generated_at is not a valid date-time.");
-        return (publicationRef, generatedAt);
+        return (publicationRef, new VocationContractTimestamp(generatedAtText, generatedAt));
     }
 
     private static List<VocationOpportunity> ReadOpportunities(JsonElement value)
@@ -111,7 +113,7 @@ public sealed class VocationOpportunityOverviewContractReader
         var title = RequiredString(properties, "title");
         if (title.Length == 0) throw Malformed("An opportunity title must not be empty.");
         var postingCountValue = properties["posting_count"];
-        if (postingCountValue.ValueKind != JsonValueKind.Number || !postingCountValue.TryGetInt64(out var postingCount) || postingCount < 0)
+        if (postingCountValue.ValueKind != JsonValueKind.Number || !TryParseNonNegativeInteger(postingCountValue.GetRawText(), out var postingCount))
             throw Malformed("An opportunity posting_count must be a non-negative JSON integer.");
         return new(
             OpaqueRef(properties, "opportunity_ref"),
@@ -171,7 +173,8 @@ public sealed class VocationOpportunityOverviewContractReader
     private static string OpaqueRef(Dictionary<string, JsonElement> properties, string name)
     {
         var value = RequiredString(properties, name);
-        if (value.Length is < 1 or > 200) throw Malformed($"The opaque reference '{name}' has an invalid length.");
+        var codePointCount = value.EnumerateRunes().Count();
+        if (codePointCount is < 1 or > 200) throw Malformed($"The opaque reference '{name}' has an invalid length.");
         return value;
     }
 
@@ -190,14 +193,91 @@ public sealed class VocationOpportunityOverviewContractReader
         return text;
     }
 
-    private static bool IsJsonSchemaDateTime(string value)
+    private static bool TryParseNonNegativeInteger(string raw, out BigInteger value)
     {
-        if (value.Length < 20 || value[10] != 'T') return false;
-        var timezoneStart = value.LastIndexOfAny(['Z', '+', '-']);
-        if (timezoneStart < 19) return false;
-        return value[^1] == 'Z' || (value.Length - timezoneStart == 6 && value[^3] == ':');
+        value = BigInteger.Zero;
+        var cursor = 0;
+        var negative = raw.Length > 0 && raw[0] == '-';
+        if (negative) cursor++;
+        var exponentMarker = raw.IndexOfAny(['e', 'E'], cursor);
+        var mantissaEnd = exponentMarker < 0 ? raw.Length : exponentMarker;
+        var decimalPoint = raw.IndexOf('.', cursor, mantissaEnd - cursor);
+        var fractionDigits = decimalPoint < 0 ? 0 : mantissaEnd - decimalPoint - 1;
+        var digits = decimalPoint < 0
+            ? raw[cursor..mantissaEnd]
+            : string.Concat(raw[cursor..decimalPoint], raw[(decimalPoint + 1)..mantissaEnd]);
+        if (digits.Length == 0 || !BigInteger.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out var coefficient)) return false;
+        if (coefficient.IsZero) return true;
+
+        var exponent = BigInteger.Zero;
+        if (exponentMarker >= 0 && !BigInteger.TryParse(raw[(exponentMarker + 1)..], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out exponent)) return false;
+        var scale = exponent - fractionDigits;
+        if (scale >= 0)
+        {
+            if (scale > int.MaxValue) return false;
+            value = coefficient * BigInteger.Pow(10, (int)scale);
+        }
+        else
+        {
+            var divisorScale = -scale;
+            if (divisorScale > int.MaxValue) return false;
+            var divisor = BigInteger.Pow(10, (int)divisorScale);
+            if (coefficient % divisor != 0) return false;
+            value = coefficient / divisor;
+        }
+        return !negative;
     }
 
-    private static VocationPublishedContractValidationException Malformed(string message, Exception? inner = null) =>
+    private static bool TryParseRfc3339(string value, out DateTimeOffset normalized)
+    {
+        normalized = default;
+        if (value.Length < 20 || !Digits(value, 0, 4) || value[4] != '-' || !Digits(value, 5, 2) || value[7] != '-' || !Digits(value, 8, 2) || (value[10] is not ('T' or 't')) || !Digits(value, 11, 2) || value[13] != ':' || !Digits(value, 14, 2) || value[16] != ':' || !Digits(value, 17, 2)) return false;
+        var fractionStart = 19;
+        var fractionLength = 0;
+        if (fractionStart < value.Length && value[fractionStart] == '.')
+        {
+            fractionStart++;
+            while (fractionStart + fractionLength < value.Length && IsAsciiDigit(value[fractionStart + fractionLength])) fractionLength++;
+            if (fractionLength == 0) return false;
+        }
+        var timezoneStart = fractionStart + fractionLength;
+        TimeSpan offset;
+        if (timezoneStart + 1 == value.Length && value[timezoneStart] is 'Z' or 'z') offset = TimeSpan.Zero;
+        else
+        {
+            if (timezoneStart + 6 != value.Length || value[timezoneStart] is not ('+' or '-') || value[timezoneStart + 3] != ':' || !Digits(value, timezoneStart + 1, 2) || !Digits(value, timezoneStart + 4, 2)) return false;
+            var offsetHours = Number(value, timezoneStart + 1, 2); var offsetMinutes = Number(value, timezoneStart + 4, 2);
+            if (offsetHours > 23 || offsetMinutes > 59) return false;
+            offset = new TimeSpan(offsetHours, offsetMinutes, 0);
+            if (value[timezoneStart] == '-') offset = -offset;
+        }
+
+        var year = Number(value, 0, 4); var month = Number(value, 5, 2); var day = Number(value, 8, 2);
+        var hour = Number(value, 11, 2); var minute = Number(value, 14, 2); var second = Number(value, 17, 2);
+        if (hour > 23 || minute > 59 || second > 60) return false;
+        var ticks = 0L;
+        for (var index = 0; index < Math.Min(fractionLength, 7); index++) ticks = ticks * 10 + (value[fractionStart + index] - '0');
+        for (var index = fractionLength; index < 7; index++) ticks *= 10;
+        try
+        {
+            var baseSecond = second == 60 ? 59 : second;
+            normalized = new DateTimeOffset(year, month, day, hour, minute, baseSecond, offset).AddTicks(ticks);
+            if (second == 60) normalized = normalized.AddSeconds(1);
+            return true;
+        }
+        catch (ArgumentOutOfRangeException) { return false; }
+    }
+
+    private static bool Digits(string value, int start, int count)
+    {
+        if (start < 0 || start + count > value.Length) return false;
+        for (var index = start; index < start + count; index++) if (!IsAsciiDigit(value[index])) return false;
+        return true;
+    }
+
+    private static bool IsAsciiDigit(char value) => value is >= '0' and <= '9';
+    private static int Number(string value, int start, int count) => int.Parse(value.AsSpan(start, count), CultureInfo.InvariantCulture);
+
+    private static VocationPublishedContractValidationException Malformed(string message) =>
         new(VocationContractFailureKind.MalformedContract, message);
 }

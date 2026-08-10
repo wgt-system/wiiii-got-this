@@ -1,16 +1,20 @@
+using System.Numerics;
+
 namespace WiiiiGotThis.Application;
 
 public sealed record VocationOpportunityOverview(
     string PublicationRef,
-    DateTimeOffset GeneratedAt,
+    VocationContractTimestamp GeneratedAt,
     IReadOnlyList<VocationOpportunity> Opportunities);
+
+public sealed record VocationContractTimestamp(string RawValue, DateTimeOffset Normalized);
 
 public sealed record VocationOpportunity(
     string OpportunityRef,
     string Title,
     VocationCompany Company,
     IReadOnlyList<VocationWorkLocation> WorkLocations,
-    long PostingCount);
+    BigInteger PostingCount);
 
 public sealed record VocationCompany(string CompanyRef, string Name);
 

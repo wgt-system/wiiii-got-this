@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Numerics;
 using WiiiiGotThis.Integrations.Vocation;
 
 namespace WiiiiGotThis.Application.Tests;
@@ -22,7 +23,7 @@ public sealed class VocationOpportunityOverviewContractTests
         var opportunity = Assert.Single(overview.Opportunities);
         var location = Assert.Single(opportunity.WorkLocations);
         Assert.Equal("publication-α", overview.PublicationRef);
-        Assert.Equal(DateTimeOffset.Parse("2026-08-10T12:34:56Z", System.Globalization.CultureInfo.InvariantCulture), overview.GeneratedAt);
+        Assert.Equal(DateTimeOffset.Parse("2026-08-10T12:34:56Z", System.Globalization.CultureInfo.InvariantCulture), overview.GeneratedAt.Normalized);
         Assert.Equal("opportunity/α", opportunity.OpportunityRef);
         Assert.Equal("Senior Role", opportunity.Title);
         Assert.Equal("company/α", opportunity.Company.CompanyRef);
@@ -66,6 +67,44 @@ public sealed class VocationOpportunityOverviewContractTests
             Assert.Equal(precision, location.Precision);
             Assert.Null(location.City); Assert.Null(location.Region); Assert.Null(location.CountryCode);
         }
+    }
+
+    [Fact]
+    public void Posting_count_accepts_exactly_integral_json_number_forms_and_big_integers()
+    {
+        foreach (var lexicalValue in new[] { "1", "1.0", "1.00", "1e0", "10e-1", "0" })
+            Assert.Equal(lexicalValue == "0" ? BigInteger.Zero : BigInteger.One, ReadPostingCount(lexicalValue));
+
+        var veryLarge = "1" + new string('0', 100);
+        Assert.Equal(BigInteger.Parse(veryLarge, System.Globalization.CultureInfo.InvariantCulture), ReadPostingCount(veryLarge));
+    }
+
+    [Fact]
+    public void Posting_count_rejects_negative_and_non_integral_json_numbers()
+    {
+        foreach (var lexicalValue in new[] { "-1", "1.5", "1e-1" })
+            AssertMalformed(CanonicalJson.Replace("\"posting_count\":2", $"\"posting_count\":{lexicalValue}", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Generated_at_accepts_rfc3339_case_offset_and_high_precision_forms()
+    {
+        foreach (var timestamp in new[] { "2026-08-10T02:00:00Z", "2026-08-10t02:00:00z", "2026-08-10T02:00:00+02:00", "2026-08-10T02:00:00.123456789Z" })
+        {
+            var overview = VocationOpportunityOverviewContractReader.Read(CanonicalJson.Replace("2026-08-10T12:34:56Z", timestamp, StringComparison.Ordinal));
+            Assert.Equal(timestamp, overview.GeneratedAt.RawValue);
+        }
+        AssertMalformed(CanonicalJson.Replace("2026-08-10T12:34:56Z", "2026-02-30T02:00:00Z", StringComparison.Ordinal));
+        AssertMalformed(CanonicalJson.Replace("2026-08-10T12:34:56Z", "2026-08-10T02:00:00+24:00", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Opaque_reference_length_uses_unicode_code_points_and_preserves_text()
+    {
+        var twoHundredCodePoints = string.Concat(Enumerable.Repeat("😀", 200));
+        var overview = VocationOpportunityOverviewContractReader.Read(CanonicalJson.Replace("publication-α", twoHundredCodePoints, StringComparison.Ordinal));
+        Assert.Equal(twoHundredCodePoints, overview.PublicationRef);
+        AssertMalformed(CanonicalJson.Replace("publication-α", twoHundredCodePoints + "a", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -130,6 +169,9 @@ public sealed class VocationOpportunityOverviewContractTests
         var exception = Assert.Throws<VocationPublishedContractValidationException>(() => VocationOpportunityOverviewContractReader.Read(json));
         Assert.Equal(VocationContractFailureKind.MalformedContract, exception.Kind);
     }
+
+    private static BigInteger ReadPostingCount(string lexicalValue) =>
+        Assert.Single(VocationOpportunityOverviewContractReader.Read(CanonicalJson.Replace("\"posting_count\":2", $"\"posting_count\":{lexicalValue}", StringComparison.Ordinal)).Opportunities).PostingCount;
 
     private static string OpportunityJson(string reference, int postingCount, string locations, string title) =>
         $"{{\"opportunity_ref\":\"{reference}\",\"title\":\"{title}\",\"company\":{{\"company_ref\":\"company-{reference}\",\"name\":\"Company\"}},\"work_locations\":{locations},\"posting_count\":{postingCount}}}";
