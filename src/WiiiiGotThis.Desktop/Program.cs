@@ -2,6 +2,7 @@ using Avalonia;
 using WiiiiGotThis.Application;
 using WiiiiGotThis.Infrastructure;
 using WiiiiGotThis.Integrations.Reference;
+using WiiiiGotThis.Integrations.Vocation;
 using WiiiiGotThis.Presentation;
 
 namespace WiiiiGotThis.Desktop;
@@ -20,7 +21,10 @@ internal static class Program
         var deviceStore = new SqliteLocalDeviceStore(connectionFactory);
         var integrationStore = new SqliteServiceIntegrationStore(connectionFactory);
         var publicationStore = new SqliteIntegrationPublicationStore(connectionFactory);
-        var adapters = new StaticIntegrationAdapterCatalog([new ReferenceIntegrationAdapter()]);
+        var vocationSource = new VocationHttpOpportunityOverviewSource(new HttpClient());
+        var adapters = new StaticIntegrationAdapterCatalog([
+            new ReferenceIntegrationAdapter(),
+            new VocationIntegrationAdapter(vocationSource)]);
         var ensureDevice = new EnsureCurrentDeviceUseCase(deviceStore);
         var register = new RegisterKnownIntegrationsUseCase(adapters, integrationStore);
         var refresh = new RefreshPublicationsUseCase(adapters, publicationStore);
