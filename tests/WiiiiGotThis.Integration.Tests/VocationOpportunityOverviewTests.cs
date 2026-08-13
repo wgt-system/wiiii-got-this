@@ -69,6 +69,32 @@ public sealed class VocationOpportunityOverviewTests
         Assert.NotNull(shell.OpenedVocationOpportunityOverview); Assert.Equal(VocationOpportunityOverviewPresentationState.Empty, shell.OpenedVocationOpportunityOverview!.State);
     }
 
+    [Fact]
+    public async Task Jobs_is_a_first_class_desktop_product_destination_using_the_existing_read_path()
+    {
+        var adapter = new VocationIntegrationAdapter(new FakeSource(Snapshot(new VocationOpportunity("a", "A", new("c", "Company"), [], BigInteger.One))));
+        var integrations = new MemoryIntegrationStore(); var publications = new MemoryPublicationStore();
+        var source = new FakeSource(Snapshot(new VocationOpportunity("a", "A", new("c", "Company"), [], BigInteger.One)));
+        var adapters = new StaticIntegrationAdapterCatalog([adapter]);
+        var shell = new ShellViewModel(
+            new EnsureCurrentDeviceUseCase(new MemoryDeviceStore()),
+            new RegisterKnownIntegrationsUseCase(adapters, integrations),
+            new RefreshPublicationsUseCase(adapters, publications),
+            new ListServiceIntegrationsUseCase(integrations, publications),
+            new SetGlobalIntegrationEnablementUseCase(integrations), new SetDeviceIntegrationOverrideUseCase(integrations), new ClearDeviceIntegrationOverrideUseCase(integrations),
+            new ResolveCapabilityCatalogUseCase(adapters, integrations, publications), "Windows PC", new GetVocationOpportunityOverviewUseCase(source));
+
+        await shell.EnsureInitializedAsync();
+        Assert.False(shell.ShowJobsCommand.CanExecute(null));
+        await shell.EnableGloballyCommand.ExecuteAsync(null);
+        Assert.True(shell.ShowJobsCommand.CanExecute(null));
+        await shell.ShowJobsCommand.ExecuteAsync(null);
+        Assert.Equal(ShellSurface.Jobs, shell.CurrentSurface);
+        Assert.True(shell.IsJobsVisible);
+        Assert.Equal(VocationOpportunityOverviewPresentationState.Loaded, shell.OpenedVocationOpportunityOverview!.State);
+        Assert.Equal("A", shell.OpenedVocationOpportunityOverview.Opportunities.Single().Title);
+    }
+
     private static async Task AssertState(VocationOpportunityOverviewSourceFailureKind kind, VocationOpportunityOverviewPresentationState expected)
     {
         var viewModel = CreateViewModel(new VocationOpportunityOverviewSourceException(kind, "not shown")); await viewModel.RefreshAsync(); Assert.Equal(expected, viewModel.State);

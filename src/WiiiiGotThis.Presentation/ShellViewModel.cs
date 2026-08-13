@@ -9,6 +9,7 @@ namespace WiiiiGotThis.Presentation;
 public enum ShellSurface
 {
     Home,
+    Jobs,
     Settings
 }
 
@@ -68,6 +69,7 @@ public sealed partial class ShellViewModel : ObservableObject
         OpenCapabilityCommand = new AsyncRelayCommand(OpenCapabilityAsync, CanOpenSelectedCapability);
         BackToCatalogCommand = new RelayCommand(() => { OpenedReferenceCapability = null; OpenedVocationOpportunityOverview = null; });
         ShowHomeCommand = new RelayCommand(() => CurrentSurface = ShellSurface.Home);
+        ShowJobsCommand = new AsyncRelayCommand(ShowJobsAsync, CanShowJobs);
         ShowSettingsCommand = new RelayCommand(() => CurrentSurface = ShellSurface.Settings);
     }
 
@@ -82,8 +84,10 @@ public sealed partial class ShellViewModel : ObservableObject
     public IAsyncRelayCommand OpenCapabilityCommand { get; }
     public IRelayCommand BackToCatalogCommand { get; }
     public IRelayCommand ShowHomeCommand { get; }
+    public IAsyncRelayCommand ShowJobsCommand { get; }
     public IRelayCommand ShowSettingsCommand { get; }
     public bool IsHomeVisible => CurrentSurface == ShellSurface.Home;
+    public bool IsJobsVisible => CurrentSurface == ShellSurface.Jobs;
     public bool IsSettingsVisible => CurrentSurface == ShellSurface.Settings;
     public bool IsReferenceCapabilityOpen => OpenedReferenceCapability is not null;
     public bool IsVocationOpportunityOverviewOpen => OpenedVocationOpportunityOverview is not null;
@@ -120,6 +124,7 @@ public sealed partial class ShellViewModel : ObservableObject
     partial void OnCurrentSurfaceChanged(ShellSurface value)
     {
         OnPropertyChanged(nameof(IsHomeVisible));
+        OnPropertyChanged(nameof(IsJobsVisible));
         OnPropertyChanged(nameof(IsSettingsVisible));
     }
 
@@ -201,16 +206,27 @@ public sealed partial class ShellViewModel : ObservableObject
             return;
         }
 
-        if (string.Equals(capability.CapabilityIdentity.Value, "vocation.opportunity_overview", StringComparison.Ordinal) && readVocationOpportunityOverview is not null)
-        {
-            OpenedReferenceCapability = null;
-            var viewModel = new VocationOpportunityOverviewViewModel(readVocationOpportunityOverview);
-            OpenedVocationOpportunityOverview = viewModel;
-            await viewModel.RefreshAsync();
-        }
+        if (string.Equals(capability.CapabilityIdentity.Value, "vocation.opportunity_overview", StringComparison.Ordinal))
+            await LoadVocationOverviewAsync();
+    }
+
+    private async Task ShowJobsAsync()
+    {
+        if (!CanShowJobs()) return;
+        await LoadVocationOverviewAsync();
+        CurrentSurface = ShellSurface.Jobs;
+    }
+
+    private async Task LoadVocationOverviewAsync()
+    {
+        if (readVocationOpportunityOverview is null) return;
+        OpenedReferenceCapability = null;
+        OpenedVocationOpportunityOverview ??= new VocationOpportunityOverviewViewModel(readVocationOpportunityOverview);
+        await OpenedVocationOpportunityOverview.RefreshAsync();
     }
 
     private bool CanManageSelectedIntegration() => SelectedIntegration is not null && CurrentDeviceIdentity is not null;
+    private bool CanShowJobs() => readVocationOpportunityOverview is not null && Integrations.Any(integration => integration.ServiceIdentity.Value == "vocation" && integration.IsEffectivelyEnabled);
     private bool CanOpenSelectedCapability()
     {
         var selected = SelectedCapability;
@@ -224,6 +240,7 @@ public sealed partial class ShellViewModel : ObservableObject
         DisableOnThisDeviceCommand.NotifyCanExecuteChanged();
         InheritGlobalSettingCommand.NotifyCanExecuteChanged();
         OpenCapabilityCommand.NotifyCanExecuteChanged();
+        ShowJobsCommand.NotifyCanExecuteChanged();
     }
 
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> source)
