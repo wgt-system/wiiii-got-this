@@ -92,6 +92,7 @@ public sealed partial class ShellViewModel : ObservableObject
     public bool IsHomeActive => IsHomeVisible;
     public bool IsJobsActive => IsJobsVisible;
     public bool IsSettingsActive => IsSettingsVisible;
+    public bool IsJobsAvailable => CanShowJobs();
     public bool IsReferenceCapabilityOpen => OpenedReferenceCapability is not null;
     public bool IsVocationOpportunityOverviewOpen => OpenedVocationOpportunityOverview is not null;
     public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen && !IsVocationOpportunityOverviewOpen;
@@ -247,6 +248,7 @@ public sealed partial class ShellViewModel : ObservableObject
         InheritGlobalSettingCommand.NotifyCanExecuteChanged();
         OpenCapabilityCommand.NotifyCanExecuteChanged();
         ShowJobsCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(IsJobsAvailable));
     }
 
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> source)

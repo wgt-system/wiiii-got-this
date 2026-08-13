@@ -19,6 +19,7 @@ public sealed class ShellViewModelTests
         Assert.True(shell.IsHomeActive);
         Assert.False(shell.IsJobsActive);
         Assert.False(shell.IsSettingsActive);
+        Assert.False(shell.IsJobsAvailable);
         Assert.Equal(1, ActiveDestinationCount(shell));
 
         shell.ShowHomeCommand.Execute(null);

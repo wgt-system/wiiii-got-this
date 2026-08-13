@@ -121,8 +121,10 @@ public sealed class VocationOpportunityOverviewTests
 
         await shell.EnsureInitializedAsync();
         Assert.False(shell.ShowJobsCommand.CanExecute(null));
+        Assert.False(shell.IsJobsAvailable);
         await shell.EnableGloballyCommand.ExecuteAsync(null);
         Assert.True(shell.ShowJobsCommand.CanExecute(null));
+        Assert.True(shell.IsJobsAvailable);
         await shell.ShowJobsCommand.ExecuteAsync(null);
         Assert.Equal(ShellSurface.Jobs, shell.CurrentSurface);
         Assert.True(shell.IsJobsVisible);

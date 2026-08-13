@@ -53,6 +53,14 @@
   <Style Selector="RadioButton.wgt-shell-nav:checked">
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
+  <Style Selector="RadioButton.wgt-mobile-nav">
+    <Setter Property="Padding" Value="{DynamicResource WgtSpaceMd},8" />
+    <Setter Property="Margin" Value="0,0,6,0" />
+    <Setter Property="MinWidth" Value="84" />
+  </Style>
+  <Style Selector="RadioButton.wgt-mobile-nav:checked">
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
   <Style Selector="Border.wgt-surface">
     <Setter Property="Background" Value="{DynamicResource WgtSurfaceBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
