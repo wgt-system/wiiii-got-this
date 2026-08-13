@@ -19,6 +19,11 @@ public sealed class ShellViewModelTests
         Assert.True(shell.IsHomeActive);
         Assert.False(shell.IsJobsActive);
         Assert.False(shell.IsSettingsActive);
+        Assert.Equal(1, ActiveDestinationCount(shell));
+
+        shell.ShowHomeCommand.Execute(null);
+        Assert.True(shell.IsHomeActive);
+        Assert.Equal(1, ActiveDestinationCount(shell));
 
         shell.ShowSettingsCommand.Execute(null);
         Assert.Equal(ShellSurface.Settings, shell.CurrentSurface);
@@ -26,6 +31,7 @@ public sealed class ShellViewModelTests
         Assert.True(shell.IsSettingsVisible);
         Assert.False(shell.IsHomeActive);
         Assert.True(shell.IsSettingsActive);
+        Assert.Equal(1, ActiveDestinationCount(shell));
 
         shell.ShowHomeCommand.Execute(null);
         Assert.Equal(ShellSurface.Home, shell.CurrentSurface);
@@ -33,6 +39,7 @@ public sealed class ShellViewModelTests
         Assert.False(shell.IsSettingsVisible);
         Assert.True(shell.IsHomeActive);
         Assert.False(shell.IsSettingsActive);
+        Assert.Equal(1, ActiveDestinationCount(shell));
     }
 
     [Fact]
@@ -123,6 +130,9 @@ public sealed class ShellViewModelTests
         var integration = new ServiceIntegration(service); if (reason != AvailabilityReason.Disabled) integration.EnableGlobally();
         return new CapabilityPresentationViewModel(new CapabilityCatalogEntry(service, publication.DisplayName, publication.Capabilities[0].Id, "Capability", new(1, 0), CapabilityResolver.Resolve(integration, DeviceIdentity.New(), new(service, publication.Capabilities[0].Id), facts))).StatusText;
     }
+
+    private static int ActiveDestinationCount(ShellViewModel shell) =>
+        new[] { shell.IsHomeActive, shell.IsJobsActive, shell.IsSettingsActive }.Count(active => active);
 
     private static ShellViewModel CreateShell() => CreateShell(new ReferenceIntegrationAdapter());
 

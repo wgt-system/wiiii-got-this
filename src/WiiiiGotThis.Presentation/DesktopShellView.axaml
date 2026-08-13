@@ -11,10 +11,10 @@
           <TextBlock Classes="wgt-body" Text="{Binding CurrentDeviceName}" TextWrapping="Wrap" />
         </StackPanel>
         <StackPanel Grid.Row="2" Margin="0,28,0,0">
-          <ToggleButton Classes="wgt-shell-nav" Content="Home" Command="{Binding ShowHomeCommand}" IsChecked="{Binding IsHomeActive, Mode=OneWay}" />
-          <ToggleButton Classes="wgt-shell-nav" Content="Jobs" Command="{Binding ShowJobsCommand}" IsChecked="{Binding IsJobsActive, Mode=OneWay}" />
+          <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Home" Command="{Binding ShowHomeCommand}" IsChecked="{Binding IsHomeActive, Mode=OneWay}" />
+          <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Jobs" Command="{Binding ShowJobsCommand}" IsChecked="{Binding IsJobsActive, Mode=OneWay}" />
           <Separator Margin="0,16" />
-          <ToggleButton Classes="wgt-shell-nav" Content="Settings" Command="{Binding ShowSettingsCommand}" IsChecked="{Binding IsSettingsActive, Mode=OneWay}" />
+          <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Settings" Command="{Binding ShowSettingsCommand}" IsChecked="{Binding IsSettingsActive, Mode=OneWay}" />
         </StackPanel>
         <TextBlock Grid.Row="3" Classes="wgt-caption" Text="WGT workspace" />
       </Grid>

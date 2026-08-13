@@ -44,13 +44,13 @@
   <Style Selector="Button.wgt-action-button">
     <Setter Property="Padding" Value="{DynamicResource WgtSpaceMd},8" />
   </Style>
-  <Style Selector="ToggleButton.wgt-shell-nav">
+  <Style Selector="RadioButton.wgt-shell-nav">
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="Padding" Value="{DynamicResource WgtSpaceMd},10" />
     <Setter Property="Margin" Value="0,2" />
   </Style>
-  <Style Selector="ToggleButton.wgt-shell-nav:checked">
+  <Style Selector="RadioButton.wgt-shell-nav:checked">
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
   <Style Selector="Border.wgt-surface">
