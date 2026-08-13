@@ -1,82 +1,132 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:WiiiiGotThis.Presentation" xmlns:app="using:WiiiiGotThis.Application" xmlns:p="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.DesktopShellView" x:DataType="vm:ShellViewModel">
-  <Grid RowDefinitions="Auto,Auto,*" Margin="20">
-    <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
-      <StackPanel><TextBlock Classes="wgt-page-title">Wiiii Got This</TextBlock><TextBlock Classes="wgt-secondary" Text="{Binding CurrentDeviceName}" /></StackPanel>
-      <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="12,0" Text="{Binding StatusText}" />
-      <Button Classes="wgt-action-button" Grid.Column="2" Command="{Binding RefreshCommand}" Content="Refresh" MinWidth="90" />
-    </Grid>
-    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,16">
-      <Button Classes="wgt-nav-button" Command="{Binding ShowHomeCommand}" Content="Home" />
-      <Button Classes="wgt-nav-button" Command="{Binding ShowJobsCommand}" Content="Jobs" />
-      <Button Classes="wgt-nav-button" Command="{Binding ShowSettingsCommand}" Content="Settings" />
-    </StackPanel>
-    <Grid Grid.Row="2" IsVisible="{Binding IsHomeVisible}">
-      <StackPanel MaxWidth="720" Spacing="12" HorizontalAlignment="Left" VerticalAlignment="Top">
-        <TextBlock Classes="wgt-section-title">Welcome to Wiiii Got This</TextBlock>
-        <TextBlock Classes="wgt-body" Text="Your connected WGT product areas will appear here." />
-        <TextBlock Classes="wgt-secondary" Text="Use Settings to manage integrations and open their published capabilities." TextWrapping="Wrap" />
-      </StackPanel>
-    </Grid>
-    <Grid Grid.Row="2" IsVisible="{Binding IsJobsVisible}">
-      <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="820" Spacing="12" HorizontalAlignment="Left" VerticalAlignment="Top">
-          <TextBlock Classes="wgt-section-title">Jobs</TextBlock>
-          <TextBlock Classes="wgt-secondary" Text="Vocation opportunity overview" />
-          <p:VocationOpportunityOverviewView DataContext="{Binding OpenedVocationOpportunityOverview}" />
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:WiiiiGotThis.Presentation" xmlns:p="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.DesktopShellView" x:DataType="vm:ShellViewModel">
+  <Grid ColumnDefinitions="236,*">
+    <Border Classes="wgt-surface" Grid.Column="0" CornerRadius="0" BorderThickness="0,0,1,0" Padding="20">
+      <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="wgt-page-title">Wiiii Got This</TextBlock>
+          <TextBlock Classes="wgt-secondary" Text="Your workspace" />
         </StackPanel>
-      </ScrollViewer>
-    </Grid>
-    <Grid Grid.Row="2" IsVisible="{Binding IsSettingsVisible}" RowDefinitions="Auto,*" ColumnDefinitions="240,300,*">
-      <TextBlock Classes="wgt-section-title" Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,12">Integration settings</TextBlock>
-      <Border Classes="wgt-surface" Grid.Row="1" Grid.Column="0" Margin="0,0,12,0">
-        <DockPanel>
-          <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,8">Integrations</TextBlock>
-          <ListBox ItemsSource="{Binding Integrations}" SelectedItem="{Binding SelectedIntegration, Mode=TwoWay}">
-            <ListBox.ItemTemplate><DataTemplate x:DataType="p:ServiceIntegrationPresentationViewModel"><StackPanel Margin="0,4"><TextBlock Text="{Binding DisplayName}" /><TextBlock FontSize="11" Text="{Binding EnablementStatusText}" /><TextBlock FontSize="11" Text="{Binding PublicationRefreshStatusText}" TextWrapping="Wrap" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
-          </ListBox>
-        </DockPanel>
-      </Border>
-      <Border Classes="wgt-surface" Grid.Row="1" Grid.Column="1" Margin="0,0,12,0">
-        <DockPanel>
-          <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,8">Published capabilities</TextBlock>
-          <ListBox ItemsSource="{Binding Capabilities}" SelectedItem="{Binding SelectedCapability, Mode=TwoWay}">
-            <ListBox.ItemTemplate><DataTemplate x:DataType="vm:CapabilityPresentationViewModel"><StackPanel Margin="0,4"><TextBlock Text="{Binding CapabilityTitle}" /><TextBlock FontSize="11" Text="{Binding StatusText}" TextWrapping="Wrap" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
-          </ListBox>
-        </DockPanel>
-      </Border>
-      <Border Classes="wgt-surface" Grid.Row="1" Grid.Column="2">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <StackPanel Spacing="8">
-            <TextBlock FontWeight="Bold">Integration management</TextBlock>
-            <WrapPanel><Button Command="{Binding EnableGloballyCommand}" Content="Enable globally" Margin="0,0,6,6" /><Button Command="{Binding DisableGloballyCommand}" Content="Disable globally" Margin="0,0,6,6" /></WrapPanel>
-            <WrapPanel><Button Command="{Binding EnableOnThisDeviceCommand}" Content="Enable on this device" Margin="0,0,6,6" /><Button Command="{Binding DisableOnThisDeviceCommand}" Content="Disable on this device" Margin="0,0,6,6" /></WrapPanel>
-            <Button Command="{Binding InheritGlobalSettingCommand}" Content="Inherit global setting" HorizontalAlignment="Left" />
-            <Separator Margin="0,8" />
-            <TextBlock FontWeight="Bold">Selected integration</TextBlock>
-            <TextBlock Text="{Binding SelectedIntegration.DisplayName}" FontSize="18" />
-            <TextBlock Text="{Binding SelectedIntegration.EnablementStatusText}" />
-            <TextBlock Text="{Binding SelectedIntegration.PublicationRefreshStatusText}" TextWrapping="Wrap" />
-            <TextBlock Text="{Binding SelectedIntegration.LastRefreshAttemptText}" FontSize="11" />
-            <TextBlock Text="{Binding SelectedIntegration.LastSuccessfulRefreshText}" FontSize="11" />
-            <Separator Margin="0,8" />
-            <StackPanel IsVisible="{Binding IsCapabilityDetailsVisible}" Spacing="8">
-              <TextBlock FontWeight="Bold">Selected capability</TextBlock>
-              <TextBlock Text="{Binding SelectedCapability.CapabilityTitle}" FontSize="20" />
-              <TextBlock Text="{Binding SelectedCapability.ServiceDisplayName}" />
-              <TextBlock Text="{Binding SelectedCapability.CapabilityIdentity.Value}" />
-              <TextBlock Text="{Binding SelectedCapability.ContractVersion}" />
-              <TextBlock Text="{Binding SelectedCapability.StatusText}" TextWrapping="Wrap" />
-              <Button Command="{Binding OpenCapabilityCommand}" Content="Open" HorizontalAlignment="Left" />
-            </StackPanel>
-            <StackPanel IsVisible="{Binding IsReferenceCapabilityOpen}" Spacing="8">
-              <TextBlock FontWeight="Bold">Reference Capability</TextBlock><TextBlock Text="{Binding OpenedReferenceCapability.CapabilityTitle}" FontSize="20" /><TextBlock Text="{Binding OpenedReferenceCapability.ServiceDisplayName}" /><TextBlock Text="{Binding OpenedReferenceCapability.CapabilityIdentity.Value}" /><TextBlock Text="{Binding OpenedReferenceCapability.ContractVersion}" /><TextBlock Text="Available" /><TextBlock Text="This reference capability is available through Wiiii Got This." TextWrapping="Wrap" /><Button Command="{Binding BackToCatalogCommand}" Content="Back to catalog" HorizontalAlignment="Left" />
-            </StackPanel>
-            <StackPanel IsVisible="{Binding IsVocationOpportunityOverviewOpen}" Spacing="8">
-              <p:VocationOpportunityOverviewView DataContext="{Binding OpenedVocationOpportunityOverview}" /><Button Command="{Binding BackToCatalogCommand}" Content="Back to catalog" HorizontalAlignment="Left" />
-            </StackPanel>
+        <StackPanel Grid.Row="1" Margin="0,28,0,0" Spacing="4">
+          <TextBlock Classes="wgt-caption" Text="CURRENT DEVICE" />
+          <TextBlock Classes="wgt-body" Text="{Binding CurrentDeviceName}" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Grid.Row="2" Margin="0,28,0,0">
+          <ToggleButton Classes="wgt-shell-nav" Content="Home" Command="{Binding ShowHomeCommand}" IsChecked="{Binding IsHomeActive, Mode=OneWay}" />
+          <ToggleButton Classes="wgt-shell-nav" Content="Jobs" Command="{Binding ShowJobsCommand}" IsChecked="{Binding IsJobsActive, Mode=OneWay}" />
+          <Separator Margin="0,16" />
+          <ToggleButton Classes="wgt-shell-nav" Content="Settings" Command="{Binding ShowSettingsCommand}" IsChecked="{Binding IsSettingsActive, Mode=OneWay}" />
+        </StackPanel>
+        <TextBlock Grid.Row="3" Classes="wgt-caption" Text="WGT workspace" />
+      </Grid>
+    </Border>
+
+    <Grid Grid.Column="1" RowDefinitions="Auto,*" Margin="28,24,28,24">
+      <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,24">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="wgt-section-title" Text="{Binding CurrentSurface}" />
+          <TextBlock Classes="wgt-secondary" Text="{Binding StatusText}" />
+        </StackPanel>
+        <TextBlock Grid.Column="1" Classes="wgt-caption" VerticalAlignment="Center" Margin="16,0" Text="{Binding CurrentDeviceName}" />
+        <Button Classes="wgt-action-button" Grid.Column="2" Command="{Binding RefreshCommand}" Content="Refresh" />
+      </Grid>
+
+      <Grid Grid.Row="1" IsVisible="{Binding IsHomeVisible}">
+        <StackPanel Spacing="16">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="wgt-page-title">Overview</TextBlock>
+            <TextBlock Classes="wgt-secondary" Text="Your WGT workspace at a glance." />
           </StackPanel>
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="16" RowDefinitions="Auto">
+            <Border Classes="wgt-surface">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="wgt-caption" Text="DEVICE" />
+                <TextBlock Classes="wgt-section-title" Text="{Binding CurrentDeviceName}" TextWrapping="Wrap" />
+                <TextBlock Classes="wgt-secondary" Text="{Binding StatusText}" />
+              </StackPanel>
+            </Border>
+            <Border Classes="wgt-surface" Grid.Column="1">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="wgt-caption" Text="PRODUCT AREA" />
+                <TextBlock Classes="wgt-section-title">Jobs</TextBlock>
+                <TextBlock Classes="wgt-secondary" Text="Vocation opportunity overview" TextWrapping="Wrap" />
+                <Button Classes="wgt-action-button" Command="{Binding ShowJobsCommand}" Content="Open Jobs" HorizontalAlignment="Left" />
+              </StackPanel>
+            </Border>
+          </Grid>
+        </StackPanel>
+      </Grid>
+
+      <Grid Grid.Row="1" IsVisible="{Binding IsJobsVisible}">
+        <Grid RowDefinitions="Auto,*">
+          <StackPanel Spacing="4" Margin="0,0,0,16">
+            <TextBlock Classes="wgt-page-title">Jobs</TextBlock>
+            <TextBlock Classes="wgt-secondary" Text="Vocation opportunity overview" />
+          </StackPanel>
+          <Border Classes="wgt-surface" Grid.Row="1">
+            <p:VocationOpportunityOverviewView DataContext="{Binding OpenedVocationOpportunityOverview}" />
+          </Border>
+        </Grid>
+      </Grid>
+
+      <Grid Grid.Row="1" IsVisible="{Binding IsSettingsVisible}" RowDefinitions="Auto,*">
+        <StackPanel Spacing="4" Margin="0,0,0,16">
+          <TextBlock Classes="wgt-page-title">Settings</TextBlock>
+          <TextBlock Classes="wgt-secondary" Text="Manage integrations and published capabilities." />
+        </StackPanel>
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+          <Grid MinWidth="760" RowDefinitions="*" ColumnDefinitions="1.1*,1.4*,2*">
+            <Border Classes="wgt-surface" Grid.Column="0" Margin="0,0,12,0">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,8">Integrations</TextBlock>
+                <ListBox ItemsSource="{Binding Integrations}" SelectedItem="{Binding SelectedIntegration, Mode=TwoWay}">
+                  <ListBox.ItemTemplate><DataTemplate x:DataType="p:ServiceIntegrationPresentationViewModel"><StackPanel Margin="0,4"><TextBlock Text="{Binding DisplayName}" /><TextBlock Classes="wgt-caption" Text="{Binding EnablementStatusText}" /><TextBlock Classes="wgt-caption" Text="{Binding PublicationRefreshStatusText}" TextWrapping="Wrap" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
+                </ListBox>
+              </DockPanel>
+            </Border>
+            <Border Classes="wgt-surface" Grid.Column="1" Margin="0,0,12,0">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,8">Published capabilities</TextBlock>
+                <ListBox ItemsSource="{Binding Capabilities}" SelectedItem="{Binding SelectedCapability, Mode=TwoWay}">
+                  <ListBox.ItemTemplate><DataTemplate x:DataType="vm:CapabilityPresentationViewModel"><StackPanel Margin="0,4"><TextBlock Text="{Binding CapabilityTitle}" /><TextBlock Classes="wgt-caption" Text="{Binding StatusText}" TextWrapping="Wrap" /></StackPanel></DataTemplate></ListBox.ItemTemplate>
+                </ListBox>
+              </DockPanel>
+            </Border>
+            <Border Classes="wgt-surface" Grid.Column="2">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="8">
+                  <TextBlock FontWeight="Bold">Integration management</TextBlock>
+                  <WrapPanel><Button Command="{Binding EnableGloballyCommand}" Content="Enable globally" Margin="0,0,6,6" /><Button Command="{Binding DisableGloballyCommand}" Content="Disable globally" Margin="0,0,6,6" /></WrapPanel>
+                  <WrapPanel><Button Command="{Binding EnableOnThisDeviceCommand}" Content="Enable on this device" Margin="0,0,6,6" /><Button Command="{Binding DisableOnThisDeviceCommand}" Content="Disable on this device" Margin="0,0,6,6" /></WrapPanel>
+                  <Button Command="{Binding InheritGlobalSettingCommand}" Content="Inherit global setting" HorizontalAlignment="Left" />
+                  <Separator Margin="0,8" />
+                  <TextBlock FontWeight="Bold">Selected integration</TextBlock>
+                  <TextBlock Text="{Binding SelectedIntegration.DisplayName}" FontSize="18" />
+                  <TextBlock Text="{Binding SelectedIntegration.EnablementStatusText}" />
+                  <TextBlock Text="{Binding SelectedIntegration.PublicationRefreshStatusText}" TextWrapping="Wrap" />
+                  <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.LastRefreshAttemptText}" />
+                  <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.LastSuccessfulRefreshText}" />
+                  <Separator Margin="0,8" />
+                  <StackPanel IsVisible="{Binding IsCapabilityDetailsVisible}" Spacing="8">
+                    <TextBlock FontWeight="Bold">Selected capability</TextBlock>
+                    <TextBlock Text="{Binding SelectedCapability.CapabilityTitle}" FontSize="20" />
+                    <TextBlock Text="{Binding SelectedCapability.ServiceDisplayName}" />
+                    <TextBlock Text="{Binding SelectedCapability.CapabilityIdentity.Value}" />
+                    <TextBlock Text="{Binding SelectedCapability.ContractVersion}" />
+                    <TextBlock Text="{Binding SelectedCapability.StatusText}" TextWrapping="Wrap" />
+                    <Button Command="{Binding OpenCapabilityCommand}" Content="Open" HorizontalAlignment="Left" />
+                  </StackPanel>
+                  <StackPanel IsVisible="{Binding IsReferenceCapabilityOpen}" Spacing="8">
+                    <TextBlock FontWeight="Bold">Reference Capability</TextBlock><TextBlock Text="{Binding OpenedReferenceCapability.CapabilityTitle}" FontSize="20" /><TextBlock Text="{Binding OpenedReferenceCapability.ServiceDisplayName}" /><TextBlock Text="{Binding OpenedReferenceCapability.CapabilityIdentity.Value}" /><TextBlock Text="{Binding OpenedReferenceCapability.ContractVersion}" /><TextBlock Text="Available" /><TextBlock Text="This reference capability is available through Wiiii Got This." TextWrapping="Wrap" /><Button Command="{Binding BackToCatalogCommand}" Content="Back to catalog" HorizontalAlignment="Left" />
+                  </StackPanel>
+                  <StackPanel IsVisible="{Binding IsVocationOpportunityOverviewOpen}" Spacing="8">
+                    <p:VocationOpportunityOverviewView DataContext="{Binding OpenedVocationOpportunityOverview}" /><Button Command="{Binding BackToCatalogCommand}" Content="Back to catalog" HorizontalAlignment="Left" />
+                  </StackPanel>
+                </StackPanel>
+              </ScrollViewer>
+            </Border>
+          </Grid>
         </ScrollViewer>
-      </Border>
+      </Grid>
     </Grid>
   </Grid>
 </UserControl>

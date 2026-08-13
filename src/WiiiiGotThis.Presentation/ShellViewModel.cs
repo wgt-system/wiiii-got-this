@@ -89,6 +89,9 @@ public sealed partial class ShellViewModel : ObservableObject
     public bool IsHomeVisible => CurrentSurface == ShellSurface.Home;
     public bool IsJobsVisible => CurrentSurface == ShellSurface.Jobs;
     public bool IsSettingsVisible => CurrentSurface == ShellSurface.Settings;
+    public bool IsHomeActive => IsHomeVisible;
+    public bool IsJobsActive => IsJobsVisible;
+    public bool IsSettingsActive => IsSettingsVisible;
     public bool IsReferenceCapabilityOpen => OpenedReferenceCapability is not null;
     public bool IsVocationOpportunityOverviewOpen => OpenedVocationOpportunityOverview is not null;
     public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen && !IsVocationOpportunityOverviewOpen;
@@ -126,6 +129,9 @@ public sealed partial class ShellViewModel : ObservableObject
         OnPropertyChanged(nameof(IsHomeVisible));
         OnPropertyChanged(nameof(IsJobsVisible));
         OnPropertyChanged(nameof(IsSettingsVisible));
+        OnPropertyChanged(nameof(IsHomeActive));
+        OnPropertyChanged(nameof(IsJobsActive));
+        OnPropertyChanged(nameof(IsSettingsActive));
     }
 
     private async Task InitializeCoreAsync()

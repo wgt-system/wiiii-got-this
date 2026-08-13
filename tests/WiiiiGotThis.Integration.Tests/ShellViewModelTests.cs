@@ -16,16 +16,23 @@ public sealed class ShellViewModelTests
         Assert.Equal(ShellSurface.Home, shell.CurrentSurface);
         Assert.True(shell.IsHomeVisible);
         Assert.False(shell.IsSettingsVisible);
+        Assert.True(shell.IsHomeActive);
+        Assert.False(shell.IsJobsActive);
+        Assert.False(shell.IsSettingsActive);
 
         shell.ShowSettingsCommand.Execute(null);
         Assert.Equal(ShellSurface.Settings, shell.CurrentSurface);
         Assert.False(shell.IsHomeVisible);
         Assert.True(shell.IsSettingsVisible);
+        Assert.False(shell.IsHomeActive);
+        Assert.True(shell.IsSettingsActive);
 
         shell.ShowHomeCommand.Execute(null);
         Assert.Equal(ShellSurface.Home, shell.CurrentSurface);
         Assert.True(shell.IsHomeVisible);
         Assert.False(shell.IsSettingsVisible);
+        Assert.True(shell.IsHomeActive);
+        Assert.False(shell.IsSettingsActive);
     }
 
     [Fact]
