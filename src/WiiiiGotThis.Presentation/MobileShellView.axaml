@@ -31,12 +31,12 @@
               <TextBlock Classes="wgt-secondary" Text="{Binding StatusText}" TextWrapping="Wrap" />
             </StackPanel>
           </Border>
-          <Border Classes="wgt-surface">
+          <Border Classes="wgt-surface" IsVisible="{Binding IsJobsAvailable}">
             <StackPanel Spacing="8">
               <TextBlock Classes="wgt-caption" Text="PRODUCT AREA" />
               <TextBlock Classes="wgt-section-title">Jobs</TextBlock>
-              <TextBlock Classes="wgt-secondary" Text="Jobs is available when a Vocation read connection is supplied." TextWrapping="Wrap" />
-              <Button Classes="wgt-action-button" IsVisible="{Binding IsJobsAvailable}" Command="{Binding ShowJobsCommand}" Content="Open Jobs" HorizontalAlignment="Left" />
+              <TextBlock Classes="wgt-secondary" Text="Vocation opportunity overview" TextWrapping="Wrap" />
+              <Button Classes="wgt-action-button" Command="{Binding ShowJobsCommand}" Content="Open Jobs" HorizontalAlignment="Left" />
             </StackPanel>
           </Border>
         </StackPanel>
