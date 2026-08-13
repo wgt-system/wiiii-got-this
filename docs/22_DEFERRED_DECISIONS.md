@@ -45,7 +45,7 @@ These require threat modeling together with the first real synchronized Service.
 
 ## 3. First Vocation WGT Contract
 
-Vocation's `Published Opportunity Overview 1.0` is implemented on its `dev` branch and is a valid consumer-ready first WGT integration candidate. Its canonical schema is `schemas/published-opportunity-overview-v1.schema.json`, and its local read-only endpoint is `/published/v1/opportunity-overview`.
+Vocation's `Published Opportunity Overview 1.0` is implemented on its `dev` branch and is the first real WGT Windows integration. Its canonical schema is `schemas/published-opportunity-overview-v1.schema.json`, and its local read-only endpoint is `/published/v1/opportunity-overview`.
 
 It is client-neutral, versioned, and read-only. It excludes personal state, Availability/Freshness, URLs/navigation, maps, comparison, and opportunity detail. It is not a Vocation database, domain-class, or internal React API dependency.
 

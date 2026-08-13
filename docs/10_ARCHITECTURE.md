@@ -431,7 +431,7 @@ A fake/reference provider should be used to exercise the generic WGT integration
 
 ## 21. First Real Integration Direction
 
-After WGT Core is stable, a read-only Vocation integration is currently the lower-risk first real integration because it can validate:
+The released v0.3.0 baseline implements a read-only Vocation integration because it validates:
 
 - Service publication,
 - versioning,
@@ -468,7 +468,7 @@ Before WGT relies on local Illumination iPhone execution, Illumination must prov
 
 WGT Core does not wait for either provider.
 
-The first real Integration Adapter targets whichever provider first supplies an accepted consumer-ready Published Contract.
+The first real Integration Adapter is the Vocation adapter for Published Opportunity Overview 1.0. Further provider adapters require their own accepted consumer-ready Published Contracts.
 
 See `docs/23_FOREIGN_CONTEXT_ALIGNMENT.md`.
 

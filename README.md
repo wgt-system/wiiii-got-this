@@ -8,7 +8,7 @@ Its purpose is to provide a coherent user experience across devices while preser
 
 ## Current project status
 
-The repository contains the implemented v0.3.0 release-candidate baseline on `dev`:
+The repository contains the released v0.3.0 baseline:
 
 - Domain/Application baseline,
 - WGT-owned SQLite persistence,

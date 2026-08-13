@@ -121,7 +121,7 @@ Examples may legitimately differ:
 
 This is intentional polyglot architecture.
 
-The current v0.3.0 release-candidate baseline implements the first concrete Windows provider path through Vocation's Published Opportunity Overview 1.0: a WGT Vocation Integration Adapter consumes the local HTTP contract, and WGT presents the result in a native Windows view. This does not claim iPhone provider acceptance or release approval.
+The released v0.3.0 baseline implements the first concrete Windows provider path through Vocation's Published Opportunity Overview 1.0: a WGT Vocation Integration Adapter consumes the local HTTP contract, and WGT presents the result in a native Windows view. This does not claim iPhone provider acceptance.
 
 ## 6. Normalized WGT Integration Description
 

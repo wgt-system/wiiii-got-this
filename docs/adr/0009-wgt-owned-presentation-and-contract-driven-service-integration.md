@@ -92,7 +92,7 @@ A future Web client remains valid, but Web is not implemented or prioritized sol
 
 - WGT-native presentation is the default coherent product experience.
 - Provider ownership remains behind explicit versioned Published Contracts.
-- Vocation Published Opportunity Overview 1.0 is a valid first concrete read integration candidate.
+- Vocation Published Opportunity Overview 1.0 is the first concrete read integration implemented by WGT on Windows.
 - Conveyance may transport an opaque/protected copy of that contract without interpreting its semantics.
 - Current V1 shipped adapters remain valid, while arbitrary dynamic executable plugins are not introduced.
 - Future generic extension must be justified by concrete integrations and accepted separately where it changes architecture.

@@ -271,7 +271,7 @@ Vocation Published Opportunity Overview 1.0 is the implemented first real WGT Wi
 
 Repository reality now adds an important condition:
 
-> The first real WGT integration should be whichever provider has the first **accepted, versioned, consumer-ready Published Contract**.
+> The first real WGT integration was selected by the provider with the first **accepted, versioned, consumer-ready Published Contract**.
 
 Therefore:
 
@@ -304,7 +304,7 @@ The WGT repository can be bootstrapped now using:
 - fake/reference contracts,
 - accepted WGT Domain/Application semantics.
 
-Further real provider integration work begins only when the owning provider has accepted the relevant contract. The Vocation Windows integration is already implemented on `dev`; this does not claim iPhone acceptance or v0.3.0 release approval.
+Further real provider integration work begins only when the owning provider has accepted the relevant contract. The Vocation Windows integration is released in v0.3.0; this does not claim iPhone acceptance.
 
 ## 16. Provider Readiness Checklist
 
@@ -348,7 +348,7 @@ Architecture relationship: **accepted**
 
 Standalone runtime/UI: **implemented direction remains valid**
 
-Published Opportunity Overview 1.0: **implemented on `dev`, consumed by WGT's Windows release-candidate baseline**
+Published Opportunity Overview 1.0: **implemented on `dev`, consumed by WGT's released Windows v0.3.0 baseline**
 
 Later Opportunity Detail, Groups/Waves, Availability/Freshness, and Map contracts: **not part of Published Opportunity Overview 1.0**
 
