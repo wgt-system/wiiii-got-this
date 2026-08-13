@@ -9,6 +9,26 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class ShellViewModelTests
 {
     [Fact]
+    public async Task Shell_starts_on_home_and_settings_reveals_technical_capability_surface()
+    {
+        var shell = CreateShell();
+        await shell.EnsureInitializedAsync();
+        Assert.Equal(ShellSurface.Home, shell.CurrentSurface);
+        Assert.True(shell.IsHomeVisible);
+        Assert.False(shell.IsSettingsVisible);
+
+        shell.ShowSettingsCommand.Execute(null);
+        Assert.Equal(ShellSurface.Settings, shell.CurrentSurface);
+        Assert.False(shell.IsHomeVisible);
+        Assert.True(shell.IsSettingsVisible);
+
+        shell.ShowHomeCommand.Execute(null);
+        Assert.Equal(ShellSurface.Home, shell.CurrentSurface);
+        Assert.True(shell.IsHomeVisible);
+        Assert.False(shell.IsSettingsVisible);
+    }
+
+    [Fact]
     public async Task Initialize_starts_disabled_and_resolves_four_reference_capabilities()
     {
         var shell = CreateShell();

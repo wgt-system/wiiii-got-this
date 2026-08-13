@@ -6,6 +6,12 @@ using WiiiiGotThis.Domain;
 
 namespace WiiiiGotThis.Presentation;
 
+public enum ShellSurface
+{
+    Home,
+    Settings
+}
+
 public sealed partial class ShellViewModel : ObservableObject
 {
     private readonly EnsureCurrentDeviceUseCase ensureCurrentDevice;
@@ -28,6 +34,7 @@ public sealed partial class ShellViewModel : ObservableObject
     [ObservableProperty] private CapabilityPresentationViewModel? openedReferenceCapability;
     [ObservableProperty] private VocationOpportunityOverviewViewModel? openedVocationOpportunityOverview;
     [ObservableProperty] private string statusText = "Starting…";
+    [ObservableProperty] private ShellSurface currentSurface = ShellSurface.Home;
 
     public ShellViewModel(
         EnsureCurrentDeviceUseCase ensureCurrentDevice,
@@ -60,6 +67,8 @@ public sealed partial class ShellViewModel : ObservableObject
         InheritGlobalSettingCommand = new AsyncRelayCommand(InheritGlobalSettingAsync, CanManageSelectedIntegration);
         OpenCapabilityCommand = new AsyncRelayCommand(OpenCapabilityAsync, CanOpenSelectedCapability);
         BackToCatalogCommand = new RelayCommand(() => { OpenedReferenceCapability = null; OpenedVocationOpportunityOverview = null; });
+        ShowHomeCommand = new RelayCommand(() => CurrentSurface = ShellSurface.Home);
+        ShowSettingsCommand = new RelayCommand(() => CurrentSurface = ShellSurface.Settings);
     }
 
     public ObservableCollection<ServiceIntegrationPresentationViewModel> Integrations { get; } = [];
@@ -72,6 +81,10 @@ public sealed partial class ShellViewModel : ObservableObject
     public IAsyncRelayCommand InheritGlobalSettingCommand { get; }
     public IAsyncRelayCommand OpenCapabilityCommand { get; }
     public IRelayCommand BackToCatalogCommand { get; }
+    public IRelayCommand ShowHomeCommand { get; }
+    public IRelayCommand ShowSettingsCommand { get; }
+    public bool IsHomeVisible => CurrentSurface == ShellSurface.Home;
+    public bool IsSettingsVisible => CurrentSurface == ShellSurface.Settings;
     public bool IsReferenceCapabilityOpen => OpenedReferenceCapability is not null;
     public bool IsVocationOpportunityOverviewOpen => OpenedVocationOpportunityOverview is not null;
     public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen && !IsVocationOpportunityOverviewOpen;
@@ -102,6 +115,12 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsVocationOpportunityOverviewOpen));
         OnPropertyChanged(nameof(IsCapabilityDetailsVisible));
+    }
+
+    partial void OnCurrentSurfaceChanged(ShellSurface value)
+    {
+        OnPropertyChanged(nameof(IsHomeVisible));
+        OnPropertyChanged(nameof(IsSettingsVisible));
     }
 
     private async Task InitializeCoreAsync()
