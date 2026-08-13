@@ -4,6 +4,7 @@
 .vs/
 .idea/
 .codex/
+.runtime/
 *.user
 *.suo
 *.db
