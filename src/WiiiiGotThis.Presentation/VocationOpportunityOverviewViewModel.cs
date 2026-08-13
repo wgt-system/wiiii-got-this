@@ -45,6 +45,33 @@ public sealed partial class VocationOpportunityOverviewViewModel : ObservableObj
     public ObservableCollection<VocationOpportunityItemViewModel> Opportunities { get; } = [];
     public IAsyncRelayCommand RefreshCommand { get; }
     public bool IsLoading => State == VocationOpportunityOverviewPresentationState.Loading;
+    public bool IsLoaded => State == VocationOpportunityOverviewPresentationState.Loaded;
+    public bool IsEmpty => State == VocationOpportunityOverviewPresentationState.Empty;
+    public bool IsUnavailable => State == VocationOpportunityOverviewPresentationState.Unavailable;
+    public bool IsInvalidContract => State == VocationOpportunityOverviewPresentationState.InvalidContract;
+    public bool IsIncompatibleContract => State == VocationOpportunityOverviewPresentationState.IncompatibleContract;
+    public bool IsFailureState => IsUnavailable || IsInvalidContract || IsIncompatibleContract;
+    public bool HasPublicationMetadata => !string.IsNullOrWhiteSpace(PublicationMetadataText);
+    public string StateTitle => State switch
+    {
+        VocationOpportunityOverviewPresentationState.Loading => "Loading opportunities",
+        VocationOpportunityOverviewPresentationState.Loaded => "Current opportunities",
+        VocationOpportunityOverviewPresentationState.Empty => "No opportunities yet",
+        VocationOpportunityOverviewPresentationState.Unavailable => "Vocation is unavailable",
+        VocationOpportunityOverviewPresentationState.InvalidContract => "Opportunity data could not be read",
+        VocationOpportunityOverviewPresentationState.IncompatibleContract => "This capability version is not supported",
+        _ => "Opportunity overview"
+    };
+    public string StateDescription => State switch
+    {
+        VocationOpportunityOverviewPresentationState.Loading => "Fetching the latest published overview.",
+        VocationOpportunityOverviewPresentationState.Loaded => "Published opportunities from Vocation.",
+        VocationOpportunityOverviewPresentationState.Empty => "Vocation has not published any opportunities yet.",
+        VocationOpportunityOverviewPresentationState.Unavailable => "Vocation could not be reached. Try refreshing again later.",
+        VocationOpportunityOverviewPresentationState.InvalidContract => "Vocation returned data that did not match the accepted contract.",
+        VocationOpportunityOverviewPresentationState.IncompatibleContract => "This Vocation capability version is not supported by WGT.",
+        _ => "The opportunity overview could not be displayed."
+    };
     public string StateText => State switch
     {
         VocationOpportunityOverviewPresentationState.Loading => "Loading opportunities…",
@@ -56,12 +83,41 @@ public sealed partial class VocationOpportunityOverviewViewModel : ObservableObj
         _ => "The Vocation opportunity overview could not be displayed."
     };
     public string GeneratedAtText => GeneratedAtRawValue is { Length: > 0 } raw ? $"Published: {raw}" : string.Empty;
+    public string PublicationMetadataText => string.Join(" · ", new[]
+    {
+        PublicationRef is { Length: > 0 } reference ? $"Publication {reference}" : null,
+        GeneratedAtText is { Length: > 0 } generated ? generated : null
+    }.Where(value => value is not null));
+
+    partial void OnStateChanged(VocationOpportunityOverviewPresentationState value)
+    {
+        OnPropertyChanged(nameof(IsLoading));
+        OnPropertyChanged(nameof(IsLoaded));
+        OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(IsUnavailable));
+        OnPropertyChanged(nameof(IsInvalidContract));
+        OnPropertyChanged(nameof(IsIncompatibleContract));
+        OnPropertyChanged(nameof(IsFailureState));
+        OnPropertyChanged(nameof(StateTitle));
+        OnPropertyChanged(nameof(StateDescription));
+        OnPropertyChanged(nameof(StateText));
+    }
+
+    partial void OnPublicationRefChanged(string? value)
+    {
+        OnPropertyChanged(nameof(PublicationMetadataText));
+        OnPropertyChanged(nameof(HasPublicationMetadata));
+    }
+    partial void OnGeneratedAtRawValueChanged(string? value)
+    {
+        OnPropertyChanged(nameof(GeneratedAtText));
+        OnPropertyChanged(nameof(PublicationMetadataText));
+        OnPropertyChanged(nameof(HasPublicationMetadata));
+    }
 
     public async Task RefreshAsync()
     {
         State = VocationOpportunityOverviewPresentationState.Loading;
-        OnPropertyChanged(nameof(IsLoading));
-        OnPropertyChanged(nameof(StateText));
         Opportunities.Clear();
         PublicationRef = null;
         GeneratedAtRawValue = null;
@@ -90,8 +146,6 @@ public sealed partial class VocationOpportunityOverviewViewModel : ObservableObj
             };
         }
 
-        OnPropertyChanged(nameof(IsLoading));
-        OnPropertyChanged(nameof(StateText));
-        OnPropertyChanged(nameof(GeneratedAtText));
+        OnPropertyChanged(nameof(PublicationMetadataText));
     }
 }

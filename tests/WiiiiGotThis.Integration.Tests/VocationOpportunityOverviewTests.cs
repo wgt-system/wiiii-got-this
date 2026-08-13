@@ -30,7 +30,7 @@ public sealed class VocationOpportunityOverviewTests
     public async Task Empty_valid_snapshot_is_empty_not_unavailable()
     {
         var viewModel = CreateViewModel(Snapshot()); await viewModel.RefreshAsync();
-        Assert.Equal(VocationOpportunityOverviewPresentationState.Empty, viewModel.State); Assert.Empty(viewModel.Opportunities); Assert.Contains("No opportunities", viewModel.StateText, StringComparison.Ordinal);
+        Assert.Equal(VocationOpportunityOverviewPresentationState.Empty, viewModel.State); Assert.True(viewModel.IsEmpty); Assert.False(viewModel.IsFailureState); Assert.Empty(viewModel.Opportunities); Assert.Contains("No opportunities", viewModel.StateText, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -39,6 +39,37 @@ public sealed class VocationOpportunityOverviewTests
         await AssertState(VocationOpportunityOverviewSourceFailureKind.Unavailable, VocationOpportunityOverviewPresentationState.Unavailable);
         await AssertState(VocationOpportunityOverviewSourceFailureKind.InvalidContract, VocationOpportunityOverviewPresentationState.InvalidContract);
         await AssertState(VocationOpportunityOverviewSourceFailureKind.IncompatibleContract, VocationOpportunityOverviewPresentationState.IncompatibleContract);
+    }
+
+    [Fact]
+    public async Task Presentation_exposes_distinct_user_facing_state_information()
+    {
+        var viewModel = CreateViewModel(Snapshot());
+        Assert.True(viewModel.IsLoading);
+        Assert.False(viewModel.IsLoaded);
+
+        await viewModel.RefreshAsync();
+        Assert.True(viewModel.IsEmpty);
+        Assert.False(viewModel.IsFailureState);
+        Assert.False(string.IsNullOrWhiteSpace(viewModel.StateTitle));
+        Assert.False(string.IsNullOrWhiteSpace(viewModel.StateDescription));
+        Assert.Contains("Publication publication-1", viewModel.PublicationMetadataText, StringComparison.Ordinal);
+
+        var states = new[]
+        {
+            VocationOpportunityOverviewSourceFailureKind.Unavailable,
+            VocationOpportunityOverviewSourceFailureKind.InvalidContract,
+            VocationOpportunityOverviewSourceFailureKind.IncompatibleContract
+        };
+        foreach (var state in states)
+        {
+            var failed = CreateViewModel(new VocationOpportunityOverviewSourceException(state, "not shown"));
+            await failed.RefreshAsync();
+            Assert.True(failed.IsFailureState);
+            Assert.False(failed.IsEmpty);
+            Assert.False(string.IsNullOrWhiteSpace(failed.StateTitle));
+            Assert.False(string.IsNullOrWhiteSpace(failed.StateDescription));
+        }
     }
 
     [Fact]

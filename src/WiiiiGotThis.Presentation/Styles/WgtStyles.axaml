@@ -64,4 +64,18 @@
     <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
     <Setter Property="BorderThickness" Value="0,0,0,1" />
   </Style>
+  <Style Selector="Border.wgt-opportunity-card">
+    <Setter Property="Background" Value="{DynamicResource WgtSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="{DynamicResource WgtSpaceLg}" />
+  </Style>
+  <Style Selector="Border.wgt-state-banner">
+    <Setter Property="Background" Value="{DynamicResource WgtSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="{DynamicResource WgtSpaceMd}" />
+  </Style>
 </Styles>

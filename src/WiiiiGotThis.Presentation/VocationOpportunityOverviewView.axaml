@@ -1,27 +1,54 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:v="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.VocationOpportunityOverviewView" x:DataType="v:VocationOpportunityOverviewViewModel">
   <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel Spacing="16" Margin="4">
-      <StackPanel Spacing="4">
-        <TextBlock Classes="wgt-section-title" Text="Opportunity Overview" />
-        <TextBlock Classes="wgt-secondary" Text="Vocation · Jobs" />
-        <TextBlock Text="{Binding StateText}" TextWrapping="Wrap" />
-        <TextBlock Classes="wgt-caption" Text="{Binding GeneratedAtText}" />
-      </StackPanel>
-      <Button Command="{Binding RefreshCommand}" Content="Refresh opportunities" HorizontalAlignment="Left" />
-      <ItemsControl ItemsSource="{Binding Opportunities}">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="wgt-page-title" Text="Jobs" />
+          <TextBlock Classes="wgt-secondary" Text="Vocation opportunity overview" />
+        </StackPanel>
+        <Button Classes="wgt-action-button" Grid.Column="1" Command="{Binding RefreshCommand}" Content="Refresh" VerticalAlignment="Top" />
+      </Grid>
+
+      <Border Classes="wgt-state-banner">
+        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+          <TextBlock Classes="wgt-section-title" Text="{Binding StateTitle}" />
+          <TextBlock Grid.Row="1" Classes="wgt-secondary" Text="{Binding StateDescription}" TextWrapping="Wrap" />
+          <ProgressBar Grid.Row="2" Classes="wgt-state-progress" IsVisible="{Binding IsLoading}" IsIndeterminate="True" Height="4" />
+        </Grid>
+      </Border>
+
+      <Border Classes="wgt-state-banner" IsVisible="{Binding IsEmpty}">
+        <StackPanel Spacing="4">
+          <TextBlock FontWeight="SemiBold">Nothing published yet</TextBlock>
+          <TextBlock Classes="wgt-secondary" Text="There are no opportunity records in the current Vocation overview." TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="wgt-state-banner" IsVisible="{Binding IsFailureState}">
+        <StackPanel Spacing="4">
+          <TextBlock FontWeight="SemiBold">The Jobs overview is not available</TextBlock>
+          <TextBlock Classes="wgt-secondary" Text="Refresh to try the existing Vocation read path again." TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <ItemsControl IsVisible="{Binding IsLoaded}" ItemsSource="{Binding Opportunities}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="v:VocationOpportunityItemViewModel">
-            <Border Classes="wgt-list-divider" Padding="0,8,0,12">
-              <StackPanel Spacing="4">
-                <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" />
-                <TextBlock Text="{Binding CompanyName}" FontWeight="Medium" />
-                <TextBlock Classes="wgt-secondary" Text="{Binding WorkLocationsText}" TextWrapping="Wrap" />
-                <TextBlock Classes="wgt-secondary" Text="{Binding PostingCountText}" />
-              </StackPanel>
+            <Border Classes="wgt-opportunity-card" Margin="0,0,0,12">
+              <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
+                <TextBlock Classes="wgt-section-title" Text="{Binding Title}" TextWrapping="Wrap" />
+                <TextBlock Grid.Column="1" Classes="wgt-caption" Text="{Binding PostingCountText}" VerticalAlignment="Center" />
+                <TextBlock Grid.Row="1" Classes="wgt-body" Text="{Binding CompanyName}" />
+                <TextBlock Grid.Row="2" Classes="wgt-secondary" Text="{Binding WorkLocationsText}" TextWrapping="Wrap" />
+              </Grid>
             </Border>
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>
+
+      <Border Classes="wgt-surface" IsVisible="{Binding HasPublicationMetadata}">
+        <TextBlock Classes="wgt-caption" Text="{Binding PublicationMetadataText}" />
+      </Border>
     </StackPanel>
   </ScrollViewer>
 </UserControl>
