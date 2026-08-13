@@ -35,6 +35,8 @@ Relevant Vocation-owned concepts include:
 
 Wiiii Got This must not duplicate these as Wiiii Got This domain entities.
 
+Private Vocation application material, including CVs, cover letters, and personal application documents, remains Vocation-owned semantics. If WGT later presents or transports it, the integration must preserve the private boundary defined by ADR-0010; WGT must not publish or expose the material through public contracts or artifacts.
+
 ## 4. Vocation → Wiiii Got This
 
 ### Pattern

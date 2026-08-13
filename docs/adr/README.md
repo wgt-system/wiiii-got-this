@@ -52,6 +52,12 @@ Accepted decisions:
   - no mandatory universal publication wire protocol or automatic LAN discovery
   - generic Service Registry deferred until independently justified
 
+- `0010-private-vocation-application-material-boundary.md`
+  - Vocation owns private application-material semantics
+  - private material is excluded from public contracts, artifacts, and logs
+  - future transfer/rendering remains inside an end-to-end-protected private boundary
+  - Conveyance may relay only opaque protected payloads
+
 Current intentionally deferred decisions are tracked in `docs/22_DEFERRED_DECISIONS.md`.
 
 The most important are:

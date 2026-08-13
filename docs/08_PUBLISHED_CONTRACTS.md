@@ -252,6 +252,8 @@ A provider must not dictate Wiiii Got This global/device enablement.
 
 Contracts should expose only what the consumer scenario needs.
 
+Private Vocation application material is not public Published Contract data. CVs, cover letters, and personal application documents must remain outside public contracts, fixtures, examples, logs, repository artifacts, and other publicly exposed surfaces. Any future cross-device contract must preserve the private end-to-end trust boundary described in ADR-0010.
+
 Examples:
 
 - a Vocation overview capability should not expose full internal research history unless needed,
