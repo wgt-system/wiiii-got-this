@@ -51,8 +51,8 @@ public sealed class VocationOpportunityOverviewTests
         await viewModel.RefreshAsync();
         Assert.True(viewModel.IsEmpty);
         Assert.False(viewModel.IsFailureState);
-        Assert.False(string.IsNullOrWhiteSpace(viewModel.StateTitle));
-        Assert.False(string.IsNullOrWhiteSpace(viewModel.StateDescription));
+        Assert.Equal("No opportunities yet", viewModel.StateTitle);
+        Assert.Equal("Vocation has not published any opportunities yet.", viewModel.StateDescription);
         Assert.Contains("Publication publication-1", viewModel.PublicationMetadataText, StringComparison.Ordinal);
 
         var states = new[]
@@ -61,6 +61,7 @@ public sealed class VocationOpportunityOverviewTests
             VocationOpportunityOverviewSourceFailureKind.InvalidContract,
             VocationOpportunityOverviewSourceFailureKind.IncompatibleContract
         };
+        var failureTitles = new List<string>();
         foreach (var state in states)
         {
             var failed = CreateViewModel(new VocationOpportunityOverviewSourceException(state, "not shown"));
@@ -69,7 +70,10 @@ public sealed class VocationOpportunityOverviewTests
             Assert.False(failed.IsEmpty);
             Assert.False(string.IsNullOrWhiteSpace(failed.StateTitle));
             Assert.False(string.IsNullOrWhiteSpace(failed.StateDescription));
+            failureTitles.Add(failed.StateTitle);
         }
+
+        Assert.Equal(3, failureTitles.Distinct().Count());
     }
 
     [Fact]

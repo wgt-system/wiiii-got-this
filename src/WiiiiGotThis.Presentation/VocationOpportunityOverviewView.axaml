@@ -2,10 +2,6 @@
   <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel Spacing="16" Margin="4">
       <Grid ColumnDefinitions="*,Auto">
-        <StackPanel Spacing="4">
-          <TextBlock Classes="wgt-page-title" Text="Jobs" />
-          <TextBlock Classes="wgt-secondary" Text="Vocation opportunity overview" />
-        </StackPanel>
         <Button Classes="wgt-action-button" Grid.Column="1" Command="{Binding RefreshCommand}" Content="Refresh" VerticalAlignment="Top" />
       </Grid>
 
@@ -15,20 +11,6 @@
           <TextBlock Grid.Row="1" Classes="wgt-secondary" Text="{Binding StateDescription}" TextWrapping="Wrap" />
           <ProgressBar Grid.Row="2" Classes="wgt-state-progress" IsVisible="{Binding IsLoading}" IsIndeterminate="True" Height="4" />
         </Grid>
-      </Border>
-
-      <Border Classes="wgt-state-banner" IsVisible="{Binding IsEmpty}">
-        <StackPanel Spacing="4">
-          <TextBlock FontWeight="SemiBold">Nothing published yet</TextBlock>
-          <TextBlock Classes="wgt-secondary" Text="There are no opportunity records in the current Vocation overview." TextWrapping="Wrap" />
-        </StackPanel>
-      </Border>
-
-      <Border Classes="wgt-state-banner" IsVisible="{Binding IsFailureState}">
-        <StackPanel Spacing="4">
-          <TextBlock FontWeight="SemiBold">The Jobs overview is not available</TextBlock>
-          <TextBlock Classes="wgt-secondary" Text="Refresh to try the existing Vocation read path again." TextWrapping="Wrap" />
-        </StackPanel>
       </Border>
 
       <ItemsControl IsVisible="{Binding IsLoaded}" ItemsSource="{Binding Opportunities}">
