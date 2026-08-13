@@ -262,9 +262,17 @@ After repository creation, use the same general control-plane discipline as Voca
 - `main` for stable milestone releases,
 - `dev` for ongoing integrated development,
 - narrow feature branches only where useful for parallel/risky changes,
-- milestone release merge/tag after integration gate.
+- milestone release fast-forward/tag after integration gate.
 
-The exact Git workflow may be recorded in repository AGENTS/README when the repo is created.
+The release workflow is:
+
+1. validate the release candidate on `dev`;
+2. advance `main` by a clean fast-forward to the approved release commit;
+3. create the immutable version tag on that commit;
+4. publish the corresponding GitHub Release from the tag;
+5. close the release Issue and milestone only after validation and publication succeed.
+
+`main` prevents force pushes and deletion while continuing to allow intentional direct fast-forward pushes. `dev` remains the active integrated-development branch and does not require pull requests or reviews. Apple runtime claims remain subject to the explicit real Mac/Xcode/iPhone gate.
 
 ## 11. Done Criteria Per Slice
 
