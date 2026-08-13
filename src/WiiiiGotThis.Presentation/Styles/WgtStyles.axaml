@@ -9,27 +9,32 @@
     <x:Double x:Key="WgtTypeSection">20</x:Double>
     <x:Double x:Key="WgtTypePageTitle">28</x:Double>
 
-    <SolidColorBrush x:Key="WgtSurfaceBrush" Color="{DynamicResource SystemChromeWhiteColor}" />
+    <SolidColorBrush x:Key="WgtSurfaceBrush" Color="{DynamicResource SystemRegionColor}" />
     <SolidColorBrush x:Key="WgtDividerBrush" Color="{DynamicResource SystemBaseLowColor}" />
+    <SolidColorBrush x:Key="WgtForegroundBrush" Color="{DynamicResource SystemBaseHighColor}" />
+    <SolidColorBrush x:Key="WgtSecondaryForegroundBrush" Color="{DynamicResource SystemBaseMediumColor}" />
   </Styles.Resources>
 
   <Style Selector="TextBlock.wgt-page-title">
     <Setter Property="FontSize" Value="{DynamicResource WgtTypePageTitle}" />
     <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource WgtForegroundBrush}" />
   </Style>
   <Style Selector="TextBlock.wgt-section-title">
     <Setter Property="FontSize" Value="{DynamicResource WgtTypeSection}" />
     <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource WgtForegroundBrush}" />
   </Style>
   <Style Selector="TextBlock.wgt-body">
     <Setter Property="FontSize" Value="{DynamicResource WgtTypeBody}" />
+    <Setter Property="Foreground" Value="{DynamicResource WgtForegroundBrush}" />
   </Style>
   <Style Selector="TextBlock.wgt-secondary">
-    <Setter Property="Opacity" Value="0.72" />
+    <Setter Property="Foreground" Value="{DynamicResource WgtSecondaryForegroundBrush}" />
   </Style>
   <Style Selector="TextBlock.wgt-caption">
     <Setter Property="FontSize" Value="12" />
-    <Setter Property="Opacity" Value="0.68" />
+    <Setter Property="Foreground" Value="{DynamicResource WgtSecondaryForegroundBrush}" />
   </Style>
 
   <Style Selector="Button.wgt-nav-button">
