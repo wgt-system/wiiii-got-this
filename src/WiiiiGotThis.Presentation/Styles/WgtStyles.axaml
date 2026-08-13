@@ -1,10 +1,10 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Styles.Resources>
     <!-- WGT spacing and type tokens; colors resolve from Fluent's active light/dark palette. -->
-    <x:Double x:Key="WgtSpaceXs">4</x:Double>
-    <x:Double x:Key="WgtSpaceSm">8</x:Double>
-    <x:Double x:Key="WgtSpaceMd">12</x:Double>
-    <x:Double x:Key="WgtSpaceLg">20</x:Double>
+    <Thickness x:Key="WgtSpaceXs">4</Thickness>
+    <Thickness x:Key="WgtSpaceSm">8</Thickness>
+    <Thickness x:Key="WgtSpaceMd">12</Thickness>
+    <Thickness x:Key="WgtSpaceLg">20</Thickness>
     <x:Double x:Key="WgtTypeBody">15</x:Double>
     <x:Double x:Key="WgtTypeSection">20</x:Double>
     <x:Double x:Key="WgtTypePageTitle">28</x:Double>
