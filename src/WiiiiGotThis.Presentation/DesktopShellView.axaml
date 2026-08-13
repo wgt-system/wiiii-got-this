@@ -1,34 +1,34 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:WiiiiGotThis.Presentation" xmlns:app="using:WiiiiGotThis.Application" xmlns:p="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.DesktopShellView" x:DataType="vm:ShellViewModel">
   <Grid RowDefinitions="Auto,Auto,*" Margin="20">
     <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
-      <StackPanel><TextBlock FontSize="28" FontWeight="Bold">Wiiii Got This</TextBlock><TextBlock Text="{Binding CurrentDeviceName}" Opacity="0.7" /></StackPanel>
+      <StackPanel><TextBlock Classes="wgt-page-title">Wiiii Got This</TextBlock><TextBlock Classes="wgt-secondary" Text="{Binding CurrentDeviceName}" /></StackPanel>
       <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="12,0" Text="{Binding StatusText}" />
-      <Button Grid.Column="2" Command="{Binding RefreshCommand}" Content="Refresh" MinWidth="90" />
+      <Button Classes="wgt-action-button" Grid.Column="2" Command="{Binding RefreshCommand}" Content="Refresh" MinWidth="90" />
     </Grid>
     <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,0,0,16">
-      <Button Command="{Binding ShowHomeCommand}" Content="Home" MinWidth="100" />
-      <Button Command="{Binding ShowJobsCommand}" Content="Jobs" MinWidth="100" />
-      <Button Command="{Binding ShowSettingsCommand}" Content="Settings" MinWidth="100" />
+      <Button Classes="wgt-nav-button" Command="{Binding ShowHomeCommand}" Content="Home" />
+      <Button Classes="wgt-nav-button" Command="{Binding ShowJobsCommand}" Content="Jobs" />
+      <Button Classes="wgt-nav-button" Command="{Binding ShowSettingsCommand}" Content="Settings" />
     </StackPanel>
     <Grid Grid.Row="2" IsVisible="{Binding IsHomeVisible}">
       <StackPanel MaxWidth="720" Spacing="12" HorizontalAlignment="Left" VerticalAlignment="Top">
-        <TextBlock FontSize="24" FontWeight="SemiBold">Welcome to Wiiii Got This</TextBlock>
-        <TextBlock Text="Your connected WGT product areas will appear here." FontSize="16" />
-        <TextBlock Text="Use Settings to manage integrations and open their published capabilities." Opacity="0.75" TextWrapping="Wrap" />
+        <TextBlock Classes="wgt-section-title">Welcome to Wiiii Got This</TextBlock>
+        <TextBlock Classes="wgt-body" Text="Your connected WGT product areas will appear here." />
+        <TextBlock Classes="wgt-secondary" Text="Use Settings to manage integrations and open their published capabilities." TextWrapping="Wrap" />
       </StackPanel>
     </Grid>
     <Grid Grid.Row="2" IsVisible="{Binding IsJobsVisible}">
       <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel MaxWidth="820" Spacing="12" HorizontalAlignment="Left" VerticalAlignment="Top">
-          <TextBlock FontSize="24" FontWeight="SemiBold">Jobs</TextBlock>
-          <TextBlock Text="Vocation opportunity overview" Opacity="0.72" />
+          <TextBlock Classes="wgt-section-title">Jobs</TextBlock>
+          <TextBlock Classes="wgt-secondary" Text="Vocation opportunity overview" />
           <p:VocationOpportunityOverviewView DataContext="{Binding OpenedVocationOpportunityOverview}" />
         </StackPanel>
       </ScrollViewer>
     </Grid>
     <Grid Grid.Row="2" IsVisible="{Binding IsSettingsVisible}" RowDefinitions="Auto,*" ColumnDefinitions="240,300,*">
-      <TextBlock Grid.Row="0" Grid.ColumnSpan="3" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12">Integration settings</TextBlock>
-      <Border Grid.Row="1" Grid.Column="0" BorderBrush="Gray" BorderThickness="1" Padding="10" Margin="0,0,12,0">
+      <TextBlock Classes="wgt-section-title" Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,12">Integration settings</TextBlock>
+      <Border Classes="wgt-surface" Grid.Row="1" Grid.Column="0" Margin="0,0,12,0">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,8">Integrations</TextBlock>
           <ListBox ItemsSource="{Binding Integrations}" SelectedItem="{Binding SelectedIntegration, Mode=TwoWay}">
@@ -36,7 +36,7 @@
           </ListBox>
         </DockPanel>
       </Border>
-      <Border Grid.Row="1" Grid.Column="1" BorderBrush="Gray" BorderThickness="1" Padding="10" Margin="0,0,12,0">
+      <Border Classes="wgt-surface" Grid.Row="1" Grid.Column="1" Margin="0,0,12,0">
         <DockPanel>
           <TextBlock DockPanel.Dock="Top" FontWeight="Bold" Margin="0,0,0,8">Published capabilities</TextBlock>
           <ListBox ItemsSource="{Binding Capabilities}" SelectedItem="{Binding SelectedCapability, Mode=TwoWay}">
@@ -44,7 +44,7 @@
           </ListBox>
         </DockPanel>
       </Border>
-      <Border Grid.Row="1" Grid.Column="2" BorderBrush="Gray" BorderThickness="1" Padding="14">
+      <Border Classes="wgt-surface" Grid.Row="1" Grid.Column="2">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel Spacing="8">
             <TextBlock FontWeight="Bold">Integration management</TextBlock>

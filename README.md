@@ -21,6 +21,8 @@ The solution and the `net10.0-ios` target compile on Windows. The real Mac/Xcode
 
 WGT owns integration concerns such as service and capability identity, registration, configuration, availability, and presentation. Vocation and Illumination remain independent bounded contexts; WGT does not import their domain models, access their databases, or take ownership of their business semantics. Integration uses explicit, versioned published contracts and provider-specific adapters.
 
+WGT's presentation principle is that Wiiii Got This is the user's primary application: it should feel like a coherent, high-quality native product across Windows and iPhone, with platform-appropriate layouts and interactions rather than a technical dashboard or web homepage. Shared visual foundations may be reused across platforms, while product areas and technical Settings remain distinct presentation surfaces.
+
 The implementation is organized into Domain, Application, Contracts, Infrastructure, Integration Adapters, shared Presentation, and platform Hosts. The Desktop host is the current validated runtime. The iOS host exists for shared-code and `net10.0-ios` compile validation; Apple runtime validation still requires Mac/Xcode/iPhone-capable tooling.
 
 ## Repository layout

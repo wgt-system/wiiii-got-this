@@ -1,0 +1,53 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <!-- WGT spacing and type tokens; colors resolve from Fluent's active light/dark palette. -->
+    <x:Double x:Key="WgtSpaceXs">4</x:Double>
+    <x:Double x:Key="WgtSpaceSm">8</x:Double>
+    <x:Double x:Key="WgtSpaceMd">12</x:Double>
+    <x:Double x:Key="WgtSpaceLg">20</x:Double>
+    <x:Double x:Key="WgtTypeBody">15</x:Double>
+    <x:Double x:Key="WgtTypeSection">20</x:Double>
+    <x:Double x:Key="WgtTypePageTitle">28</x:Double>
+
+    <SolidColorBrush x:Key="WgtSurfaceBrush" Color="{DynamicResource SystemChromeWhiteColor}" />
+    <SolidColorBrush x:Key="WgtDividerBrush" Color="{DynamicResource SystemBaseLowColor}" />
+  </Styles.Resources>
+
+  <Style Selector="TextBlock.wgt-page-title">
+    <Setter Property="FontSize" Value="{DynamicResource WgtTypePageTitle}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.wgt-section-title">
+    <Setter Property="FontSize" Value="{DynamicResource WgtTypeSection}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="TextBlock.wgt-body">
+    <Setter Property="FontSize" Value="{DynamicResource WgtTypeBody}" />
+  </Style>
+  <Style Selector="TextBlock.wgt-secondary">
+    <Setter Property="Opacity" Value="0.72" />
+  </Style>
+  <Style Selector="TextBlock.wgt-caption">
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Opacity" Value="0.68" />
+  </Style>
+
+  <Style Selector="Button.wgt-nav-button">
+    <Setter Property="MinWidth" Value="100" />
+    <Setter Property="Padding" Value="{DynamicResource WgtSpaceMd},8" />
+  </Style>
+  <Style Selector="Button.wgt-action-button">
+    <Setter Property="Padding" Value="{DynamicResource WgtSpaceMd},8" />
+  </Style>
+  <Style Selector="Border.wgt-surface">
+    <Setter Property="Background" Value="{DynamicResource WgtSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Padding" Value="{DynamicResource WgtSpaceMd}" />
+  </Style>
+  <Style Selector="Border.wgt-list-divider">
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+  </Style>
+</Styles>
