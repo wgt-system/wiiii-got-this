@@ -1,253 +1,83 @@
 # Wiiii Got This
 
-Wiiii Got This is a cross-platform application and bounded context for integrating independently developed applications and services across the user's devices and platforms.
+Wiiii Got This (WGT) is a cross-platform application and bounded context for integrating independently developed applications and services across a user's devices and platforms. WGT provides a coherent product experience while the integrated services retain ownership of their domains and authoritative data.
 
-It is not merely a launcher.
+## Current status
 
-Its purpose is to provide a coherent user experience across devices while preserving the independence and domain ownership of the services it integrates.
+The current release is **v0.3.0**. It is a Windows-first baseline with:
 
-## Current project status
+- WGT-owned Domain/Application boundaries and local SQLite persistence;
+- explicit service registration, enablement, availability, refresh, and device-override behavior;
+- a Reference Integration that runs independently of foreign providers;
+- Vocation Published Opportunity Overview 1.0 consumed through a local HTTP adapter;
+- WGT-native Windows presentation for the Vocation Opportunity Overview;
+- a shared Avalonia presentation structure and an iOS project.
 
-The repository contains the released v0.3.0 baseline:
+The solution and the `net10.0-ios` target compile on Windows. The real Mac/Xcode/iPhone runtime smoke has not been performed, and Vocation is not accepted or wired as a provider on iPhone. Conveyance, a generic Registry, Shared Map, and additional provider capabilities remain deferred.
 
-- Domain/Application baseline,
-- WGT-owned SQLite persistence,
-- Reference Integration,
-- Avalonia Desktop/mobile presentation,
-- Windows host,
-- iOS host,
-- successful `net10.0-ios` compilation on Windows,
-- explicit known-integration registration,
-- publication refresh observations with last-known publication retention,
-- deterministic Capability snapshot reconciliation,
-- per-integration publication refresh diagnostics,
-- the Vocation Published Opportunity Overview 1.0 consumer and local Windows HTTP adapter,
-- WGT-native Windows Opportunity Overview presentation with explicit provider failure states.
+## Architecture in brief
 
-Physical-device and simulator iOS runtime validation has not yet been performed.
-The Vocation provider is not wired into iOS; the real Apple runtime smoke remains a release gate.
+WGT owns integration concerns such as service and capability identity, registration, configuration, availability, and presentation. Vocation and Illumination remain independent bounded contexts; WGT does not import their domain models, access their databases, or take ownership of their business semantics. Integration uses explicit, versioned published contracts and provider-specific adapters.
 
-## Product direction
+The implementation is organized into Domain, Application, Contracts, Infrastructure, Integration Adapters, shared Presentation, and platform Hosts. The Desktop host is the current validated runtime. The iOS host exists for shared-code and `net10.0-ios` compile validation; Apple runtime validation still requires Mac/Xcode/iPhone-capable tooling.
 
-Wiiii Got This should become the primary application through which the user accesses capabilities provided by independent services.
+## Repository layout
 
-On a mobile device, the intended experience is that the user may need to install only Wiiii Got This while capabilities from services such as Vocation or Illumination appear as integrated parts of the Wiiii Got This experience.
+| Path | Responsibility |
+| --- | --- |
+| `src/WiiiiGotThis.Domain` | WGT domain model and invariants |
+| `src/WiiiiGotThis.Application` | Use cases and application ports |
+| `src/WiiiiGotThis.Contracts` | WGT-owned contracts and read models |
+| `src/WiiiiGotThis.Infrastructure` | SQLite persistence and technical adapters |
+| `src/WiiiiGotThis.Integrations.Reference` | Trivial reference integration |
+| `src/WiiiiGotThis.Integrations.Vocation` | Vocation published-contract adapter |
+| `src/WiiiiGotThis.Presentation` | Shared Avalonia presentation |
+| `src/WiiiiGotThis.Desktop` | Windows/Desktop composition root |
+| `src/WiiiiGotThis.iOS` | iOS composition and compile target |
+| `tests/` | Domain, application, infrastructure, and integration tests |
+| `docs/` | Architecture, contracts, acceptance criteria, and implementation records |
 
-The user should not normally need to think about which independent bounded context provides a particular capability.
+## Prerequisites
 
-This integrated presentation must not remove the architectural independence of the contributing services.
+- Windows for the currently validated Desktop workflow;
+- .NET 10 SDK;
+- the repository's .NET workloads and NuGet restore access;
+- Mac/Xcode and an iPhone-capable environment only for the outstanding Apple runtime smoke.
 
-Service integrations should be enableable and disableable in a plugin-like manner.
+## Build and test
 
-Opening a separate application is not the intended default interaction model, but it is not prohibited as a permanent architectural rule.
+From the repository root:
 
-## Wiiii Got This domain responsibility
+```powershell
+dotnet restore WiiiiGotThis.sln
+dotnet build WiiiiGotThis.sln
+dotnet test WiiiiGotThis.sln
+```
 
-Current candidate responsibilities include:
+The Windows regression compile for the iOS target is:
 
-- devices,
-- platforms and execution environments,
-- service identity,
-- service registration and discovery,
-- service integration,
-- capabilities exposed by services,
-- service and capability availability,
-- integration configuration,
-- platform- and device-dependent capability presentation,
-- navigation and invocation of published capabilities.
+```powershell
+dotnet build src/WiiiiGotThis.iOS/WiiiiGotThis.iOS.csproj -p:BuildiOS=true
+```
 
-These are candidate concepts for the domain language.
+To inspect transitive package vulnerabilities:
 
-They are not yet assumed to be entities, aggregates, network services, or independently deployable components.
+```powershell
+dotnet list WiiiiGotThis.sln package --vulnerable --include-transitive
+```
 
-## Independent bounded contexts
+## Run the Desktop app
 
-Wiiii Got This does not own the business domains of applications it integrates.
+```powershell
+dotnet run --project src/WiiiiGotThis.Desktop/WiiiiGotThis.Desktop.csproj
+```
 
-### Vocation
+The Reference Integration is available without a foreign service. The Vocation path additionally requires a compatible local Vocation runtime exposing its published HTTP contract; WGT does not use or inspect Vocation persistence.
 
-Vocation owns the personal job-market domain, including concepts such as:
+## Documentation
 
-- Job Opportunities,
-- Postings,
-- Companies,
-- Research,
-- Assessments,
-- Decisions,
-- job-market-specific projections and workflows.
+Start with the accepted [architecture](docs/10_ARCHITECTURE.md), [acceptance tests](docs/11_ACCEPTANCE_TESTS.md), and [V1 technical baseline](docs/20_V1_TECHNICAL_BASELINE.md). The [context map](docs/06_CONTEXT_MAP.md), [published contracts](docs/08_PUBLISHED_CONTRACTS.md), [service-integration runtime](docs/16_SERVICE_INTEGRATION_RUNTIME.md), [iOS build tooling](docs/18_IOS_BUILD_TOOLING.md), and [foreign-context alignment](docs/23_FOREIGN_CONTEXT_ALIGNMENT.md) describe the corresponding boundaries in detail. Accepted decisions are recorded in [`docs/adr/`](docs/adr/); deferred decisions are listed in [docs/22_DEFERRED_DECISIONS.md](docs/22_DEFERRED_DECISIONS.md).
 
-### Illumination
+## Current release gates
 
-Illumination owns the personal learning domain, including concepts such as:
-
-- learning content,
-- questions and tasks,
-- reference solutions,
-- reviews,
-- scheduling,
-- learning state,
-- learning progress.
-
-Wiiii Got This must not reproduce these concepts as its own domain model.
-
-## Integration principles
-
-Independent bounded contexts communicate only through explicit published contracts.
-
-Forbidden coupling includes:
-
-- shared databases between bounded contexts,
-- direct access to foreign tables,
-- cross-context imports of domain classes,
-- shared domain entities,
-- shared business-logic libraries used to bypass published boundaries,
-- dependencies on another application's internal repository or persistence structure.
-
-Expected integration mechanisms may include:
-
-- Open Host Services,
-- Published Languages,
-- versioned read contracts,
-- versioned command or capability contracts,
-- explicit adapters and Anticorruption Layers,
-- service-provided presentation contributions.
-
-Provider-specific transport and deployment are allowed. The V1 host/composition and registration baselines are accepted; concrete foreign-Service contracts remain service-specific.
-
-WGT owns coherent native presentation for integrated capabilities. Contract-driven remote/read integrations may later be added without forcing a new WGT build when existing platform capabilities suffice; this does not introduce arbitrary downloaded executable plugins.
-
-## Presentation
-
-Wiiii Got This is a product and bounded context, not a single specific client application.
-
-It may eventually expose multiple presentation adapters, for example:
-
-- native mobile clients,
-- native desktop clients,
-- web clients,
-- other future device-specific surfaces.
-
-Not every client must support every capability.
-
-The exact first supported platforms belong to implementation planning after the domain and architecture specification has stabilized.
-
-## Local and remote operation
-
-Wiiii Got This does not assume that all application data is stored remotely.
-
-It also does not prohibit servers, containers, Docker, remote APIs, synchronization infrastructure, or hosted services.
-
-Different bounded contexts and different classes of data may require different locality and confidentiality policies.
-
-A service remains responsible for the meaning and ownership of its domain data.
-
-Wiiii Got This may provide or coordinate device, connectivity, transport, replication, availability, and presentation mechanisms only where those responsibilities belong to its own domain or to explicitly separated integration contexts.
-
-Sensitive data must not become remotely persisted merely because remote infrastructure exists.
-
-## Microservice and bounded-context direction
-
-DDD boundaries are determined before deployment boundaries.
-
-A bounded context is not automatically a network microservice.
-
-A domain concept is not automatically a separately deployed service.
-
-The architecture should optimize for:
-
-- clear ownership,
-- independent development,
-- independent testing,
-- explicit contracts,
-- controlled evolution,
-- replaceable integration,
-- fault isolation,
-- maintainability.
-
-It should not optimize for:
-
-- the maximum number of repositories,
-- the maximum number of containers,
-- the maximum number of HTTP APIs,
-- artificial distributed-system complexity.
-
-The current Wiiii Got This boundary is provisional.
-
-During specification, responsibilities such as synchronization, identity, service registry, notifications, shared spatial presentation, or other integration concerns may be identified as separate bounded contexts if their domain responsibilities justify independent ownership.
-
-## Possible Shared Map context
-
-A Shared Map bounded context may later exist if several independent services need to contribute spatial information to a common presentation.
-
-In that model:
-
-- the contributing service owns the meaning of its spatial data,
-- the service publishes an explicit map contribution or projection,
-- the Shared Map context owns service-independent composition and rendering,
-- Wiiii Got This may integrate the resulting capability according to device and platform.
-
-This is a design hypothesis, not an implementation decision.
-
-## Relationship to service presentation
-
-A service, capability, integration module, and presentation contribution are not assumed to be the same concept.
-
-A service may expose multiple capabilities.
-
-A Wiiii Got This integration may present those capabilities through one or more presentation mechanisms.
-
-The concrete mechanism may later involve declarative presentation, native adapters, portable UI surfaces, dynamically loaded modules, remote rendering, or another design.
-
-No mechanism is selected during the initial product specification.
-
-## Specification-first workflow
-
-Before implementation:
-
-1. define the product and domain vision,
-2. document concrete usage scenarios,
-3. establish the ubiquitous language,
-4. classify subdomains,
-5. model the domain,
-6. determine bounded-context boundaries,
-7. define the context map,
-8. specify application use cases,
-9. design published contracts only where concrete scenarios require them,
-10. define read models,
-11. select architecture and technology through explicit ADRs,
-12. define acceptance tests,
-13. create an implementation plan.
-
-Codex or Luna implementation work begins only after the relevant specification and contracts are stable enough to implement without inventing product decisions.
-
-
-## Accepted V1 Architecture Baseline
-
-The current accepted implementation baseline is:
-
-- primary clients: Windows desktop + iPhone,
-- C# / .NET 10,
-- Avalonia 12,
-- CommunityToolkit.Mvvm for presentation state,
-- SQLite via Microsoft.Data.Sqlite for WGT-owned local state,
-- WGT-native executable presentation,
-- Integration Adapters shipped with WGT,
-- provider-specific Published Contracts/transports,
-- no arbitrary runtime-downloaded native plugins in V1,
-- no mandatory WGT server,
-- separate Synchronization / Relay bounded context/service,
-- personal Device trust/pairing without a mandatory user account,
-- hybrid recovery using trusted-Device approval plus separately stored emergency recovery material,
-- local-only Services/data remain supported.
-
-WGT is one bounded context with multiple presentation/runtime adapters. Windows and iPhone are not separate WGT bounded contexts.
-
-See `docs/adr/` for accepted decisions and `docs/22_DEFERRED_DECISIONS.md` for decisions implementation agents must not invent.
-
-## Foreign Context Alignment
-
-Current Vocation and Illumination repository alignment is recorded in:
-
-- `docs/23_FOREIGN_CONTEXT_ALIGNMENT.md`
-
-Provider repositories remain authoritative for their own domain and published-contract semantics.
+The first real Vocation integration is accepted for Windows. Before claiming the equivalent Apple runtime support, the real Mac/Xcode/iPhone smoke must verify startup, provider discovery, capability opening, usable data or empty state, provider-loss isolation, and recovery after restart. Shared-code tests and a Windows iOS compile do not satisfy that gate.

@@ -3,6 +3,7 @@
 .worktrees/
 .vs/
 .idea/
+.codex/
 *.user
 *.suo
 *.db
