@@ -16,7 +16,21 @@ public sealed class ServiceIntegrationPresentationViewModel(ServiceIntegrationLi
     public DateTimeOffset? LastRefreshAttemptedAtUtc => item.LastRefreshAttemptedAtUtc;
     public DateTimeOffset? LastSuccessfulRefreshAtUtc => item.LastSuccessfulRefreshAtUtc;
 
-    public string EnablementStatusText => IsEffectivelyEnabled ? "Enabled on this device" : "Disabled on this device";
+    public string GlobalEnablementText => IsGloballyEnabled ? "Enabled globally" : "Disabled globally";
+    public string DeviceOverrideText => CurrentDeviceOverride switch
+    {
+        true => "Enabled on this device",
+        false => "Disabled on this device",
+        null => "Inherit global setting"
+    };
+    public string DeviceBehaviorText => CurrentDeviceOverride switch
+    {
+        true => "This device is explicitly enabled, regardless of the global setting.",
+        false => "This device is explicitly disabled, regardless of the global setting.",
+        null => "This device follows the global setting."
+    };
+    public string EffectiveEnablementText => IsEffectivelyEnabled ? "Enabled on this device" : "Disabled on this device";
+    public string EnablementStatusText => EffectiveEnablementText;
 
     public string PublicationRefreshStatusText => !HasRefreshBeenAttempted
         ? "Known integration — publication not refreshed yet."

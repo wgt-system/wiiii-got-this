@@ -14,6 +14,22 @@ public sealed class ServiceIntegrationPresentationTests
     }
 
     [Fact]
+    public void Mapping_explains_global_device_and_inherited_enablement()
+    {
+        var inherited = Map(false, false, null, null);
+        Assert.Equal("Disabled globally", inherited.GlobalEnablementText);
+        Assert.Equal("Inherit global setting", inherited.DeviceOverrideText);
+        Assert.Equal("This device follows the global setting.", inherited.DeviceBehaviorText);
+        Assert.Equal("Disabled on this device", inherited.EffectiveEnablementText);
+
+        var enabled = new ServiceIntegrationPresentationViewModel(new ServiceIntegrationListItem(new("service"), "Service", true, true, true, false, false, null, null, null));
+        Assert.Equal("Enabled globally", enabled.GlobalEnablementText);
+        Assert.Equal("Enabled on this device", enabled.DeviceOverrideText);
+        Assert.Contains("explicitly enabled", enabled.DeviceBehaviorText, StringComparison.Ordinal);
+        Assert.Equal("Enabled on this device", enabled.EffectiveEnablementText);
+    }
+
+    [Fact]
     public void Mapping_distinguishes_first_failed_state()
     {
         var model = Map(false, true, IntegrationRefreshStatus.AdapterFailed, null);
