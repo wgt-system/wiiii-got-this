@@ -4,8 +4,10 @@ Wiiii Got This (WGT) is a cross-platform application and bounded context for int
 
 ## Current status
 
-The current release is **v0.3.0**. It is a Windows-first baseline with:
+The current release baseline is **v0.4.0**. It is a Windows-first product shell with:
 
+- Home, Jobs, and Settings product navigation;
+- direct Desktop access to Vocation Jobs without navigating through the technical Capability Catalog;
 - WGT-owned Domain/Application boundaries and local SQLite persistence;
 - explicit service registration, enablement, availability, refresh, and device-override behavior;
 - a Reference Integration that runs independently of foreign providers;
