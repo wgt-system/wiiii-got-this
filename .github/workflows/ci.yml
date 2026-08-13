@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore WiiiiGotThis.sln
+
+      - name: Build
+        run: dotnet build WiiiiGotThis.sln --no-restore
+
+      - name: Test
+        run: dotnet test WiiiiGotThis.sln --no-build
+
+      - name: Audit vulnerable packages
+        shell: pwsh
+        run: |
+          $report = dotnet list WiiiiGotThis.sln package --vulnerable --include-transitive 2>&1
+          $report | Write-Output
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+          if ($report -match 'has the following vulnerable packages') {
+            throw 'Vulnerable NuGet packages were reported.'
+          }
