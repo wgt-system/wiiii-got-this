@@ -3,9 +3,11 @@
 ## Purpose
 
 This is a service-owned, derived design-time visualization of the accepted Wiiii Got
-This runtime topology. WGT documentation and accepted ADRs remain authoritative for
-internal architecture; `wgt-system/architecture` remains authoritative for system-wide
-ownership and cross-context integration. The model is not consumed at runtime.
+This runtime topology. The workspace extends the central `wgt-system/architecture`
+workspace rather than duplicating its system model. WGT documentation and accepted ADRs
+remain authoritative for internal architecture; the central repository remains
+authoritative for system-wide ownership and cross-context integration. The model is not
+consumed at runtime.
 
 ## C4 container meaning
 
@@ -27,18 +29,23 @@ The relevant WGT sources are:
 - [`../adr/0007-v1-client-host-composition-topology.md`](../adr/0007-v1-client-host-composition-topology.md)
 
 System-wide ownership and integration authority remains in
-[`wgt-system/architecture`](https://github.com/wgt-system/architecture). If this model
-conflicts with accepted WGT documentation or ADRs, correct the diagram or involve the
-Architecture Control Plane; never derive a new Architecture Decision from the diagram.
+[`wgt-system/architecture`](https://github.com/wgt-system/architecture). The active
+development parent is the central `dev` workspace at
+`https://raw.githubusercontent.com/wgt-system/architecture/dev/model/workspace.dsl`.
+System-wide elements and relationships are not locally duplicated; this workspace adds
+only WGT's service-internal container details and enables navigation from the System
+Landscape through WGT's context view to `WgtContainers`. If this model conflicts with
+accepted WGT documentation or ADRs, correct the diagram or involve the Architecture
+Control Plane; never derive a new Architecture Decision from the diagram.
 
 ## Local usage
 
 The official `structurizr/structurizr` image can be run from `docs/model/`:
 
 ```powershell
-docker run --rm -v "P:\wgt-system\wiiii-got-this\docs\model:/usr/local/structurizr" structurizr/structurizr validate -w workspace.dsl
-docker run --rm -v "P:\wgt-system\wiiii-got-this\docs\model:/usr/local/structurizr" structurizr/structurizr inspect -w workspace.dsl
-docker run --rm -d --name wgt-wiiii-got-this-structurizr -p 127.0.0.1:18081:8080 -v "P:\wgt-system\wiiii-got-this\docs\model:/usr/local/structurizr" structurizr/structurizr local
+docker run --rm -v "P:\wgt-system\wiiii-got-this\.worktrees\dev\docs\model:/usr/local/structurizr" structurizr/structurizr validate -w workspace.dsl
+docker run --rm -v "P:\wgt-system\wiiii-got-this\.worktrees\dev\docs\model:/usr/local/structurizr" structurizr/structurizr inspect -w workspace.dsl
+docker run --rm -d --name wgt-wiiii-got-this-structurizr -e STRUCTURIZR_EDITABLE=false -p 127.0.0.1:18081:8080 -v "P:\wgt-system\wiiii-got-this\.worktrees\dev\docs\model:/usr/local/structurizr" structurizr/structurizr local
 ```
 
 Docker and Structurizr are design-time tooling only. They are not runtime dependencies,
