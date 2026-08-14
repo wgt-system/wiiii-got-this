@@ -15,6 +15,11 @@ public static class VocationIntegrationMetadata
     public const string ServiceDisplayName = "Vocation";
     public static readonly CapabilityIdentity OpportunityOverviewCapability = new(OpportunityOverviewCapabilityValue);
     public const string OpportunityOverviewTitle = "Opportunity Overview";
+    public const string MapProjectionCapabilityValue = "vocation.map_projection";
+    public const string MapProjectionContractVersionValue = "1.0";
+    public static readonly CapabilityIdentity MapProjectionCapability = new(MapProjectionCapabilityValue);
+    public const string MapProjectionTitle = "Map Projection";
+    public static readonly Version MapProjectionContractVersion = new(1, 0);
     public static readonly Version OpportunityOverviewContractVersion = new(1, 0);
 }
 

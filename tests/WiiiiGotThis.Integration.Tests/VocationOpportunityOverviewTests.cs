@@ -99,8 +99,8 @@ public sealed class VocationOpportunityOverviewTests
             new ListServiceIntegrationsUseCase(integrations, publications),
             new SetGlobalIntegrationEnablementUseCase(integrations), new SetDeviceIntegrationOverrideUseCase(integrations), new ClearDeviceIntegrationOverrideUseCase(integrations),
             new ResolveCapabilityCatalogUseCase(new StaticIntegrationAdapterCatalog([adapter]), integrations, publications), "Windows PC", new GetVocationOpportunityOverviewUseCase(new FakeSource(Snapshot())));
-        await shell.EnsureInitializedAsync(); Assert.False(shell.Capabilities.Single().CanOpen);
-        await shell.EnableGloballyCommand.ExecuteAsync(null); Assert.True(shell.Capabilities.Single().CanOpen); await shell.OpenCapabilityCommand.ExecuteAsync(null);
+        await shell.EnsureInitializedAsync(); Assert.False(shell.Capabilities.Single(x => x.CapabilityIdentity == VocationIntegrationMetadata.OpportunityOverviewCapability).CanOpen);
+        await shell.EnableGloballyCommand.ExecuteAsync(null); Assert.True(shell.Capabilities.Single(x => x.CapabilityIdentity == VocationIntegrationMetadata.OpportunityOverviewCapability).CanOpen); await shell.OpenCapabilityCommand.ExecuteAsync(null);
         Assert.NotNull(shell.OpenedVocationOpportunityOverview); Assert.Equal(VocationOpportunityOverviewPresentationState.Empty, shell.OpenedVocationOpportunityOverview!.State);
     }
 

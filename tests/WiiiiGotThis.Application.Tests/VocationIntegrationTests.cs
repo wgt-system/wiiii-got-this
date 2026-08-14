@@ -82,7 +82,7 @@ public sealed class VocationIntegrationTests
     }
 
     [Fact]
-    public async Task Vocation_adapter_publishes_one_capability_and_resolves_available()
+    public async Task Vocation_adapter_publishes_both_capabilities_and_resolves_overview_available()
     {
         var adapter = new VocationIntegrationAdapter(new StubSource(snapshot: Snapshot()), new FixedTimeProvider(new DateTimeOffset(2026, 8, 10, 12, 0, 0, TimeSpan.Zero)));
 
@@ -92,9 +92,11 @@ public sealed class VocationIntegrationTests
 
         Assert.Equal(new ServiceIdentity("vocation"), publication.ServiceId);
         Assert.Equal("Vocation", publication.DisplayName);
-        Assert.Single(publication.Capabilities);
+        Assert.Equal(2, publication.Capabilities.Count);
         Assert.Equal("vocation.opportunity_overview", publication.Capabilities[0].Id.Value);
         Assert.Equal(new Version(1, 0), publication.Capabilities[0].ContractVersion);
+        Assert.Equal("vocation.map_projection", publication.Capabilities[1].Id.Value);
+        Assert.Equal(new Version(1, 0), publication.Capabilities[1].ContractVersion);
         Assert.Null(resolution.Availability.Reason);
     }
 

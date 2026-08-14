@@ -21,10 +21,12 @@ internal static class Program
         var deviceStore = new SqliteLocalDeviceStore(connectionFactory);
         var integrationStore = new SqliteServiceIntegrationStore(connectionFactory);
         var publicationStore = new SqliteIntegrationPublicationStore(connectionFactory);
-        var vocationSource = new VocationHttpOpportunityOverviewSource(new HttpClient());
+        var vocationHttpClient = new HttpClient();
+        var vocationSource = new VocationHttpOpportunityOverviewSource(vocationHttpClient);
+        var vocationMapSource = new VocationHttpMapProjectionSource(vocationHttpClient);
         var adapters = new StaticIntegrationAdapterCatalog([
             new ReferenceIntegrationAdapter(),
-            new VocationIntegrationAdapter(vocationSource)]);
+            new VocationIntegrationAdapter(vocationSource, vocationMapSource)]);
         var ensureDevice = new EnsureCurrentDeviceUseCase(deviceStore);
         var register = new RegisterKnownIntegrationsUseCase(adapters, integrationStore);
         var refresh = new RefreshPublicationsUseCase(adapters, publicationStore);
