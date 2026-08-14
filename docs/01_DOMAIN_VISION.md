@@ -209,7 +209,7 @@ Some capabilities may require a running remote provider.
 
 Other capabilities may eventually remain usable from synchronized or replicated state when the original service runtime is unavailable.
 
-The exact replication, synchronization, conflict, and encryption model is deliberately unresolved and may justify a separate bounded context.
+Conveyance is the accepted separate bounded context for generic durable opaque cross-device delivery. The exact domain-owned replication, synchronization, authority, conflict, reconciliation, and encryption semantics remain unresolved and must be defined by the affected service before a concrete contract is selected.
 
 ## 14. Candidate Supporting Responsibilities
 
@@ -349,7 +349,7 @@ The following remain deliberately open:
 - exact meaning and granularity of Platform,
 - whether service-integration enablement is global, per device, per platform, or layered,
 - exact capability taxonomy,
-- whether synchronization/replication is a Wiiii Got This concern or a separate bounded context,
+- concrete domain-owned synchronization/replication semantics for individual capability classes,
 - offline expectations for individual capability classes,
 - concrete presentation-contribution mechanism,
 - trust/authentication requirements between devices and services,

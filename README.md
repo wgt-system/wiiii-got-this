@@ -15,7 +15,7 @@ The current release baseline is **v0.4.0**. It is a Windows-first product shell 
 - WGT-native Windows presentation for the Vocation Opportunity Overview;
 - a shared Avalonia presentation structure and an iOS project.
 
-The solution and the `net10.0-ios` target compile on Windows. The real Mac/Xcode/iPhone runtime smoke has not been performed, and Vocation is not accepted or wired as a provider on iPhone. Conveyance, a generic Registry, Shared Map, and additional provider capabilities remain deferred.
+The solution and the `net10.0-ios` target compile on Windows. The real Mac/Xcode/iPhone runtime smoke has not been performed, and Vocation is not accepted or wired as a provider on iPhone. Conveyance is the accepted separate bounded context for generic durable opaque cross-device delivery; its Current Object mode is available, while production interoperability and concrete domain-owned synchronization contracts remain gated. A generic Registry, Shared Map, and additional provider capabilities remain deferred.
 
 ## Architecture in brief
 

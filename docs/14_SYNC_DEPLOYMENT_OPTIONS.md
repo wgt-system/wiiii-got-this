@@ -383,13 +383,13 @@ These concerns may justify a separate Identity/Trust context or security subsyst
 
 ## 14. Recommended Decision
 
-Adopt **Option B** as the target architecture:
+The accepted system architecture is **Option B**:
 
-> Cross-device synchronization uses a separate generic Synchronization / Relay context for asynchronous delivery, while each domain Service owns synchronization eligibility, payload semantics, conflict detection, and reconciliation.
+> Cross-device delivery uses the separate Conveyance bounded context for generic durable opaque delivery, while each domain Service owns synchronization eligibility, payload semantics, authority, conflict detection, and reconciliation.
 
-Do not implement that context yet merely to complete WGT Core.
+WGT must not implement a competing relay or make Conveyance interpret foreign business payloads. Conveyance's accepted V1 delivery mode is Current Object; further delivery modes still require concrete contracts and system decisions.
 
-First define one concrete synchronized Service flow—most likely Illumination—and use it to finalize the first Sync Contract.
+Before any domain-changing synchronization is integrated, define one concrete synchronized Service flow—most likely Illumination—and use it to finalize the provider-owned contract and reconciliation semantics.
 
 ## 15. Consequence for Wiiii Got This
 

@@ -17,7 +17,7 @@ Wiiii Got This owns cross-application integration semantics including, at the cu
 - integration presentation selection,
 - explicit degradation behavior.
 
-Its boundary remains open to later extraction of concerns such as synchronization, identity/trust, registry, or shared maps where independent ownership emerges.
+WGT does not own generic durable cross-device delivery; that capability belongs to the accepted Conveyance bounded context. Concrete domain-specific synchronization, identity/trust, registry, or shared-map semantics remain separate decisions where their ownership is not yet accepted.
 
 ## 3. Vocation Context
 
@@ -162,20 +162,18 @@ If extracted, Wiiii Got This becomes a consumer of its registry contracts rather
 
 ### Status
 
-Accepted as a separate target bounded context/service. See `docs/adr/0002-synchronization-relay-context-boundary.md`.
+Accepted as the separate Conveyance bounded context for generic durable opaque cross-device delivery. See `docs/adr/0002-synchronization-relay-context-boundary.md` and the system Architecture Control Plane.
 
 Possible responsibilities:
 
-- device-to-device state transfer,
-- generic change transport,
-- relay infrastructure,
-- encryption envelope transport,
-- synchronization scheduling,
-- delivery/acknowledgement.
+- Current Object delivery,
+- generic opaque envelope transport,
+- durable relay/delivery,
+- generic sequencing/revision and delivery status where accepted.
 
 ### Ownership boundary
 
-Generic transport/replication mechanics may be separable.
+Generic delivery mechanics are owned by Conveyance.
 
 However:
 
@@ -183,7 +181,7 @@ However:
 - Illumination owns merge/conflict semantics for Illumination data,
 - Wiiii Got This must not invent foreign conflict resolution.
 
-A future Sync Context may therefore transport domain-defined change sets rather than own foreign merge rules.
+Future delivery modes may transport domain-defined changes only after the relevant domain contract and system decision exist; Conveyance must not own foreign merge rules.
 
 ## 11. Identity / Trust
 

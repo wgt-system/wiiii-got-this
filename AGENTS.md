@@ -16,7 +16,7 @@ Wiiii Got This is not merely a launcher.
 
 It has its own domain responsibilities around device-, platform-, service-, capability-, availability-, integration-, and presentation-related concerns, subject to refinement through the domain specification.
 
-The current bounded-context boundary is provisional until the domain and context-map work is complete.
+Wiiii Got This is an accepted bounded context within the wider `wgt-system`; its own domain boundary and local architecture remain authoritative here. System-wide ownership and cross-context policy are maintained by `wgt-system/architecture`.
 
 Do not force a responsibility into Wiiii Got This merely because it is required by more than one application.
 
@@ -34,6 +34,14 @@ Before proposing or implementing changes:
 6. do not infer domain ownership from deployment topology.
 
 Chat history is not the durable architectural source of truth once decisions have been recorded in the repository.
+
+## WGT System Architecture
+
+The system-level architecture source of truth is `wgt-system/architecture`.
+
+Before introducing or changing cross-context integration, synchronization/replication, generic relay or storage infrastructure, service discovery/registry infrastructure, shared cross-context infrastructure, or another system-wide capability, consult its `CAPABILITY_CATALOG.md`, `ARCHITECTURE_PRINCIPLES.md`, and `INTEGRATION_POLICY.md`.
+
+Generic durable opaque cross-device delivery is owned by Conveyance. Conveyance does not own WGT, Vocation, or Illumination business semantics; domain-specific publication, commands, authority, merge, conflict, and reconciliation remain with the affected domain owner. If an existing generic capability is conceptually correct but insufficient, return the concrete requirement to the System Architecture Control Plane instead of creating a competing subsystem. WGT runtime code must not depend on the Architecture Repository.
 
 ## Product boundaries
 
@@ -129,11 +137,11 @@ Opening a separate application is not the intended default integration model, bu
 
 ## Context-boundary discipline
 
-The current Wiiii Got This boundary must be challenged during specification.
+WGT's local boundary must still be challenged during specification, but generic delivery ownership is already assigned to Conveyance at system level.
 
 Potential concerns such as:
 
-- synchronization or replication,
+- domain-specific synchronization or replication semantics,
 - identity and authentication,
 - service registry,
 - shared map composition,
@@ -147,7 +155,7 @@ For each substantial responsibility, determine whether it is:
 
 1. part of the Wiiii Got This domain,
 2. an internal technical component,
-3. generic infrastructure,
+3. generic infrastructure owned elsewhere,
 4. a separate bounded context,
 5. owned by another existing service.
 
@@ -155,9 +163,9 @@ Create a new bounded context only when the domain and ownership boundary justify
 
 Do not create new network services merely to obtain a "microservice architecture."
 
-## Microservice and deployment discipline
+## WGT deployment discipline
 
-DDD and ownership boundaries come before process, repository, container, and network boundaries.
+DDD and ownership boundaries come before WGT process, repository, container, and network boundaries. The system-wide principle is maintained in `wgt-system/architecture/ARCHITECTURE_PRINCIPLES.md`; the following rules are WGT-specific consequences.
 
 Do not assume:
 

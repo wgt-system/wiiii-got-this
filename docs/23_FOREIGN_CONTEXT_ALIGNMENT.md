@@ -2,15 +2,15 @@
 
 ## Status
 
-Repository-grounded alignment baseline as of 2026-08-10.
+Repository-grounded WGT consumer-alignment baseline. System-wide ownership is authoritative in `wgt-system/architecture`; this document records only WGT-relevant consequences.
 
 Sources of truth reviewed:
 
-- `Wiiii90/illumination` branch `dev`
-- `Wiiii90/vocation` branch `dev`
-- `Wiiii90/conveyance` branch `dev`
+- `wgt-system/illumination` branch `dev`
+- `wgt-system/vocation` branch `dev`
+- `wgt-system/conveyance` branch `dev`
 
-This document records only integration facts already accepted or explicitly planned by the owning bounded contexts.
+This document records only integration facts already accepted or explicitly planned by the owning bounded contexts. It is not a second Service Catalog or system-wide ownership source.
 
 ## 1. Illumination Alignment
 
@@ -192,7 +192,7 @@ The contract is client-neutral, versioned, and read-only. It intentionally exclu
 
 It can be consumed without accessing Vocation's database, domain classes, or internal React API. It is therefore the concrete contract consumed by WGT's first Windows integration.
 
-This contract does not include later Vocation contracts such as Opportunity Detail, Groups/Waves, Availability/Freshness, or Map.
+Vocation also owns the accepted `Published Map Projection 1.0`, whose canonical schema is `schemas/published-map-projection-v1.schema.json`. WGT may consume either projection only through the provider-owned contract; neither projection transfers Vocation semantics or persistence authority to WGT. These contracts do not include later Vocation contracts such as Opportunity Detail, Groups/Waves, or Availability/Freshness.
 
 The endpoint remains outside Vocation's internal React/OpenAPI surface and does not implement relay, authentication, remote persistence, or cross-device writes.
 
@@ -233,12 +233,12 @@ A concrete Capability is added to WGT only when the cross-device/integrated use 
 
 ## 12. Conveyance Alignment
 
-Conveyance is the independently developed Synchronization/Relay bounded context for generic durable delivery.
+Conveyance is the accepted separate bounded context for generic durable opaque cross-device delivery.
 
 Conveyance owns:
 
 - generic durable delivery,
-- transport/relay mechanics,
+- Current Object delivery and transport/relay mechanics,
 - opaque Current Object storage and delivery,
 - later security/trust transport mechanisms as separately accepted.
 
@@ -263,7 +263,7 @@ WGT iPhone
 WGT-native Vocation presentation
 ```
 
-Conveyance currently implements the generic Current Object delivery mode. Production authentication/cryptography interoperability and the foreign-context integration path are not claimed complete by WGT.
+Conveyance currently implements the generic Current Object delivery mode. Production authentication/cryptography interoperability remains gated in Conveyance; WGT must not treat this alignment document as a claim that production secure cross-device integration is complete.
 
 ## 13. First Real Integration Ordering
 
@@ -354,7 +354,7 @@ Later Opportunity Detail, Groups/Waves, Availability/Freshness, and Map contract
 
 ### Conveyance
 
-Architecture relationship: **accepted as separate Synchronization/Relay bounded context**
+Architecture relationship: **accepted as separate Conveyance bounded context**
 
 V1 Current Object delivery: **implemented direction/contract available on `dev`**
 
