@@ -35,6 +35,8 @@ Before proposing or implementing changes:
 
 Chat history is not the durable architectural source of truth once decisions have been recorded in the repository.
 
+`docs/model/workspace.dsl` is a derived service-local visualization, not normative architecture authority. If it conflicts with accepted WGT documentation/ADRs, treat the model as drift; system-wide conflicts must be returned to `wgt-system/architecture`.
+
 ## WGT System Architecture
 
 The system-level architecture source of truth is `wgt-system/architecture`.

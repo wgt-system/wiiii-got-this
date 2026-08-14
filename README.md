@@ -79,6 +79,8 @@ The Reference Integration is available without a foreign service. The Vocation p
 
 Start with the accepted [architecture](docs/10_ARCHITECTURE.md), [acceptance tests](docs/11_ACCEPTANCE_TESTS.md), and [V1 technical baseline](docs/20_V1_TECHNICAL_BASELINE.md). The [context map](docs/06_CONTEXT_MAP.md), [published contracts](docs/08_PUBLISHED_CONTRACTS.md), [service-integration runtime](docs/16_SERVICE_INTEGRATION_RUNTIME.md), [iOS build tooling](docs/18_IOS_BUILD_TOOLING.md), and [foreign-context alignment](docs/23_FOREIGN_CONTEXT_ALIGNMENT.md) describe the corresponding boundaries in detail. Accepted decisions are recorded in [`docs/adr/`](docs/adr/); deferred decisions are listed in [docs/22_DEFERRED_DECISIONS.md](docs/22_DEFERRED_DECISIONS.md).
 
+The [Architecture Model](docs/model/README.md) provides the derived service-local C4 runtime view.
+
 ## Current release gates
 
 The first real Vocation integration is accepted for Windows. Before claiming the equivalent Apple runtime support, the real Mac/Xcode/iPhone smoke must verify startup, provider discovery, capability opening, usable data or empty state, provider-loss isolation, and recovery after restart. Shared-code tests and a Windows iOS compile do not satisfy that gate.

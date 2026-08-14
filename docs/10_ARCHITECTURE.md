@@ -4,6 +4,12 @@
 
 Accepted V1 architecture baseline, with explicitly deferred security-cryptography and production synchronization contract details.
 
+## Visual runtime model
+
+The service-local [C4 runtime model](model/README.md) visualizes the accepted WGT
+runtime topology. This document and the accepted ADRs remain authoritative for WGT
+architecture decisions.
+
 Accepted foundations include:
 
 - Windows desktop + iPhone,
