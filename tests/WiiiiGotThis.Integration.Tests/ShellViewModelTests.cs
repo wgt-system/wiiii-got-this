@@ -133,7 +133,7 @@ public sealed class ShellViewModelTests
     }
 
     private static int ActiveDestinationCount(ShellViewModel shell) =>
-        new[] { shell.IsHomeActive, shell.IsJobsActive, shell.IsSettingsActive }.Count(active => active);
+        new[] { shell.IsHomeActive, shell.IsJobsActive, shell.IsMapActive, shell.IsSettingsActive }.Count(active => active);
 
     private static ShellViewModel CreateShell() => CreateShell(new ReferenceIntegrationAdapter());
 

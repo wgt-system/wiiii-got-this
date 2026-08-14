@@ -13,6 +13,9 @@
     <SolidColorBrush x:Key="WgtDividerBrush" Color="{DynamicResource SystemBaseLowColor}" />
     <SolidColorBrush x:Key="WgtForegroundBrush" Color="{DynamicResource SystemBaseHighColor}" />
     <SolidColorBrush x:Key="WgtSecondaryForegroundBrush" Color="{DynamicResource SystemBaseMediumColor}" />
+    <SolidColorBrush x:Key="WgtMapBackgroundBrush" Color="{DynamicResource SystemRegionColor}" />
+    <SolidColorBrush x:Key="WgtMapGridBrush" Color="{DynamicResource SystemBaseLowColor}" />
+    <SolidColorBrush x:Key="WgtMapPointBrush" Color="{DynamicResource SystemAccentColor}" />
   </Styles.Resources>
 
   <Style Selector="TextBlock.wgt-page-title">
@@ -85,5 +88,11 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="4" />
     <Setter Property="Padding" Value="{DynamicResource WgtSpaceMd}" />
+  </Style>
+  <Style Selector="Border.wgt-map-surface">
+    <Setter Property="Background" Value="{DynamicResource WgtMapBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="4" />
   </Style>
 </Styles>

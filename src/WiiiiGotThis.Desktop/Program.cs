@@ -36,7 +36,8 @@ internal static class Program
         var clearOverride = new ClearDeviceIntegrationOverrideUseCase(integrationStore);
         var catalog = new ResolveCapabilityCatalogUseCase(adapters, integrationStore, publicationStore);
         var readVocationOpportunityOverview = new GetVocationOpportunityOverviewUseCase(vocationSource);
-        var shell = new ShellViewModel(ensureDevice, register, refresh, list, global, deviceOverride, clearOverride, catalog, "Windows PC", readVocationOpportunityOverview);
+        var readVocationMapProjection = new GetVocationMapProjectionUseCase(vocationMapSource);
+        var shell = new ShellViewModel(ensureDevice, register, refresh, list, global, deviceOverride, clearOverride, catalog, "Windows PC", readVocationOpportunityOverview, readVocationMapProjection);
 
         BuildAvaloniaApp(shell).StartWithClassicDesktopLifetime(args);
     }

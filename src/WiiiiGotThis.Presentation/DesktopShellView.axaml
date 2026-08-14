@@ -13,6 +13,7 @@
         <StackPanel Grid.Row="2" Margin="0,28,0,0">
           <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Home" Command="{Binding ShowHomeCommand}" IsChecked="{Binding IsHomeActive, Mode=OneWay}" />
           <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Jobs" Command="{Binding ShowJobsCommand}" IsChecked="{Binding IsJobsActive, Mode=OneWay}" />
+          <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Map" IsVisible="{Binding IsMapAvailable}" Command="{Binding ShowMapCommand}" IsChecked="{Binding IsMapActive, Mode=OneWay}" />
           <Separator Margin="0,16" />
           <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Settings" Command="{Binding ShowSettingsCommand}" IsChecked="{Binding IsSettingsActive, Mode=OneWay}" />
         </StackPanel>
@@ -64,6 +65,18 @@
           </StackPanel>
           <Border Classes="wgt-surface" Grid.Row="1">
             <p:VocationOpportunityOverviewView DataContext="{Binding OpenedVocationOpportunityOverview}" />
+          </Border>
+        </Grid>
+      </Grid>
+
+      <Grid Grid.Row="1" IsVisible="{Binding IsMapVisible}">
+        <Grid RowDefinitions="Auto,*">
+          <StackPanel Spacing="4" Margin="0,0,0,16">
+            <TextBlock Classes="wgt-page-title">Map</TextBlock>
+            <TextBlock Classes="wgt-secondary" Text="Vocation opportunity locations" />
+          </StackPanel>
+          <Border Classes="wgt-surface" Grid.Row="1">
+            <p:VocationMapProjectionView DataContext="{Binding OpenedVocationMapProjection}" />
           </Border>
         </Grid>
       </Grid>

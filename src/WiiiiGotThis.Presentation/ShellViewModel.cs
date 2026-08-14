@@ -10,6 +10,7 @@ public enum ShellSurface
 {
     Home,
     Jobs,
+    Map,
     Settings
 }
 
@@ -24,6 +25,7 @@ public sealed partial class ShellViewModel : ObservableObject
     private readonly ClearDeviceIntegrationOverrideUseCase clearDeviceOverride;
     private readonly ResolveCapabilityCatalogUseCase resolveCapabilityCatalog;
     private readonly GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview;
+    private readonly GetVocationMapProjectionUseCase? readVocationMapProjection;
     private readonly string suggestedDeviceName;
     private readonly object initializationGate = new();
     private Task? initializationTask;
@@ -34,6 +36,7 @@ public sealed partial class ShellViewModel : ObservableObject
     [ObservableProperty] private CapabilityPresentationViewModel? selectedCapability;
     [ObservableProperty] private CapabilityPresentationViewModel? openedReferenceCapability;
     [ObservableProperty] private VocationOpportunityOverviewViewModel? openedVocationOpportunityOverview;
+    [ObservableProperty] private VocationMapProjectionViewModel? openedVocationMapProjection;
     [ObservableProperty] private string statusText = "Starting…";
     [ObservableProperty] private ShellSurface currentSurface = ShellSurface.Home;
 
@@ -47,7 +50,8 @@ public sealed partial class ShellViewModel : ObservableObject
         ClearDeviceIntegrationOverrideUseCase clearDeviceOverride,
         ResolveCapabilityCatalogUseCase resolveCapabilityCatalog,
         string suggestedDeviceName,
-        GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview = null)
+        GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview = null,
+        GetVocationMapProjectionUseCase? readVocationMapProjection = null)
     {
         this.ensureCurrentDevice = ensureCurrentDevice;
         this.registerKnownIntegrations = registerKnownIntegrations;
@@ -58,6 +62,7 @@ public sealed partial class ShellViewModel : ObservableObject
         this.clearDeviceOverride = clearDeviceOverride;
         this.resolveCapabilityCatalog = resolveCapabilityCatalog;
         this.readVocationOpportunityOverview = readVocationOpportunityOverview;
+        this.readVocationMapProjection = readVocationMapProjection;
         this.suggestedDeviceName = suggestedDeviceName;
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
@@ -67,9 +72,10 @@ public sealed partial class ShellViewModel : ObservableObject
         DisableOnThisDeviceCommand = new AsyncRelayCommand(DisableOnThisDeviceAsync, CanManageSelectedIntegration);
         InheritGlobalSettingCommand = new AsyncRelayCommand(InheritGlobalSettingAsync, CanManageSelectedIntegration);
         OpenCapabilityCommand = new AsyncRelayCommand(OpenCapabilityAsync, CanOpenSelectedCapability);
-        BackToCatalogCommand = new RelayCommand(() => { OpenedReferenceCapability = null; OpenedVocationOpportunityOverview = null; });
+        BackToCatalogCommand = new RelayCommand(() => { OpenedReferenceCapability = null; OpenedVocationOpportunityOverview = null; OpenedVocationMapProjection = null; });
         ShowHomeCommand = new RelayCommand(() => CurrentSurface = ShellSurface.Home);
         ShowJobsCommand = new AsyncRelayCommand(ShowJobsAsync, CanShowJobs);
+        ShowMapCommand = new AsyncRelayCommand(ShowMapAsync, CanShowMap);
         ShowSettingsCommand = new RelayCommand(() => CurrentSurface = ShellSurface.Settings);
     }
 
@@ -85,16 +91,21 @@ public sealed partial class ShellViewModel : ObservableObject
     public IRelayCommand BackToCatalogCommand { get; }
     public IRelayCommand ShowHomeCommand { get; }
     public IAsyncRelayCommand ShowJobsCommand { get; }
+    public IAsyncRelayCommand ShowMapCommand { get; }
     public IRelayCommand ShowSettingsCommand { get; }
     public bool IsHomeVisible => CurrentSurface == ShellSurface.Home;
     public bool IsJobsVisible => CurrentSurface == ShellSurface.Jobs;
+    public bool IsMapVisible => CurrentSurface == ShellSurface.Map;
     public bool IsSettingsVisible => CurrentSurface == ShellSurface.Settings;
     public bool IsHomeActive => IsHomeVisible;
     public bool IsJobsActive => IsJobsVisible;
+    public bool IsMapActive => IsMapVisible;
     public bool IsSettingsActive => IsSettingsVisible;
     public bool IsJobsAvailable => CanShowJobs();
+    public bool IsMapAvailable => CanShowMap();
     public bool IsReferenceCapabilityOpen => OpenedReferenceCapability is not null;
     public bool IsVocationOpportunityOverviewOpen => OpenedVocationOpportunityOverview is not null;
+    public bool IsMapProjectionOpen => OpenedVocationMapProjection is not null;
     public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen && !IsVocationOpportunityOverviewOpen;
 
     public Task EnsureInitializedAsync()
@@ -125,13 +136,20 @@ public sealed partial class ShellViewModel : ObservableObject
         OnPropertyChanged(nameof(IsCapabilityDetailsVisible));
     }
 
+    partial void OnOpenedVocationMapProjectionChanged(VocationMapProjectionViewModel? value)
+    {
+        OnPropertyChanged(nameof(IsMapProjectionOpen));
+    }
+
     partial void OnCurrentSurfaceChanged(ShellSurface value)
     {
         OnPropertyChanged(nameof(IsHomeVisible));
         OnPropertyChanged(nameof(IsJobsVisible));
+        OnPropertyChanged(nameof(IsMapVisible));
         OnPropertyChanged(nameof(IsSettingsVisible));
         OnPropertyChanged(nameof(IsHomeActive));
         OnPropertyChanged(nameof(IsJobsActive));
+        OnPropertyChanged(nameof(IsMapActive));
         OnPropertyChanged(nameof(IsSettingsActive));
     }
 
@@ -224,6 +242,13 @@ public sealed partial class ShellViewModel : ObservableObject
         CurrentSurface = ShellSurface.Jobs;
     }
 
+    private async Task ShowMapAsync()
+    {
+        if (!CanShowMap()) return;
+        await LoadMapProjectionAsync();
+        CurrentSurface = ShellSurface.Map;
+    }
+
     private async Task LoadVocationOverviewAsync()
     {
         if (readVocationOpportunityOverview is null) return;
@@ -232,8 +257,18 @@ public sealed partial class ShellViewModel : ObservableObject
         await OpenedVocationOpportunityOverview.RefreshAsync();
     }
 
+    private async Task LoadMapProjectionAsync()
+    {
+        if (readVocationMapProjection is null) return;
+        OpenedReferenceCapability = null;
+        OpenedVocationOpportunityOverview = null;
+        OpenedVocationMapProjection ??= new VocationMapProjectionViewModel(readVocationMapProjection);
+        await OpenedVocationMapProjection.RefreshAsync();
+    }
+
     private bool CanManageSelectedIntegration() => SelectedIntegration is not null && CurrentDeviceIdentity is not null;
     private bool CanShowJobs() => readVocationOpportunityOverview is not null && Integrations.Any(integration => integration.ServiceIdentity.Value == "vocation" && integration.IsEffectivelyEnabled);
+    private bool CanShowMap() => readVocationMapProjection is not null && Integrations.Any(integration => integration.ServiceIdentity.Value == "vocation" && integration.IsEffectivelyEnabled);
     private bool CanOpenSelectedCapability()
     {
         var selected = SelectedCapability;
@@ -248,7 +283,9 @@ public sealed partial class ShellViewModel : ObservableObject
         InheritGlobalSettingCommand.NotifyCanExecuteChanged();
         OpenCapabilityCommand.NotifyCanExecuteChanged();
         ShowJobsCommand.NotifyCanExecuteChanged();
+        ShowMapCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(IsJobsAvailable));
+        OnPropertyChanged(nameof(IsMapAvailable));
     }
 
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> source)

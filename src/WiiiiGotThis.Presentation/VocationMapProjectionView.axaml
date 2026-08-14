@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:v="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.VocationMapProjectionView" x:DataType="v:VocationMapProjectionViewModel">
+  <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+    <Border Classes="wgt-state-banner">
+      <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+        <TextBlock Classes="wgt-section-title" Text="{Binding StateTitle}" />
+        <TextBlock Grid.Row="1" Classes="wgt-secondary" Text="{Binding StateDescription}" TextWrapping="Wrap" />
+        <ProgressBar Grid.Row="2" Classes="wgt-state-progress" IsVisible="{Binding IsLoading}" IsIndeterminate="True" Height="4" />
+      </Grid>
+    </Border>
+
+    <v:WgtMapView Grid.Row="1" IsVisible="{Binding IsLoaded}" DataContext="{Binding}" MinHeight="420" />
+
+    <Grid Grid.Row="2" RowDefinitions="Auto,Auto" RowSpacing="8">
+      <Border Classes="wgt-surface" IsVisible="{Binding IsFeatureSelected}">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="wgt-section-title" Text="{Binding SelectedFeature.Title}" TextWrapping="Wrap" />
+          <TextBlock Classes="wgt-body" Text="{Binding SelectedFeature.CompanyName}" />
+          <TextBlock Classes="wgt-secondary" Text="{Binding SelectedFeature.WorkLocationLabel}" TextWrapping="Wrap" />
+          <TextBlock Classes="wgt-caption" Text="{Binding SelectedFeature.WorkLocationPrecision}" />
+        </StackPanel>
+      </Border>
+      <TextBlock Grid.Row="1" Classes="wgt-caption" IsVisible="{Binding HasPublicationMetadata}" Text="{Binding PublicationMetadataText}" />
+    </Grid>
+  </Grid>
+</UserControl>

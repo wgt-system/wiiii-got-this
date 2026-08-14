@@ -132,6 +132,63 @@ public sealed class VocationOpportunityOverviewTests
         Assert.Equal("A", shell.OpenedVocationOpportunityOverview.Opportunities.Single().Title);
     }
 
+    [Fact]
+    public async Task Map_destination_requires_the_composed_read_seam_and_preserves_provider_states()
+    {
+        var mapSource = new MapSource(MapSnapshot());
+        var overviewSource = new FakeSource(Snapshot(new VocationOpportunity("a", "A", new("c", "Company"), [], BigInteger.One)));
+        var adapter = new VocationIntegrationAdapter(overviewSource, mapSource);
+        var adapters = new StaticIntegrationAdapterCatalog([adapter]);
+        var integrations = new MemoryIntegrationStore();
+        var publications = new MemoryPublicationStore();
+        var shell = new ShellViewModel(
+            new EnsureCurrentDeviceUseCase(new MemoryDeviceStore()),
+            new RegisterKnownIntegrationsUseCase(adapters, integrations),
+            new RefreshPublicationsUseCase(adapters, publications),
+            new ListServiceIntegrationsUseCase(integrations, publications),
+            new SetGlobalIntegrationEnablementUseCase(integrations),
+            new SetDeviceIntegrationOverrideUseCase(integrations),
+            new ClearDeviceIntegrationOverrideUseCase(integrations),
+            new ResolveCapabilityCatalogUseCase(adapters, integrations, publications),
+            "Windows PC",
+            new GetVocationOpportunityOverviewUseCase(overviewSource),
+            new GetVocationMapProjectionUseCase(mapSource));
+
+        await shell.EnsureInitializedAsync();
+        Assert.False(shell.IsMapAvailable);
+        await shell.EnableGloballyCommand.ExecuteAsync(null);
+        Assert.True(shell.IsMapAvailable);
+        await shell.ShowMapCommand.ExecuteAsync(null);
+        Assert.Equal(ShellSurface.Map, shell.CurrentSurface);
+        Assert.Equal(VocationMapProjectionPresentationState.Loaded, shell.OpenedVocationMapProjection!.State);
+        Assert.Single(shell.OpenedVocationMapProjection.Features);
+
+        mapSource.Next = new VocationMapProjectionSourceException(VocationMapProjectionSourceFailureKind.InvalidContract, "invalid");
+        await shell.ShowMapCommand.ExecuteAsync(null);
+        Assert.Equal(VocationMapProjectionPresentationState.InvalidContract, shell.OpenedVocationMapProjection.State);
+        mapSource.Next = new VocationMapProjectionSourceException(VocationMapProjectionSourceFailureKind.Unavailable, "offline");
+        await shell.ShowMapCommand.ExecuteAsync(null);
+        Assert.Equal(VocationMapProjectionPresentationState.Unavailable, shell.OpenedVocationMapProjection.State);
+        mapSource.Next = new VocationMapProjectionSourceException(VocationMapProjectionSourceFailureKind.IncompatibleContract, "unsupported", "2.0");
+        await shell.ShowMapCommand.ExecuteAsync(null);
+        Assert.Equal(VocationMapProjectionPresentationState.IncompatibleContract, shell.OpenedVocationMapProjection.State);
+    }
+
+    [Fact]
+    public async Task Map_projection_presentation_distinguishes_empty_and_loaded_states()
+    {
+        var source = new MapSource(MapSnapshot());
+        var viewModel = new VocationMapProjectionViewModel(new GetVocationMapProjectionUseCase(source));
+        await viewModel.RefreshAsync();
+        Assert.Equal(VocationMapProjectionPresentationState.Loaded, viewModel.State);
+        Assert.Equal("Role", viewModel.Features.Single().Title);
+
+        var emptyViewModel = new VocationMapProjectionViewModel(new GetVocationMapProjectionUseCase(
+            new MapSource(new VocationMapProjection("p", new("2026-08-10T10:00:00Z", DateTimeOffset.UtcNow), []))));
+        await emptyViewModel.RefreshAsync();
+        Assert.Equal(VocationMapProjectionPresentationState.Empty, emptyViewModel.State);
+        Assert.False(emptyViewModel.IsUnavailable);
+    }
     private static async Task AssertState(VocationOpportunityOverviewSourceFailureKind kind, VocationOpportunityOverviewPresentationState expected)
     {
         var viewModel = CreateViewModel(new VocationOpportunityOverviewSourceException(kind, "not shown")); await viewModel.RefreshAsync(); Assert.Equal(expected, viewModel.State);
@@ -150,6 +207,21 @@ public sealed class VocationOpportunityOverviewTests
         }
     }
 
+    private static VocationMapProjection MapSnapshot() => new(
+        "map-publication",
+        new("2026-08-10T10:00:00Z", DateTimeOffset.UtcNow),
+        [new("feature-1", "opportunity-1", "Role", new("company-1", "Company"), new("Berlin", "city"), new(52.52, 13.405))]);
+
+    private sealed class MapSource(object next) : IVocationMapProjectionSource
+    {
+        public object Next { get; set; } = next;
+        public ValueTask<VocationMapProjection> GetAsync(CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (Next is Exception exception) throw exception;
+            return ValueTask.FromResult((VocationMapProjection)Next);
+        }
+    }
     private sealed class MemoryDeviceStore : ILocalDeviceStore
     {
         private LocalDeviceConfiguration? value;
