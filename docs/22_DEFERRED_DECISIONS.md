@@ -170,7 +170,7 @@ These are required before external release, not before architecture/bootstrap.
 
 Standing hypotheses such as:
 
-- Shared Map,
+- additional geospatial contracts beyond the accepted Orientation boundary,
 - future account/auth context,
 - Vault,
 - other services,

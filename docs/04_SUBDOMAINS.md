@@ -208,11 +208,12 @@ authority. Future public/multi-user account/auth ownership remains open.
 
 They are not currently part of the core domain.
 
-## 10. Candidate Separate Context: Shared Map
+## 10. Orientation Integration Boundary
 
-A Shared Map bounded context remains a plausible later extraction if several independent services contribute spatial projections.
+Orientation is the accepted bounded context for generic geospatial capability when independent
+services contribute spatial projections.
 
-If introduced, it would conceptually own:
+Orientation owns:
 
 - generic spatial composition,
 - rendering-oriented cross-service map projection,
@@ -283,7 +284,7 @@ Wiiii Got This
 Unclassified / possible extraction:
 ├── Synchronization and Replication
 ├── Identity and Trust
-└── Shared Map
+└── Orientation integration
 ```
 
 This diagram does not imply separate deployables.

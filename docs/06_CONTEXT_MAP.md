@@ -202,11 +202,12 @@ This may remain security infrastructure or become a separate context if product 
 
 It is not currently part of the Wiiii Got This core domain.
 
-## 12. Candidate Shared Map Context
+## 12. Orientation Integration
 
 ### Status
 
-Optional future bounded context.
+Orientation is the accepted generic geospatial bounded context. WGT integrates it for product
+composition and device/platform presentation.
 
 Conceptual relationship:
 
@@ -214,7 +215,7 @@ Conceptual relationship:
 Vocation ───────┐
 Other Service ──┼─> Published Map Contributions
                 ▼
-          Shared Map
+          Orientation
                 │
                 │ composed map capability
                 ▼
@@ -224,8 +225,8 @@ Other Service ──┼─> Published Map Contributions
 ### Rules
 
 - source services own the meaning of their spatial data,
-- Shared Map owns generic composition/rendering semantics,
-- Shared Map never reads foreign databases,
+- Orientation owns generic composition/rendering semantics,
+- Orientation never reads foreign databases,
 - Wiiii Got This owns device/platform-specific integration of the resulting capability.
 
 ## 13. Physical Infrastructure
@@ -282,7 +283,7 @@ The exact runtime topology is an architecture decision.
                     optional future consumers/providers
               ┌─────────────────┼─────────────────┐
               ▼                 ▼                 ▼
-         Shared Map?       Conveyance           Registry/Trust?
+         Orientation       Conveyance           Registry/Trust?
 ```
 
 ## 16. Context Map Rules

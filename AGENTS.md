@@ -232,18 +232,16 @@ Failure or absence of one integrated service must not make unrelated Wiiii Got T
 
 Exact degradation and availability semantics belong to the specification.
 
-## Shared Map
+## Orientation map integration
 
-A future Shared Map bounded context is a design hypothesis, not an accepted implementation.
+Orientation is the accepted system owner of generic geospatial capability, including map
+rendering, spatial composition, geospatial provider integration, and generic map interaction.
+Do not add a generic map domain or renderer to Wiiii Got This.
 
-Do not add a generic map domain to Wiiii Got This merely because several services may have spatial presentation needs.
-
-If a Shared Map context is introduced:
-
-- contributing services retain ownership of the meaning of their spatial data,
-- contributions use explicit published contracts,
-- Shared Map does not read foreign databases,
-- Wiiii Got This may integrate the resulting presentation according to platform and device.
+WGT remains the product composition, navigation, device/platform presentation, and host
+integration owner. Provider contexts retain the meaning of their spatial data; WGT adapts that
+data into Orientation scenes and consumes generic interaction events. Legacy Mapsui paths are
+migration debt and remain only until the Orientation Windows and physical-iPhone host gates pass.
 
 ## Architecture decisions
 

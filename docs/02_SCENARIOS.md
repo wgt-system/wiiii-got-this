@@ -344,14 +344,15 @@ Present spatial contributions from independent services without giving a generic
 
 ### Directional flow
 
-1. Several services publish explicit map contributions or projections.
-2. A future Shared Map context composes those contributions.
+1. Provider services publish explicit spatial projections or other provider-owned data.
+2. WGT adapts and composes those contributions through the accepted Orientation map surface.
 3. Wiiii Got This presents the composed map where supported.
 4. Each source service remains authoritative for the meaning of its contribution.
 
 ### Status
 
-Shared Map is not yet an accepted bounded context or implementation.
+Orientation is the accepted generic geospatial owner; no separate Shared Map bounded context or
+WGT-owned generic renderer is introduced.
 
 ## 21. Scenario: Unknown Service Is Not Trusted Automatically
 

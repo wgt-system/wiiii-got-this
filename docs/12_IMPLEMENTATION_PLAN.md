@@ -223,11 +223,12 @@ Before implementation:
 Generic durable delivery ownership is already assigned to Conveyance. Do not create a
 competing relay or re-decide whether that capability belongs in a separate context.
 
-## 8. Shared Map Work
+## 8. Orientation Map Integration Work
 
-Do not build Shared Map as part of WGT Core.
-
-Create it only when at least two independent services have concrete spatial contribution requirements that justify cross-service composition.
+Do not build a generic map renderer or Shared Map capability as part of WGT Core. Integrate the
+accepted Orientation map surface when the concrete Desktop and physical-iPhone host gates are
+ready. Provider services retain spatial meaning; WGT owns composition, navigation, and device
+presentation.
 
 ## 9. Codex / Luna Use
 

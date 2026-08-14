@@ -281,27 +281,27 @@ Wiiii Got This may present Illumination workflows on platforms for which Illumin
 
 This does not transfer learning-domain ownership to Wiiii Got This.
 
-## 18. Shared Map Direction
+## 18. Orientation Map Direction
 
-A later Shared Map bounded context may be appropriate if several services publish spatial contributions that should be composed across domains.
-
-The current hypothesis is:
+Orientation is the accepted system bounded context for generic geospatial capability. WGT
+composes provider-owned spatial data with Orientation for product presentation; it does not own
+generic map rendering or foreign spatial semantics.
 
 ```text
 Domain Service
     │
     │ explicit Map Contribution
     ▼
-Shared Map
+Orientation
     │
     │ composed presentation
     ▼
 Wiiii Got This
 ```
 
-Shared Map would not read foreign databases.
-
-This remains a design hypothesis.
+Orientation does not read foreign databases. Provider contexts remain authoritative for the
+meaning of their spatial data, and WGT remains authoritative for product navigation and device
+presentation.
 
 ## 19. Explicit Non-Goals
 

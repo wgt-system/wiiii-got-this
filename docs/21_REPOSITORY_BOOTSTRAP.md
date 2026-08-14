@@ -193,7 +193,7 @@ Do not create speculative tables for:
 - Vocation data,
 - Illumination data,
 - future Registry,
-- future Shared Map.
+- a duplicate generic map owner; generic geospatial capability is owned by Orientation.
 
 ## 9. Reference Integration Bootstrap
 

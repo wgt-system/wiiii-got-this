@@ -178,7 +178,7 @@ The following require explicit version semantics once implemented:
 - Presentation Contribution Contract where provider/consumer compatibility depends on it,
 - Registration/Discovery Contract when cross-process/context,
 - future Replication/Sync Contracts,
-- future Shared Map Contribution Contract.
+- Orientation scene/host boundaries when a concrete embedding scenario justifies them.
 
 ## 6. Compatibility
 
@@ -316,13 +316,12 @@ Potential contract pressure:
 
 Wiiii Got This must not infer Illumination's command model before Illumination publishes it.
 
-## 15. Shared Map Contract Direction
+## 15. Orientation Map Integration Direction
 
-If Shared Map is introduced, source services publish a Map Contribution / Projection through a versioned contract.
-
-Shared Map consumes that contract.
-
-Wiiii Got This should consume the Shared Map capability rather than directly reading source-service spatial internals.
+Provider services retain ownership of their spatial projections and publish only the concrete
+provider-owned boundary required by a scenario. WGT adapts that data into Orientation scenes and
+consumes Orientation's generic event boundary rather than reading provider internals or creating
+another generic renderer.
 
 ## 16. Contract Gate
 

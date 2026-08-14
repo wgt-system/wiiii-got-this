@@ -188,7 +188,7 @@ Do not implement yet:
 - generic service registry,
 - dynamic native plugin loading,
 - declarative universal UI language,
-- Shared Map,
+- a new WGT-owned generic map implementation,
 - real Vocation integration,
 - real Illumination integration,
 - web client,
