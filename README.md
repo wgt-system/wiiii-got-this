@@ -4,18 +4,15 @@ Wiiii Got This (WGT) is a cross-platform application and bounded context for int
 
 ## Current status
 
-The current release baseline is **v0.4.0**. It is a Windows-first product shell with:
+The current release baseline is **v0.5.0**. Wiiii Got This is the primary user-facing application, with an application-grade Desktop workspace and persistent Home, Jobs, and Settings navigation:
 
-- Home, Jobs, and Settings product navigation;
-- direct Desktop access to Vocation Jobs without navigating through the technical Capability Catalog;
-- WGT-owned Domain/Application boundaries and local SQLite persistence;
-- explicit service registration, enablement, availability, refresh, and device-override behavior;
-- a Reference Integration that runs independently of foreign providers;
-- Vocation Published Opportunity Overview 1.0 consumed through a local HTTP adapter;
-- WGT-native Windows presentation for the Vocation Opportunity Overview;
-- a shared Avalonia presentation structure and an iOS project.
+- Jobs is a direct Desktop product destination with polished browsing for the accepted Vocation Published Opportunity Overview 1.0 states: Loading, Loaded, Empty, Unavailable, InvalidContract, and IncompatibleContract;
+- Settings is the secondary surface for technical Integration and Capability administration, including enablement, availability, refresh, and device overrides;
+- WGT-owned Domain/Application boundaries, local SQLite persistence, and a Reference Integration remain isolated from foreign providers;
+- the shared WGT visual foundation provides Fluent Light/Dark behavior, while Mobile follows the same product semantics with phone-appropriate layout;
+- Mobile Jobs is exposed only when the required Vocation read seam is composed and effectively available.
 
-The solution and the `net10.0-ios` target compile on Windows. The real Mac/Xcode/iPhone runtime smoke has not been performed, and Vocation is not accepted or wired as a provider on iPhone. Conveyance is the accepted separate bounded context for generic durable opaque cross-device delivery; its Current Object mode is available, while production interoperability and concrete domain-owned synchronization contracts remain gated. A generic Registry, Shared Map, and additional provider capabilities remain deferred.
+The current real iOS composition does not wire a Vocation provider or read seam. Windows Desktop remains the validated runtime; the solution and the `net10.0-ios` target compile on Windows for regression validation only. Real Mac/Xcode/iPhone runtime validation remains outstanding, and Vocation is not accepted or wired as a provider on iPhone. Conveyance is the accepted separate bounded context for generic durable opaque cross-device delivery; its Current Object mode is available, while production interoperability and concrete domain-owned synchronization contracts remain gated. A generic Registry, Shared Map, and additional provider capabilities remain deferred.
 
 ## Architecture in brief
 
