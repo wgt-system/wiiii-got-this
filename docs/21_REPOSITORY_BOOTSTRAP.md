@@ -2,7 +2,8 @@
 
 ## Status
 
-Implementation-ready bootstrap specification.
+Historical repository bootstrap specification. The WGT repository bootstrap is complete;
+this document records the original baseline and is not an active bootstrap-worker prompt.
 
 This document describes what the first Luna/Codex repository bootstrap should create. It is not the implementation itself.
 

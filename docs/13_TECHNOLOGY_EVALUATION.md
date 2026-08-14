@@ -2,9 +2,10 @@
 
 ## Status
 
-Decision proposal. Not yet accepted.
-
-No programming language, UI framework, persistence technology, server technology, or synchronization implementation becomes final until explicitly accepted.
+Historical technology evaluation. The technology decision is accepted; the current
+authorities are ADR-0001 (client technology stack), ADR-0006 (persistence stack), and
+`docs/20_V1_TECHNICAL_BASELINE.md`. The candidate analysis below remains the historical
+decision rationale and is not an active proposal.
 
 ## 1. Decided Product Constraints
 

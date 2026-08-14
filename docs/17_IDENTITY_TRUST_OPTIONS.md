@@ -243,7 +243,9 @@ opaque envelope
 Service Sync Adapter
 ```
 
-However, the exact key hierarchy is deliberately deferred until the first real synchronized Service contract.
+Conveyance's v0.2 Security Interoperability Profile is the provider-owned, frozen basis for
+the current interoperability proof. Go and Windows evidence is complete; the physical
+iPhone interoperability gate remains open. This does not grant Production Security approval.
 
 Potential designs include:
 
@@ -252,7 +254,11 @@ Potential designs include:
 - per-Device key wrapping,
 - service-specific key derivation.
 
-Do not choose one before the Illumination sync semantics are concrete.
+Production enrollment, revocation/recovery implementation, payload integration, final
+production key handling/nonce integration, and other production-only security details
+remain gated or deferred. WGT records the personal trust and recovery semantics here;
+Conveyance owns the technical delivery/security capability. Consult Conveyance's ADR-0007
+and v0.2 Security Interoperability Profile for exact provider-owned readiness evidence.
 
 ## 10. Server Compromise Model
 

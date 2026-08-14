@@ -282,7 +282,7 @@ The exact runtime topology is an architecture decision.
                     optional future consumers/providers
               ┌─────────────────┼─────────────────┐
               ▼                 ▼                 ▼
-        Shared Map?       Sync/Replication?    Registry/Trust?
+         Shared Map?       Conveyance           Registry/Trust?
 ```
 
 ## 16. Context Map Rules

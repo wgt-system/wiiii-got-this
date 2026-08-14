@@ -367,8 +367,9 @@ vocation/
 conveyance/
 ```
 
-The Conveyance repository is the accepted generic delivery owner; its implementation
-technology is deliberately not selected here.
+The Conveyance repository is the accepted generic delivery owner. Conveyance's runtime and
+technology decisions belong exclusively to that repository; this WGT document records only
+the ownership boundary.
 
 A temporary reference/fake relay may exist in WGT tests, but it must not become the production implementation by accident.
 

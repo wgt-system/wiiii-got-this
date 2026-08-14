@@ -192,7 +192,8 @@ synchronization semantics may remain open until the owning service defines and a
 
 ### Current status
 
-Required product capability; separate bounded-context/service target accepted.
+V1 Personal Device Trust / explicit pairing and Hybrid Recovery are accepted product
+semantics. A separate Identity/Auth/Account bounded context is not accepted for V1.
 
 Service discovery, multiple devices, and remote infrastructure may eventually require:
 
@@ -202,7 +203,8 @@ Service discovery, multiple devices, and remote infrastructure may eventually re
 - trust establishment,
 - secrets/credentials.
 
-These concerns may be infrastructure, security architecture, or a separate identity/trust context.
+Conveyance owns generic technical delivery/security seams without becoming personal trust
+authority. Future public/multi-user account/auth ownership remains open.
 
 They are not currently part of the core domain.
 

@@ -2,7 +2,8 @@
 
 ## Status
 
-Proposed first implementation sequence after repository creation.
+Historical, completed initial implementation sequence. This document records the original
+post-bootstrap progression and is not a current work order.
 
 This slice deliberately proves WGT's own architecture before integrating unfinished foreign business contracts.
 

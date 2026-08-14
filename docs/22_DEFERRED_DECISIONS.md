@@ -31,25 +31,34 @@ The target properties are accepted:
 - server control alone cannot take over trust,
 - relay should be able to transport opaque/encrypted foreign payloads where appropriate.
 
-Still deferred:
+Accepted/gated interoperability profile:
 
-- exact cryptographic algorithms/protocol,
-- key hierarchy,
-- per-Service versus shared keys,
-- Device key wrapping,
-- rotation after revocation,
-- recovery-material format,
-- metadata-hiding strategy.
+- Conveyance owns the provider-specific v0.2 Security Interoperability Profile;
+- Go and Windows interoperability evidence is complete;
+- the physical iPhone interoperability gate remains open;
+- Production Security is not approved before the complete ADR-0007 gate.
 
-These require threat modeling together with the first real synchronized Service.
+Still production-deferred:
 
-## 3. First Vocation WGT Contract
+- production enrollment,
+- production revocation/recovery implementation,
+- production payload integration,
+- final production key handling/nonce integration and other production-only details.
+
+These remain provider-owned readiness items and do not mean that no interoperability profile
+exists.
+
+## 3. Vocation Published Contract Status
 
 Vocation's `Published Opportunity Overview 1.0` is implemented on its `dev` branch and is the first real WGT Windows integration. Its canonical schema is `schemas/published-opportunity-overview-v1.schema.json`, and its local read-only endpoint is `/published/v1/opportunity-overview`.
 
 It is client-neutral, versioned, and read-only. It excludes personal state, Availability/Freshness, URLs/navigation, maps, comparison, and opportunity detail. It is not a Vocation database, domain-class, or internal React API dependency.
 
-Later Vocation contracts remain separate and deferred, including Opportunity Detail, Groups/Waves, Availability/Freshness, and Map.
+Vocation's `Published Map Projection 1.0` is likewise accepted and implemented on `dev`
+through its provider-owned schema and publication boundary.
+
+Later Vocation contracts remain separate and deferred, including Opportunity Detail,
+Groups/Waves, and Availability/Freshness.
 
 Do not build a generic Vocation API inside WGT.
 

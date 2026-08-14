@@ -52,6 +52,10 @@ Accepted decisions:
   - no mandatory universal publication wire protocol or automatic LAN discovery
   - generic Service Registry deferred until independently justified
 
+- `0009-wgt-owned-presentation-and-contract-driven-service-integration.md`
+  - WGT-owned primary presentation and contract-driven service integration
+  - WGT does not own foreign domain semantics or generic delivery
+
 - `0010-private-vocation-application-material-boundary.md`
   - Vocation owns private application-material semantics
   - private material is excluded from public contracts, artifacts, and logs
@@ -64,7 +68,8 @@ The most important are:
 
 - production synchronization cryptography/key hierarchy,
 - concrete first Illumination sync/interaction contracts,
-- concrete first Vocation WGT contract,
+- new/unaccepted Vocation Published Contracts beyond the accepted Opportunity Overview 1.0
+  and Map Projection 1.0,
 - Mac build-host operational choice,
 - future account/auth architecture if the product becomes multi-user.
 

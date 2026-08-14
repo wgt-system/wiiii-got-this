@@ -209,11 +209,11 @@ Some capabilities may require a running remote provider.
 
 Other capabilities may eventually remain usable from synchronized or replicated state when the original service runtime is unavailable.
 
-Conveyance is the accepted separate bounded context for generic durable opaque cross-device delivery. The exact domain-owned replication, synchronization, authority, conflict, reconciliation, and encryption semantics remain unresolved and must be defined by the affected service before a concrete contract is selected.
+Conveyance is the accepted separate bounded context for generic durable opaque cross-device delivery. The exact domain-owned replication, synchronization, authority, conflict, and reconciliation semantics remain unresolved and must be defined by the affected service before a concrete contract is selected. Conveyance's technical delivery/security capability is provider-owned and separately gated.
 
-## 14. Candidate Supporting Responsibilities
+## 14. Accepted V1 Supporting Responsibilities
 
-Current candidate supporting responsibilities include:
+The accepted V1 supporting responsibilities include:
 
 - service identity,
 - service registration,
@@ -225,14 +225,15 @@ Current candidate supporting responsibilities include:
 - navigation/invocation,
 - presentation contribution resolution.
 
-These are responsibility hypotheses rather than implementation modules.
+These are WGT responsibility boundaries, not implementation modules. Future generalized
+scope naming or additional presentation primitives remain open.
 
 ## 15. Boundary Hypotheses To Challenge
 
 The following concerns must not automatically be absorbed into Wiiii Got This:
 
-- synchronization and replication,
-- identity and authentication,
+- domain-specific synchronization and replication,
+- future public/multi-user account and authentication architecture,
 - generic service registry infrastructure,
 - notifications,
 - shared map composition,
@@ -345,13 +346,9 @@ Wiiii Got This is successful when:
 
 The following remain deliberately open:
 
-- exact identity and lifecycle of a Device,
-- exact meaning and granularity of Platform,
-- whether service-integration enablement is global, per device, per platform, or layered,
 - exact capability taxonomy,
 - concrete domain-owned synchronization/replication semantics for individual capability classes,
 - offline expectations for individual capability classes,
-- concrete presentation-contribution mechanism,
-- trust/authentication requirements between devices and services,
-- exact first supported client platforms,
-- concrete transport and technology stack.
+- future generalized presentation-contribution mechanism,
+- production security/interoperability completion and provider-owned gates,
+- future public/multi-user account/auth architecture.

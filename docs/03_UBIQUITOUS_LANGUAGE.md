@@ -83,13 +83,15 @@ The act or state by which a Service becomes known to an accepted registry or Wii
 
 Registration does not imply that the Service is currently reachable or enabled.
 
-The technical mechanism is unresolved.
+The V1 baseline uses shipped/known Integration Adapters and provider-specific publication
+and discovery. A universal registry/discovery mechanism remains unresolved.
 
 ### Service Discovery
 
 The process by which Wiiii Got This learns that a Service exists or refreshes information needed to resolve it.
 
-Discovery may use registered, configured, local, remote, or future mechanisms.
+Discovery may use registered, configured, local, remote, or future mechanisms within the
+accepted V1 adapter/provider baseline.
 
 Discovery does not imply trust or enablement.
 
@@ -298,11 +300,10 @@ The following should remain architecture/implementation language unless a later 
 
 ### Integration Scope
 
-Potential term for the scope in which enablement/configuration applies.
+V1 uses layered integration enablement: global Service Integration state is the default,
+a Device may explicitly override it, and the global state is inherited without an override.
 
-Possible scopes include user-wide, device-specific, platform-specific, or layered configuration.
-
-No semantic model is accepted yet.
+Future generalized scope naming or additional scope dimensions remain open.
 
 ### Local Service
 
@@ -320,13 +321,17 @@ A remote Service does not imply remotely authoritative domain data.
 
 Candidate term for a Capability that can operate from intentionally transferred service-owned state without the original provider runtime being live.
 
-This term must not be accepted before synchronization ownership and semantics are resolved.
+Generic durable delivery for a Replicated Capability is owned by Conveyance. The term may
+be used only when the affected Service has defined eligibility, state, authority,
+merge/conflict/reconciliation semantics and an accepted Conveyance delivery mode exists.
 
 ### Service Registry
 
 Candidate term for a catalog or component that stores registered Service identities and published integration metadata.
 
-Whether this is part of Wiiii Got This, generic infrastructure, or a separate bounded context remains open.
+WGT's V1 registration/discovery baseline is provided by shipped/known Integration Adapters
+and provider-specific publication/discovery. A universal runtime Service Registry remains
+open and must not be inferred from this term.
 
 ## 9. Language Rule
 

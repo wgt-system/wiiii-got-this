@@ -86,13 +86,11 @@ The first real Illumination WGT contract should be designed jointly when Illumin
 The two contexts agree on the ownership split:
 
 ```text
-Synchronization / Relay
+Conveyance
 owns:
-- generic delivery
-- relay
-- retry
-- transport
-- opaque/encrypted envelope handling as selected
+- generic durable opaque delivery under accepted Conveyance modes
+- Current Object as the currently accepted delivery mode
+- provider-owned technical delivery/security seams as separately gated
 
 Illumination
 owns:
@@ -263,7 +261,10 @@ WGT iPhone
 WGT-native Vocation presentation
 ```
 
-Conveyance currently implements the generic Current Object delivery mode. Production authentication/cryptography interoperability remains gated in Conveyance; WGT must not treat this alignment document as a claim that production secure cross-device integration is complete.
+Conveyance currently implements the generic Current Object delivery mode. Production
+authentication/cryptography interoperability remains gated in Conveyance; WGT must not
+treat this alignment document as a claim that production secure cross-device integration
+is complete. Retry, ordered/change, and other delivery semantics are not implied.
 
 ## 13. First Real Integration Ordering
 
@@ -350,7 +351,7 @@ Standalone runtime/UI: **implemented direction remains valid**
 
 Published Opportunity Overview 1.0: **implemented on `dev`, consumed by WGT's released Windows v0.3.0 baseline**
 
-Later Opportunity Detail, Groups/Waves, Availability/Freshness, and Map contracts: **not part of Published Opportunity Overview 1.0**
+Later Opportunity Detail, Groups/Waves, and Availability/Freshness contracts: **not part of Published Opportunity Overview 1.0**
 
 ### Conveyance
 

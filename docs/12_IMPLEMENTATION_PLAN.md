@@ -217,7 +217,11 @@ Before implementation:
 5. define conflicts,
 6. define merge/reconciliation,
 7. define sensitivity/encryption,
-8. decide whether generic transport deserves a separate context.
+8. determine whether an accepted Conveyance delivery mode satisfies the generic transport
+   requirement; if not, return the requirement to the System Architecture Control Plane.
+
+Generic durable delivery ownership is already assigned to Conveyance. Do not create a
+competing relay or re-decide whether that capability belongs in a separate context.
 
 ## 8. Shared Map Work
 
@@ -287,9 +291,10 @@ Each implementation slice should satisfy:
 - ADR updated when architecture changes,
 - unrelated Service failure remains isolated where relevant.
 
-## 12. Immediate Next Step
+## 12. Historical Immediate Next Step
 
-Current progression after the v0.2.0 registration/publication lifecycle baseline:
+The following recorded the progression after the v0.2.0 registration/publication lifecycle
+baseline. It is historical planning context, not a current work order:
 
 1. architecture alignment is accepted;
 2. harden the implemented Vocation Published Opportunity Overview 1.0 Windows integration;
