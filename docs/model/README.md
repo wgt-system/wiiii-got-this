@@ -43,9 +43,9 @@ Control Plane; never derive a new Architecture Decision from the diagram.
 The official `structurizr/structurizr` image can be run from `docs/model/`:
 
 ```powershell
-docker run --rm -v "P:\wgt-system\wiiii-got-this\.worktrees\dev\docs\model:/usr/local/structurizr" structurizr/structurizr validate -w workspace.dsl
-docker run --rm -v "P:\wgt-system\wiiii-got-this\.worktrees\dev\docs\model:/usr/local/structurizr" structurizr/structurizr inspect -w workspace.dsl
-docker run --rm -d --name wgt-wiiii-got-this-structurizr -e STRUCTURIZR_EDITABLE=false -p 127.0.0.1:18081:8080 -v "P:\wgt-system\wiiii-got-this\.worktrees\dev\docs\model:/usr/local/structurizr" structurizr/structurizr local
+docker run --rm --mount "type=bind,source=$PWD,target=/usr/local/structurizr" structurizr/structurizr validate -w workspace.dsl
+docker run --rm --mount "type=bind,source=$PWD,target=/usr/local/structurizr" structurizr/structurizr inspect -w workspace.dsl
+docker run --rm -d --name wgt-wiiii-got-this-structurizr -e STRUCTURIZR_EDITABLE=false -p 127.0.0.1:18081:8080 --mount "type=bind,source=$PWD,target=/usr/local/structurizr" structurizr/structurizr local
 ```
 
 Docker and Structurizr are design-time tooling only. They are not runtime dependencies,
