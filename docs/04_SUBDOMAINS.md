@@ -161,7 +161,8 @@ The concrete UI/plugin mechanism is an architecture decision and must not be emb
 
 ### Current status
 
-Required product capability; separate bounded-context/service target accepted.
+Required product capability; the separate Conveyance bounded context is the accepted owner
+of generic durable opaque cross-device delivery.
 
 The product direction creates pressure for some service capabilities to remain usable across devices even when the original runtime is absent.
 
@@ -174,18 +175,18 @@ This may require:
 - device-local copies,
 - relay/server infrastructure.
 
-### Why it is not assigned yet
+### Accepted ownership boundary
 
-There is insufficient evidence that generic synchronization is part of the Wiiii Got This domain.
+- Conveyance owns generic durable opaque delivery.
+- Wiiii Got This owns device/platform integration and presentation.
+- Each affected domain owner retains synchronization eligibility, payload meaning,
+  authority, consistency, merge, conflict, and reconciliation semantics.
+- Conveyance's currently accepted and implemented delivery mode is Current Object.
+- Ordered/change delivery is not automatically accepted; a missing generic delivery mode
+  returns to the System Architecture Control Plane for an explicit decision.
 
-Possible outcomes include:
-
-1. generic infrastructure coordinated by Wiiii Got This,
-2. a separate Synchronization bounded context,
-3. service-owned synchronization contracts with Wiiii Got This adapters,
-4. a hybrid in which generic transport is shared but merge/conflict semantics remain service-owned.
-
-Do not implement or model this as a Wiiii Got This aggregate until the product semantics are decided.
+Do not implement or model generic delivery as a Wiiii Got This aggregate. Domain-specific
+synchronization semantics may remain open until the owning service defines and accepts them.
 
 ## 9. Candidate Concern: Identity and Trust
 

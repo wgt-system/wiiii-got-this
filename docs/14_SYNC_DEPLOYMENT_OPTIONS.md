@@ -6,7 +6,14 @@ Architecture decision analysis.
 
 Cross-device continuity between Windows and iPhone is accepted as a product requirement.
 
-The ownership and deployment of synchronization infrastructure are not yet accepted.
+Capability ownership is accepted: Conveyance owns generic durable opaque cross-device
+delivery, while Wiiii Got This owns device/platform integration and presentation. Concrete
+deployment, security, and domain-specific synchronization decisions remain open where the
+owning service has not accepted them.
+
+The alternatives below retain the original decision analysis and deployment history. They
+are not equal current ownership candidates; the accepted ownership boundary is stated in
+section 14.
 
 ## 1. Required Behavior
 
@@ -348,18 +355,20 @@ A browser UI is not required.
 
 ## 12. Repository Boundary
 
-If Sync/Relay is accepted as a separate bounded context/service, it should **not** live inside the Wiiii Got This repository merely as an internal folder long-term.
+The accepted generic delivery capability should **not** live inside the Wiiii Got This
+repository merely as an internal folder long-term.
 
-Recommended eventual ownership:
+Accepted ownership boundary (with implementation technology still open):
 
 ```text
 wiiii-got-this/
 illumination/
 vocation/
-<sync-relay-project>/
+conveyance/
 ```
 
-The project name and implementation technology are deliberately not selected here.
+The Conveyance repository is the accepted generic delivery owner; its implementation
+technology is deliberately not selected here.
 
 A temporary reference/fake relay may exist in WGT tests, but it must not become the production implementation by accident.
 

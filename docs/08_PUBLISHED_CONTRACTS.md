@@ -289,18 +289,17 @@ Every implemented published contract should have tests covering:
 
 Contract tests do not replace provider domain tests.
 
-## 13. Vocation Contract Direction
+## 13. Vocation Published Contract Status
 
-The first likely low-risk integration is a read-only Vocation capability.
+The accepted first Vocation integration is the read-only **Published Opportunity Overview
+1.0** contract. It is frozen, implemented by Vocation, and consumed by WGT Windows.
 
-Potential initial contract pressure:
+The **Published Map Projection 1.0** contract is likewise accepted and implemented. The
+exact schemas and provider semantics remain Vocation-owned; WGT consumes these published
+boundaries and does not redefine them here.
 
-- Service Publication,
-- Opportunity Overview Read Model,
-- Opportunity Detail Read Model,
-- explicit external-navigation metadata where later required.
-
-No concrete schema is created here because Vocation's actual first WGT integration milestone has not yet been selected.
+Later Vocation contracts remain provider-specific and require their own accepted
+consumer-ready boundary before WGT integration.
 
 ## 14. Illumination Contract Direction
 

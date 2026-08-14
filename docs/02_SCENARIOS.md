@@ -209,9 +209,15 @@ Allow a capability to remain useful when its original desktop runtime is unavail
 
 ### Status
 
-This scenario expresses a desired architectural pressure, not an accepted synchronization design.
+This scenario expresses an accepted cross-device continuity pressure. When durable opaque
+delivery is required, the accepted generic delivery owner is Conveyance and the currently
+implemented delivery mode is Current Object. Wiiii Got This owns device/platform integration
+and presentation; the affected service remains authoritative for its domain state.
 
-The mechanism, consistency model, encryption model, and owning bounded context remain open.
+This scenario does not decide service-specific synchronization eligibility, consistency,
+encryption/trust, authority, merge, conflict, or reconciliation semantics. Ordered/change
+delivery is not implied; a missing generic delivery mode returns to the System Architecture
+Control Plane for an explicit decision.
 
 ## 13. Scenario: Capability Requires Live Provider
 

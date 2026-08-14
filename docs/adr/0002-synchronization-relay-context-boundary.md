@@ -3,6 +3,15 @@
 - Status: Accepted
 - Date: 2026-08-09
 
+## Current Architecture Context
+
+This ADR established the separate ownership boundary for generic synchronization/relay
+delivery. Current generic delivery capability and delivery-mode decisions are governed by
+`wgt-system/architecture` and Conveyance-owned ADRs. Conveyance is the accepted owner of
+generic durable opaque delivery, and Current Object is the currently implemented delivery
+mode. This historical ADR does not by itself authorize every delivery mechanism discussed
+below; ordered/change delivery requires a new explicit decision.
+
 ## Context
 
 Cross-device continuity between Windows and iPhone is a product requirement.

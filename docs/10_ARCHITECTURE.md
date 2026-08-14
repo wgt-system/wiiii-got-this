@@ -472,9 +472,9 @@ The first real Integration Adapter is the Vocation adapter for Published Opportu
 
 See `docs/23_FOREIGN_CONTEXT_ALIGNMENT.md`.
 
-## 22. Architecture Decisions Still Required
+## 22. Initial Architecture Gate (Historical — Fulfilled/Superseded)
 
-Before implementation can begin, explicit decisions are required for at least:
+Before the initial implementation, explicit decisions were required for at least:
 
 - initial target presentation platforms,
 - programming language/runtime,
@@ -486,7 +486,13 @@ Before implementation can begin, explicit decisions are required for at least:
 - initial presentation contribution strategy,
 - whether a server component is required in the first milestone.
 
-Synchronization, identity/trust, and web-client architecture may remain deferred if the first milestone does not require them.
+This initial gate is retained as historical context. It has been fulfilled and superseded by
+the released implementation baseline (including the v0.3.0 read-only Vocation integration
+and subsequent releases). Current open decisions are tracked in the deferred-decision and
+provider-readiness documents; they do not make the initial implementation gate pending again.
+
+Synchronization, identity/trust, and web-client architecture may remain deferred when the
+current milestone does not require them.
 
 ## 23. Technology Decision Rule
 

@@ -380,7 +380,9 @@ Implementation agents must not silently decide:
 
 - production Sync/Relay cryptography,
 - foreign Service merge/conflict semantics,
-- first real Vocation/Illumination contract shape,
+- any new or unaccepted Vocation/Illumination contract shape (already frozen provider
+  contracts, such as Vocation Published Opportunity Overview 1.0 and Published Map
+  Projection 1.0, may be consumed according to the provider repositories),
 - universal Capability taxonomy,
 - universal requirement/UI schema,
 - generic Service Registry,
@@ -404,16 +406,16 @@ Do not implement a WGT-side foreign contract from an earlier speculative WGT doc
 
 Canonical local worktrees:
 
-P:\wiiii-got-this
+P:\wgt-system\wiiii-got-this
 → main
 → stable milestone/release state
-P:\wiiii-got-this\.worktrees\dev
+P:\wgt-system\wiiii-got-this\.worktrees\dev
 → dev
 → active development
 
 Rules:
 
-* implementation agents work in P:\wiiii-got-this\.worktrees\dev unless explicitly instructed otherwise;
-* P:\wiiii-got-this is not used for ordinary feature implementation;
+* implementation agents work in P:\wgt-system\wiiii-got-this\.worktrees\dev unless explicitly instructed otherwise;
+* P:\wgt-system\wiiii-got-this is not used for ordinary feature implementation;
 * release integration to main happens only on explicit Control-Plane instruction;
 * agents must verify repository root and branch before modifying files.
