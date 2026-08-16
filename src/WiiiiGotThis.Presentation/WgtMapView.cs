@@ -15,6 +15,7 @@ public sealed class WgtMapView : Grid, IDisposable
     };
 
     private VocationMapProjectionViewModel? viewModel;
+    private string? orientationEmbedPath;
     private bool bridgeReady;
     private bool disposed;
 
@@ -23,15 +24,16 @@ public sealed class WgtMapView : Grid, IDisposable
         Children.Add(webView);
         Children.Add(hostStatus);
 
+        webView.AdapterCreated += OnAdapterCreated;
         webView.WebMessageReceived += OnWebMessageReceived;
         webView.NavigationStarted += OnNavigationStarted;
         webView.NavigationCompleted += OnNavigationCompleted;
         DataContextChanged += OnDataContextChanged;
 
-        NavigateToOrientationHost();
+        PrepareOrientationHost();
     }
 
-    private void NavigateToOrientationHost()
+    private void PrepareOrientationHost()
     {
         var configuredPath = Environment.GetEnvironmentVariable("WGT_ORIENTATION_EMBED_PATH");
         var embedPath = string.IsNullOrWhiteSpace(configuredPath)
@@ -46,12 +48,32 @@ public sealed class WgtMapView : Grid, IDisposable
 
         try
         {
-            webView.Source = new Uri(Path.GetFullPath(embedPath));
+            orientationEmbedPath = Path.GetFullPath(embedPath);
         }
-        catch (Exception error) when (error is ArgumentException or UriFormatException or NotSupportedException)
+        catch (Exception error) when (error is ArgumentException or NotSupportedException or PathTooLongException)
         {
             ShowHostError("Orientation map host path is invalid.");
         }
+    }
+
+    private void OnAdapterCreated(object? sender, WebViewAdapterEventArgs e)
+    {
+        if (orientationEmbedPath is null)
+            return;
+
+        if (!OperatingSystem.IsWindows())
+        {
+            ShowHostError("The Orientation desktop map host is not available on this platform yet.");
+            return;
+        }
+
+        if (!WindowsOrientationWebViewHost.TryConfigure(e.TryGetPlatformHandle(), orientationEmbedPath, out var error))
+        {
+            ShowHostError(error ?? "Orientation map host could not be configured.");
+            return;
+        }
+
+        webView.Source = WindowsOrientationWebViewHost.EmbedUri;
     }
 
     private void OnNavigationStarted(object? sender, WebViewNavigationStartingEventArgs e)
@@ -168,6 +190,7 @@ public sealed class WgtMapView : Grid, IDisposable
             return;
 
         disposed = true;
+        webView.AdapterCreated -= OnAdapterCreated;
         webView.WebMessageReceived -= OnWebMessageReceived;
         webView.NavigationStarted -= OnNavigationStarted;
         webView.NavigationCompleted -= OnNavigationCompleted;
