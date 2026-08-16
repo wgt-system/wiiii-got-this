@@ -12,6 +12,7 @@
     <PackageVersion Include="Mapsui.Avalonia12" Version="5.1.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4129.50" />
     <PackageVersion Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
     <PackageVersion Include="SQLitePCLRaw.core" Version="2.1.12" />
     <PackageVersion Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.12" />
