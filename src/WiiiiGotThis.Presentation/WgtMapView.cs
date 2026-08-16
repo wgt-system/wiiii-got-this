@@ -84,9 +84,16 @@ public sealed class WgtMapView : Grid, IDisposable
 
     private void OnWebMessageReceived(object? sender, WebMessageReceivedEventArgs e)
     {
+        var body = e.Body;
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            ShowHostError("Orientation returned an empty host message.");
+            return;
+        }
+
         try
         {
-            using var document = JsonDocument.Parse(e.Body);
+            using var document = JsonDocument.Parse(body);
             var root = document.RootElement;
             if (!MatchesBridge(root))
                 return;
