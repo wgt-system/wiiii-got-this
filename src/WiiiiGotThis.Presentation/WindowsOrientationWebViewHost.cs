@@ -35,7 +35,7 @@ internal static class WindowsOrientationWebViewHost
         }
 
         var interfaceId = CoreWebView2_3InterfaceId;
-        var queryResult = Marshal.QueryInterface(webView2Handle.CoreWebView2, ref interfaceId, out var webView3);
+        var queryResult = Marshal.QueryInterface(webView2Handle.CoreWebView2, in interfaceId, out var webView3);
         if (queryResult < 0 || webView3 == IntPtr.Zero)
         {
             error = "The installed WebView2 runtime does not support local host mapping.";
