@@ -6,11 +6,6 @@ namespace WiiiiGotThis.Presentation;
 
 public sealed class WgtMapView : Grid, IDisposable
 {
-    private const string BridgeContract = "orientation.host-bridge";
-    private const string BridgeVersion = "1.0";
-    private const string VocationMapSourceRef = "vocation.map_projection";
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
     private readonly NativeWebView webView = new();
     private readonly TextBlock hostStatus = new()
     {
@@ -29,6 +24,7 @@ public sealed class WgtMapView : Grid, IDisposable
         Children.Add(hostStatus);
 
         webView.WebMessageReceived += OnWebMessageReceived;
+        webView.NavigationStarted += OnNavigationStarted;
         webView.NavigationCompleted += OnNavigationCompleted;
         DataContextChanged += OnDataContextChanged;
 
@@ -58,6 +54,11 @@ public sealed class WgtMapView : Grid, IDisposable
         }
     }
 
+    private void OnNavigationStarted(object? sender, WebViewNavigationStartingEventArgs e)
+    {
+        bridgeReady = false;
+    }
+
     private void OnNavigationCompleted(object? sender, WebViewNavigationCompletedEventArgs e)
     {
         if (!e.IsSuccess)
@@ -84,56 +85,29 @@ public sealed class WgtMapView : Grid, IDisposable
 
     private void OnWebMessageReceived(object? sender, WebMessageReceivedEventArgs e)
     {
-        var body = e.Body;
-        if (string.IsNullOrWhiteSpace(body))
+        if (!OrientationMapBridgeAdapter.TryParseOutboundMessage(e.Body, out var message) || message is null)
         {
-            ShowHostError("Orientation returned an empty host message.");
+            ShowHostError("Orientation returned an invalid host message.");
             return;
         }
 
-        try
+        switch (message.Type)
         {
-            using var document = JsonDocument.Parse(body);
-            var root = document.RootElement;
-            if (!MatchesBridge(root))
-                return;
-
-            var type = root.GetProperty("type").GetString();
-            switch (type)
-            {
-                case "bridge.ready":
-                    bridgeReady = true;
-                    HideHostError();
-                    _ = SendSceneIfReadyAsync();
-                    break;
-                case "map.status":
-                    HandleMapStatus(root.GetProperty("payload"));
-                    break;
-                case "feature.selected":
-                    HandleFeatureSelected(root.GetProperty("payload"));
-                    break;
-                case "bridge.error":
-                    ShowHostError("Orientation rejected the current map content.");
-                    break;
-            }
+            case "bridge.ready":
+                bridgeReady = true;
+                HideHostError();
+                _ = SendSceneIfReadyAsync();
+                break;
+            case "map.status":
+                HandleMapStatus(message.Payload);
+                break;
+            case "feature.selected":
+                HandleFeatureSelected(message);
+                break;
+            case "bridge.error":
+                ShowHostError("Orientation rejected the current map content.");
+                break;
         }
-        catch (JsonException)
-        {
-            ShowHostError("Orientation returned an invalid host message.");
-        }
-    }
-
-    private static bool MatchesBridge(JsonElement root)
-    {
-        return root.ValueKind == JsonValueKind.Object
-            && root.TryGetProperty("contract", out var contract)
-            && contract.GetString() == BridgeContract
-            && root.TryGetProperty("version", out var version)
-            && version.GetString() == BridgeVersion
-            && root.TryGetProperty("type", out var type)
-            && type.ValueKind == JsonValueKind.String
-            && root.TryGetProperty("payload", out var payload)
-            && payload.ValueKind == JsonValueKind.Object;
     }
 
     private void HandleMapStatus(JsonElement payload)
@@ -153,15 +127,12 @@ public sealed class WgtMapView : Grid, IDisposable
         }
     }
 
-    private void HandleFeatureSelected(JsonElement payload)
+    private void HandleFeatureSelected(OrientationHostBridgeMessage message)
     {
         if (viewModel is null
-            || !payload.TryGetProperty("featureRef", out var featureRefElement)
-            || !payload.TryGetProperty("sourceRef", out var sourceRefElement)
-            || sourceRefElement.GetString() != VocationMapSourceRef)
+            || !OrientationMapBridgeAdapter.TryGetSelectedFeatureRef(message, out var featureRef))
             return;
 
-        var featureRef = featureRefElement.GetString();
         var selected = viewModel.Features.FirstOrDefault(feature => feature.FeatureRef == featureRef);
         viewModel.SelectFeature(selected);
     }
@@ -171,24 +142,8 @@ public sealed class WgtMapView : Grid, IDisposable
         if (disposed || !bridgeReady || viewModel?.IsLoaded != true)
             return;
 
-        var message = JsonSerializer.Serialize(new
-        {
-            contract = BridgeContract,
-            version = BridgeVersion,
-            type = "scene.replace",
-            payload = new
-            {
-                features = viewModel.Features.Select(ToOrientationFeature).ToArray(),
-                viewport = new
-                {
-                    kind = "automatic",
-                    padding = 48,
-                    maxZoom = 15,
-                },
-            },
-        }, JsonOptions);
-
-        var javascriptString = JsonSerializer.Serialize(message, JsonOptions);
+        var message = OrientationMapBridgeAdapter.CreateSceneReplaceMessage(viewModel.Features);
+        var javascriptString = JsonSerializer.Serialize(message);
         try
         {
             await webView.InvokeScript($"window.orientationHostBridge?.receive({javascriptString});");
@@ -197,35 +152,6 @@ public sealed class WgtMapView : Grid, IDisposable
         {
             ShowHostError("Orientation map host is not ready.");
         }
-    }
-
-    private static object ToOrientationFeature(VocationMapFeaturePresentationViewModel feature)
-    {
-        return new
-        {
-            @ref = feature.FeatureRef,
-            sourceRef = VocationMapSourceRef,
-            coordinate = new
-            {
-                longitude = feature.Longitude,
-                latitude = feature.Latitude,
-            },
-            title = feature.Title,
-            subtitle = $"{feature.CompanyName} · {feature.WorkLocationLabel}",
-            information = new[]
-            {
-                new
-                {
-                    title = "Vocation",
-                    rows = new[]
-                    {
-                        new { label = "Company", value = feature.CompanyName },
-                        new { label = "Location", value = feature.WorkLocationLabel },
-                        new { label = "Precision", value = feature.WorkLocationPrecision },
-                    },
-                },
-            },
-        };
     }
 
     private void ShowHostError(string message)
@@ -243,6 +169,7 @@ public sealed class WgtMapView : Grid, IDisposable
 
         disposed = true;
         webView.WebMessageReceived -= OnWebMessageReceived;
+        webView.NavigationStarted -= OnNavigationStarted;
         webView.NavigationCompleted -= OnNavigationCompleted;
         DataContextChanged -= OnDataContextChanged;
         if (viewModel is not null)
