@@ -41,6 +41,8 @@ Chat history is not the durable architectural source of truth once decisions hav
 
 The system-level architecture source of truth is `wgt-system/architecture`.
 
+The system-wide agent/Git/GitHub execution policy in `wgt-system/architecture/AGENTS.md` applies here and is not duplicated in ordinary worker prompts.
+
 Before introducing or changing cross-context integration, synchronization/replication, generic relay or storage infrastructure, service discovery/registry infrastructure, shared cross-context infrastructure, or another system-wide capability, consult its `CAPABILITY_CATALOG.md`, `ARCHITECTURE_PRINCIPLES.md`, and `INTEGRATION_POLICY.md`.
 
 Generic durable opaque cross-device delivery is owned by Conveyance. Conveyance does not own WGT, Vocation, or Illumination business semantics; domain-specific publication, commands, authority, merge, conflict, and reconciliation remain with the affected domain owner. If an existing generic capability is conceptually correct but insufficient, return the concrete requirement to the System Architecture Control Plane instead of creating a competing subsystem. WGT runtime code must not depend on the Architecture Repository.
