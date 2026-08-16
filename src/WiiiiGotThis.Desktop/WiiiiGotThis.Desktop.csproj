@@ -8,4 +8,7 @@
     <ProjectReference Include="..\WiiiiGotThis.Presentation\WiiiiGotThis.Presentation.csproj" />
     <PackageReference Include="Avalonia.Desktop" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="orientation-map\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" TargetPath="orientation-map\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
 </Project>
