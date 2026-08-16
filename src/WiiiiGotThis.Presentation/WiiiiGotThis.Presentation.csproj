@@ -5,6 +5,7 @@
     <ProjectReference Include="..\WiiiiGotThis.Contracts\WiiiiGotThis.Contracts.csproj" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Controls.WebView" />
     <PackageReference Include="Mapsui.Avalonia12" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
   </ItemGroup>
