@@ -8,4 +8,6 @@ public partial class VocationMapProjectionView : UserControl
     {
         InitializeComponent();
     }
+
+    public bool FocusPrimaryControl() => MapRefreshButton.IsVisible && MapRefreshButton.Focus();
 }

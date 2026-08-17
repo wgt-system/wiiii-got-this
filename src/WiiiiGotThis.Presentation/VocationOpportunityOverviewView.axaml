@@ -1,15 +1,21 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:v="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.VocationOpportunityOverviewView" x:DataType="v:VocationOpportunityOverviewViewModel">
   <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
-    <Grid IsVisible="{Binding IsLoaded}" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
-      <StackPanel Spacing="4">
-        <TextBox Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Search title, company, or location" MinWidth="260" />
-        <TextBlock Classes="wgt-caption" Text="{Binding ResultCountText}" />
-      </StackPanel>
-      <ComboBox Grid.Column="1" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}" MinWidth="170" VerticalAlignment="Top" />
-      <Button Grid.Column="2" Classes="wgt-action-button" Command="{Binding RefreshCommand}" Content="Refresh" VerticalAlignment="Top" />
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+      <Grid IsVisible="{Binding IsLoaded}" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+        <StackPanel Spacing="3">
+          <Label Target="JobsSearchBox" Content="_Find jobs" />
+          <TextBox x:Name="JobsSearchBox" AutomationProperties.Name="Search jobs" AutomationProperties.AutomationId="JobsSearch" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Title, company, or location" MinWidth="240" />
+          <TextBlock Classes="wgt-caption" Text="{Binding ResultCountText}" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Spacing="3">
+          <Label Target="JobsSortBox" Content="S_ort" />
+          <ComboBox x:Name="JobsSortBox" AutomationProperties.Name="Sort jobs" AutomationProperties.AutomationId="JobsSort" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}" MinWidth="170" />
+        </StackPanel>
+      </Grid>
+      <Button Grid.Column="1" Classes="wgt-action-button" AutomationProperties.Name="Refresh jobs" AutomationProperties.AutomationId="JobsRefresh" Command="{Binding RefreshCommand}" Content="_Refresh" VerticalAlignment="Bottom" />
     </Grid>
 
-    <Border Grid.Row="1" Classes="wgt-state-banner" IsVisible="{Binding IsStateBannerVisible}">
+    <Border Grid.Row="1" Classes="wgt-state-banner" IsVisible="{Binding IsStateBannerVisible}" AutomationProperties.Name="Jobs status">
       <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
         <TextBlock Classes="wgt-section-title" Text="{Binding StateTitle}" />
         <TextBlock Grid.Row="1" Classes="wgt-secondary" Text="{Binding StateDescription}" TextWrapping="Wrap" />
@@ -17,14 +23,14 @@
       </Grid>
     </Border>
 
-    <Border Grid.Row="1" Classes="wgt-state-banner" IsVisible="{Binding HasNoMatches}">
+    <Border Grid.Row="1" Classes="wgt-state-banner" IsVisible="{Binding HasNoMatches}" AutomationProperties.Name="No matching jobs">
       <StackPanel Spacing="4">
         <TextBlock Classes="wgt-section-title">No matching opportunities</TextBlock>
         <TextBlock Classes="wgt-secondary" Text="Try a different title, company, or location." />
       </StackPanel>
     </Border>
 
-    <ListBox Grid.Row="2" IsVisible="{Binding HasVisibleOpportunities}" ItemsSource="{Binding VisibleOpportunities}">
+    <ListBox Grid.Row="2" IsVisible="{Binding HasVisibleOpportunities}" ItemsSource="{Binding VisibleOpportunities}" AutomationProperties.Name="Published jobs" AutomationProperties.AutomationId="JobsResults">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="v:VocationOpportunityItemViewModel">
           <Border Classes="wgt-opportunity-row" HorizontalAlignment="Stretch">

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Text.Json;
+using Avalonia.Automation;
 using Avalonia.Controls;
 
 namespace WiiiiGotThis.Presentation;
@@ -25,6 +26,10 @@ public sealed class WgtMapView : Grid, IDisposable
 
     public WgtMapView()
     {
+        AutomationProperties.SetName(webView, "Opportunity map rendered by Orientation");
+        AutomationProperties.SetAutomationId(webView, "OrientationMap");
+        AutomationProperties.SetName(hostStatus, "Orientation map status");
+
         Children.Add(webView);
         Children.Add(hostStatus);
 
@@ -183,6 +188,7 @@ public sealed class WgtMapView : Grid, IDisposable
     private void ShowHostError(string message)
     {
         hostStatus.Text = message;
+        AutomationProperties.SetName(hostStatus, message);
         webView.IsVisible = false;
         hostStatus.IsVisible = true;
     }
