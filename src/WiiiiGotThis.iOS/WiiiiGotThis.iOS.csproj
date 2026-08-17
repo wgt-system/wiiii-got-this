@@ -17,4 +17,9 @@
     <ProjectReference Include="..\WiiiiGotThis.Presentation\WiiiiGotThis.Presentation.csproj" />
     <PackageReference Include="Avalonia.iOS" Condition="'$(BuildiOS)' == 'true'" />
   </ItemGroup>
+  <ItemGroup Condition="'$(BuildiOS)' == 'true'">
+    <BundleResource Include="..\WiiiiGotThis.Desktop\orientation-map\**\*">
+      <TargetPath>orientation-map\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </BundleResource>
+  </ItemGroup>
 </Project>
