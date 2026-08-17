@@ -29,11 +29,11 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     };
     public string AvailabilityText => IsAvailable ? Subtitle : AvailabilityReason switch
     {
-        Domain.AvailabilityReason.Disabled => "Disabled on this device",
-        Domain.AvailabilityReason.Unreachable => "Provider unavailable",
-        Domain.AvailabilityReason.Incompatible => "Incompatible contract",
-        Domain.AvailabilityReason.Unsupported => "Unsupported here",
-        Domain.AvailabilityReason.MissingPrerequisite => "Missing prerequisite",
+        WiiiiGotThis.Domain.AvailabilityReason.Disabled => "Disabled on this device",
+        WiiiiGotThis.Domain.AvailabilityReason.Unreachable => "Provider unavailable",
+        WiiiiGotThis.Domain.AvailabilityReason.Incompatible => "Incompatible contract",
+        WiiiiGotThis.Domain.AvailabilityReason.Unsupported => "Unsupported here",
+        WiiiiGotThis.Domain.AvailabilityReason.MissingPrerequisite => "Missing prerequisite",
         _ => Subtitle
     };
 }
