@@ -49,9 +49,26 @@ internal static class Program
             "Windows PC",
             readVocationOpportunityOverview,
             readVocationMapProjection,
-            isOrientationMapSurfaceComposed: true);
+            isOrientationMapSurfaceComposed: IsOrientationMapSurfaceComposed());
 
         BuildAvaloniaApp(shell).StartWithClassicDesktopLifetime(args);
+    }
+
+    private static bool IsOrientationMapSurfaceComposed()
+    {
+        var configuredPath = Environment.GetEnvironmentVariable("WGT_ORIENTATION_EMBED_PATH");
+        var embedPath = string.IsNullOrWhiteSpace(configuredPath)
+            ? Path.Combine(AppContext.BaseDirectory, "orientation-map", "embed.html")
+            : configuredPath.Trim();
+
+        try
+        {
+            return File.Exists(Path.GetFullPath(embedPath));
+        }
+        catch (Exception error) when (error is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return false;
+        }
     }
 
     private static AppBuilder BuildAvaloniaApp(ShellViewModel shell) => AppBuilder.Configure(() => new App(shell)).UsePlatformDetect().LogToTrace();
