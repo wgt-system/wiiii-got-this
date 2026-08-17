@@ -107,7 +107,8 @@ public sealed partial class ShellViewModel : ObservableObject
     public bool IsReferenceCapabilityOpen => OpenedReferenceCapability is not null;
     public bool IsVocationOpportunityOverviewOpen => OpenedVocationOpportunityOverview is not null;
     public bool IsMapProjectionOpen => OpenedVocationMapProjection is not null;
-    public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen;
+    public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen && !IsVocationOpportunityOverviewOpen;
+    public bool IsDesktopCapabilityDetailsVisible => !IsReferenceCapabilityOpen;
 
     public Task EnsureInitializedAsync()
     {
@@ -132,11 +133,13 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsReferenceCapabilityOpen));
         OnPropertyChanged(nameof(IsCapabilityDetailsVisible));
+        OnPropertyChanged(nameof(IsDesktopCapabilityDetailsVisible));
     }
 
     partial void OnOpenedVocationOpportunityOverviewChanged(VocationOpportunityOverviewViewModel? value)
     {
         OnPropertyChanged(nameof(IsVocationOpportunityOverviewOpen));
+        OnPropertyChanged(nameof(IsCapabilityDetailsVisible));
     }
 
     partial void OnOpenedVocationMapProjectionChanged(VocationMapProjectionViewModel? value)
@@ -269,7 +272,7 @@ public sealed partial class ShellViewModel : ObservableObject
     private void RebuildSelectedIntegrationCapabilities(CapabilityIdentity? preferredCapability = null)
     {
         var selectedServiceIdentity = SelectedIntegration?.ServiceIdentity;
-        var filtered = selectedServiceIdentity is null
+        CapabilityPresentationViewModel[] filtered = selectedServiceIdentity is null
             ? []
             : Capabilities.Where(capability => capability.ServiceIdentity == selectedServiceIdentity).ToArray();
         Replace(SelectedIntegrationCapabilities, filtered);
