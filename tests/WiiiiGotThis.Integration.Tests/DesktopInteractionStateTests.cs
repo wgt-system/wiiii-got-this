@@ -38,7 +38,7 @@ public sealed class DesktopInteractionStateTests
             new GetVocationMapProjectionUseCase(mapSource));
 
         await shell.EnsureInitializedAsync();
-        Assert.Equal("Ready", shell.StatusText);
+        Assert.Empty(shell.StatusText);
         Assert.False(shell.HasStatusMessage);
         AssertSurface(shell, ShellSurface.Home);
 
