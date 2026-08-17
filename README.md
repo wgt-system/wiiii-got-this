@@ -1,49 +1,88 @@
 # Wiiii Got This
 
-Wiiii Got This (WGT) is a cross-platform application and bounded context for integrating independently developed applications and services across a user's devices and platforms. WGT provides a coherent product experience while the integrated services retain ownership of their domains and authoritative data.
+Wiiii Got This (WGT) is the system's cross-platform integration/product bounded context. It composes independently owned capabilities into one coherent application while provider services retain authority over their domains and authoritative data.
 
 ## Current status
 
-The current release baseline is **v0.5.0**. Wiiii Got This is the primary user-facing application, with an application-grade Desktop workspace and persistent Home, Jobs, and Settings navigation:
+The latest published release remains **v0.5.0**. Branch `dev` is the **v0.6.0 Windows/Desktop release candidate**.
 
-- Jobs is a direct Desktop product destination with polished browsing for the accepted Vocation Published Opportunity Overview 1.0 states: Loading, Loaded, Empty, Unavailable, InvalidContract, and IncompatibleContract;
-- Settings is the secondary surface for technical Integration and Capability administration, including enablement, availability, refresh, and device overrides;
-- WGT-owned Domain/Application boundaries, local SQLite persistence, and a Reference Integration remain isolated from foreign providers;
-- the shared WGT visual foundation provides Fluent Light/Dark behavior, while Mobile follows the same product semantics with phone-appropriate layout;
-- Mobile Jobs is exposed only when the required Vocation read seam is composed and effectively available.
+The current Desktop product surface is:
 
-The current real iOS composition does not wire a Vocation provider or read seam. Windows Desktop remains the validated runtime; the solution and the `net10.0-ios` target compile on Windows for regression validation only. Real Mac/Xcode/iPhone runtime validation remains outstanding, and Vocation is not accepted or wired as a provider on iPhone. Conveyance is the accepted separate bounded context for generic durable opaque cross-device delivery; its Current Object mode is available, while production interoperability and concrete domain-owned synchronization contracts remain gated. A generic Registry, Shared Map, and additional provider capabilities remain deferred.
+- **Home** — product-first entry surface for actually available WGT product areas;
+- **Jobs** — direct Vocation Opportunity Overview workspace with loading/empty/failure handling, local search, mechanical sorting and a virtualized result list;
+- **Map** — Vocation-owned published opportunity locations rendered through the Orientation-owned map surface, with WGT-owned selection details and product composition;
+- **Settings** — user-facing Integration enablement/device behavior and connection health, with technical publication/contract diagnostics progressively disclosed;
+- **Reference Integration** — retained as an explicit development/diagnostic provider rather than presented as a normal end-user product area.
+
+Desktop interaction is hardened for keyboard navigation, visible focus, recovery from provider failures, compact-window use and Windows UI Automation naming. The shared presentation continues to use Avalonia Fluent Light/Dark resources.
+
+### Map ownership
+
+WGT does **not** own a generic map engine.
+
+The current Vocation Map path is:
+
+```text
+Vocation Published Map Projection 1.0
+    ↓
+WGT Vocation consumer/application seam
+    ↓
+WGT presentation adapter
+    ↓
+Orientation Host Bridge 1.0 / Spatial Scene
+    ↓
+Orientation map surface
+```
+
+Vocation remains authoritative for Work Location, Precision, opportunity identity and job-market meaning. Orientation owns generic geospatial rendering/interaction, basemap integration, clustering and related map capabilities. WGT owns product navigation, composition and host presentation.
+
+The Desktop host currently packages an exact tested Orientation consumer artifact pinned by `src/WiiiiGotThis.Desktop/orientation-map/ORIENTATION_SOURCE_SHA.txt`. Do not replace that artifact merely because a newer Orientation release exists; update it only through an explicit tested consumer-artifact refresh.
+
+### Platform scope
+
+Windows/Desktop is the actively validated product target for the current milestone.
+
+The iOS project remains in the repository, but the current real iOS composition contains only the Reference Integration. Vocation Jobs and Map are not claimed as iPhone capabilities. Real Apple runtime support remains deferred until Mac/Xcode/physical-iPhone validation is deliberately resumed; that deferred platform gate does not block Windows/Desktop releases.
 
 ## Architecture in brief
 
-WGT owns integration concerns such as service and capability identity, registration, configuration, availability, and presentation. Vocation and Illumination remain independent bounded contexts; WGT does not import their domain models, access their databases, or take ownership of their business semantics. Integration uses explicit, versioned published contracts and provider-specific adapters.
+WGT owns devices/platforms, Service/Capability integration, registration/configuration, availability/compatibility interpretation, product navigation/invocation and WGT-native host presentation.
 
-WGT's presentation principle is that Wiiii Got This is the user's primary application: it should feel like a coherent, high-quality native product across Windows and iPhone, with platform-appropriate layouts and interactions rather than a technical dashboard or web homepage. Shared visual foundations may be reused across platforms, while product areas and technical Settings remain distinct presentation surfaces.
+Vocation, Illumination, Orientation and Conveyance remain independent bounded contexts. WGT does not import their domain models, read their persistence, or take ownership of their semantics. Integration uses explicit provider-owned Published/Application Contracts and provider-specific adapters.
 
-The implementation is organized into Domain, Application, Contracts, Infrastructure, Integration Adapters, shared Presentation, and platform Hosts. The Desktop host is the current validated runtime. The iOS host exists for shared-code and `net10.0-ios` compile validation; Apple runtime validation still requires Mac/Xcode/iPhone-capable tooling.
+System-wide capability ownership is authoritative in `wgt-system/architecture`. In particular:
+
+- Vocation owns job-market semantics and the Published Opportunity Overview / Map Projection contracts;
+- Orientation owns the generic geospatial capability;
+- Conveyance owns accepted generic durable opaque delivery;
+- Illumination owns learning semantics and future learning-state synchronization/reconciliation semantics.
 
 ## Repository layout
 
 | Path | Responsibility |
 | --- | --- |
 | `src/WiiiiGotThis.Domain` | WGT domain model and invariants |
-| `src/WiiiiGotThis.Application` | Use cases and application ports |
-| `src/WiiiiGotThis.Contracts` | WGT-owned contracts and read models |
+| `src/WiiiiGotThis.Application` | WGT use cases and application ports |
+| `src/WiiiiGotThis.Contracts` | WGT-owned contracts/read models |
 | `src/WiiiiGotThis.Infrastructure` | SQLite persistence and technical adapters |
-| `src/WiiiiGotThis.Integrations.Reference` | Trivial reference integration |
-| `src/WiiiiGotThis.Integrations.Vocation` | Vocation published-contract adapter |
-| `src/WiiiiGotThis.Presentation` | Shared Avalonia presentation |
-| `src/WiiiiGotThis.Desktop` | Windows/Desktop composition root |
-| `src/WiiiiGotThis.iOS` | iOS composition and compile target |
-| `tests/` | Domain, application, infrastructure, and integration tests |
-| `docs/` | Architecture, contracts, acceptance criteria, and implementation records |
+| `src/WiiiiGotThis.Integrations.Reference` | Development/reference integration |
+| `src/WiiiiGotThis.Integrations.Vocation` | Strict Vocation published-contract consumer adapter |
+| `src/WiiiiGotThis.Presentation` | Shared Avalonia product presentation |
+| `src/WiiiiGotThis.Desktop` | Validated Windows/Desktop composition root and packaged Orientation consumer artifact |
+| `src/WiiiiGotThis.iOS` | Deferred iOS composition target |
+| `tests/` | Domain, application, infrastructure and integration regression coverage |
+| `docs/` | Architecture, contracts, acceptance criteria and implementation records |
 
 ## Prerequisites
 
-- Windows for the currently validated Desktop workflow;
+For the active Desktop workflow:
+
+- Windows;
 - .NET 10 SDK;
-- the repository's .NET workloads and NuGet restore access;
-- Mac/Xcode and an iPhone-capable environment only for the outstanding Apple runtime smoke.
+- NuGet restore access;
+- WebView2 for the Orientation-backed Map host.
+
+Mac/Xcode/iPhone infrastructure is required only when real Apple runtime work is deliberately resumed.
 
 ## Build and test
 
@@ -53,19 +92,11 @@ From the repository root:
 dotnet restore WiiiiGotThis.sln
 dotnet build WiiiiGotThis.sln
 dotnet test WiiiiGotThis.sln
-```
-
-The Windows regression compile for the iOS target is:
-
-```powershell
-dotnet build src/WiiiiGotThis.iOS/WiiiiGotThis.iOS.csproj -p:BuildiOS=true
-```
-
-To inspect transitive package vulnerabilities:
-
-```powershell
 dotnet list WiiiiGotThis.sln package --vulnerable --include-transitive
+git diff --check
 ```
+
+CI performs the Windows restore/build/test/vulnerability gates and a Desktop startup smoke.
 
 ## Run the Desktop app
 
@@ -73,7 +104,7 @@ dotnet list WiiiiGotThis.sln package --vulnerable --include-transitive
 dotnet run --project src/WiiiiGotThis.Desktop/WiiiiGotThis.Desktop.csproj
 ```
 
-The Reference Integration is available without a foreign service. The Vocation path additionally requires a compatible local Vocation runtime exposing its published HTTP contract; WGT does not use or inspect Vocation persistence.
+The Reference Integration works without a foreign provider. Vocation product surfaces additionally require a compatible local Vocation runtime exposing its accepted published HTTP contracts. WGT does not use or inspect Vocation persistence.
 
 ## Documentation
 
@@ -81,6 +112,17 @@ Start with the accepted [architecture](docs/10_ARCHITECTURE.md), [acceptance tes
 
 The [Architecture Model](docs/model/README.md) provides the derived service-local C4 runtime view.
 
-## Current release gates
+## v0.6.0 release gate
 
-The first real Vocation integration is accepted for Windows. Before claiming the equivalent Apple runtime support, the real Mac/Xcode/iPhone smoke must verify startup, provider discovery, capability opening, usable data or empty state, provider-loss isolation, and recovery after restart. Shared-code tests and a Windows iOS compile do not satisfy that gate.
+`v0.6.0` is a Windows/Desktop candidate until Control Plane approval.
+
+Before release:
+
+- final `dev` restore/build/test/vulnerability/startup-smoke gates must be green;
+- strict Vocation contract and capability-isolation regressions must remain green;
+- Home / Jobs / Map / Settings Desktop behavior must remain coherent;
+- Orientation must remain the sole generic map renderer owner and the packaged consumer artifact must remain explicitly pinned;
+- documentation/repository state must match the candidate;
+- `main`, the immutable `v0.6.0` tag and the GitHub Release must remain untouched until explicit release approval.
+
+Apple runtime support is a separate deferred claim and is not part of the Windows v0.6.0 acceptance statement.
