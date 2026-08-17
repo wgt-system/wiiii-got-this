@@ -49,6 +49,44 @@ public sealed class OrientationMapBridgeAdapterTests
     }
 
     [Fact]
+    public void Current_position_messages_follow_orientation_host_bridge_1_0()
+    {
+        var json = OrientationMapBridgeAdapter.CreateCurrentPositionSetMessage(new OrientationCurrentPosition(
+            10.0,
+            53.55,
+            7.25,
+            new DateTimeOffset(2026, 8, 17, 2, 3, 4, 567, TimeSpan.Zero)));
+
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+        Assert.Equal("orientation.host-bridge", root.GetProperty("contract").GetString());
+        Assert.Equal("1.0", root.GetProperty("version").GetString());
+        Assert.Equal("current-position.set", root.GetProperty("type").GetString());
+        var payload = root.GetProperty("payload");
+        Assert.Equal(10.0, payload.GetProperty("coordinate").GetProperty("longitude").GetDouble());
+        Assert.Equal(53.55, payload.GetProperty("coordinate").GetProperty("latitude").GetDouble());
+        Assert.Equal(7.25, payload.GetProperty("accuracyMeters").GetDouble());
+        Assert.Equal("2026-08-17T02:03:04.567Z", payload.GetProperty("observedAt").GetString());
+
+        using var clearDocument = JsonDocument.Parse(OrientationMapBridgeAdapter.CreateCurrentPositionClearMessage());
+        var clear = clearDocument.RootElement;
+        Assert.Equal("current-position.clear", clear.GetProperty("type").GetString());
+        Assert.Empty(clear.GetProperty("payload").EnumerateObject());
+    }
+
+    [Theory]
+    [InlineData(-181, 0, 1)]
+    [InlineData(181, 0, 1)]
+    [InlineData(0, -91, 1)]
+    [InlineData(0, 91, 1)]
+    [InlineData(0, 0, -1)]
+    public void Current_position_rejects_values_outside_the_frozen_contract(double longitude, double latitude, double accuracy)
+    {
+        var position = new OrientationCurrentPosition(longitude, latitude, accuracy, DateTimeOffset.UtcNow);
+        Assert.Throws<ArgumentOutOfRangeException>(() => OrientationMapBridgeAdapter.CreateCurrentPositionSetMessage(position));
+    }
+
+    [Fact]
     public void Outbound_parser_accepts_only_the_frozen_orientation_bridge_envelope()
     {
         const string valid = "{\"contract\":\"orientation.host-bridge\",\"version\":\"1.0\",\"type\":\"bridge.ready\",\"payload\":{}}";
