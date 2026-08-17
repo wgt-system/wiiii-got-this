@@ -1,36 +1,46 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:v="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.VocationOpportunityOverviewView" x:DataType="v:VocationOpportunityOverviewViewModel">
-  <ScrollViewer VerticalScrollBarVisibility="Auto">
-    <StackPanel Spacing="16" Margin="4">
-      <Grid ColumnDefinitions="*,Auto">
-        <Button Classes="wgt-action-button" Grid.Column="1" Command="{Binding RefreshCommand}" Content="Refresh" VerticalAlignment="Top" />
+  <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+    <Grid IsVisible="{Binding IsLoaded}" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+      <StackPanel Spacing="4">
+        <TextBox Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Search title, company, or location" MinWidth="260" />
+        <TextBlock Classes="wgt-caption" Text="{Binding ResultCountText}" />
+      </StackPanel>
+      <ComboBox Grid.Column="1" ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSortOption, Mode=TwoWay}" MinWidth="170" VerticalAlignment="Top" />
+      <Button Grid.Column="2" Classes="wgt-action-button" Command="{Binding RefreshCommand}" Content="Refresh" VerticalAlignment="Top" />
+    </Grid>
+
+    <Border Grid.Row="1" Classes="wgt-state-banner" IsVisible="{Binding IsStateBannerVisible}">
+      <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+        <TextBlock Classes="wgt-section-title" Text="{Binding StateTitle}" />
+        <TextBlock Grid.Row="1" Classes="wgt-secondary" Text="{Binding StateDescription}" TextWrapping="Wrap" />
+        <ProgressBar Grid.Row="2" Classes="wgt-state-progress" IsVisible="{Binding IsLoading}" IsIndeterminate="True" Height="4" />
       </Grid>
+    </Border>
 
-      <Border Classes="wgt-state-banner">
-        <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
-          <TextBlock Classes="wgt-section-title" Text="{Binding StateTitle}" />
-          <TextBlock Grid.Row="1" Classes="wgt-secondary" Text="{Binding StateDescription}" TextWrapping="Wrap" />
-          <ProgressBar Grid.Row="2" Classes="wgt-state-progress" IsVisible="{Binding IsLoading}" IsIndeterminate="True" Height="4" />
-        </Grid>
-      </Border>
+    <Border Grid.Row="1" Classes="wgt-state-banner" IsVisible="{Binding HasNoMatches}">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="wgt-section-title">No matching opportunities</TextBlock>
+        <TextBlock Classes="wgt-secondary" Text="Try a different title, company, or location." />
+      </StackPanel>
+    </Border>
 
-      <ItemsControl IsVisible="{Binding IsLoaded}" ItemsSource="{Binding Opportunities}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="v:VocationOpportunityItemViewModel">
-            <Border Classes="wgt-opportunity-card" Margin="0,0,0,12">
-              <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
-                <TextBlock Classes="wgt-section-title" Text="{Binding Title}" TextWrapping="Wrap" />
-                <TextBlock Grid.Column="1" Classes="wgt-caption" Text="{Binding PostingCountText}" VerticalAlignment="Center" />
-                <TextBlock Grid.Row="1" Classes="wgt-body" Text="{Binding CompanyName}" />
-                <TextBlock Grid.Row="2" Classes="wgt-secondary" Text="{Binding WorkLocationsText}" TextWrapping="Wrap" />
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+    <ListBox Grid.Row="2" IsVisible="{Binding HasVisibleOpportunities}" ItemsSource="{Binding VisibleOpportunities}">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="v:VocationOpportunityItemViewModel">
+          <Border Classes="wgt-opportunity-row" HorizontalAlignment="Stretch">
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="5" ColumnSpacing="16">
+              <StackPanel Spacing="3">
+                <TextBlock Classes="wgt-section-title" FontSize="17" Text="{Binding Title}" TextWrapping="Wrap" />
+                <TextBlock Classes="wgt-body" Text="{Binding CompanyName}" TextWrapping="Wrap" />
+              </StackPanel>
+              <TextBlock Grid.Column="1" Classes="wgt-caption" Text="{Binding PostingCountText}" VerticalAlignment="Top" />
+              <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Classes="wgt-secondary" Text="{Binding WorkLocationsText}" TextWrapping="Wrap" />
+            </Grid>
+          </Border>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
 
-      <Border Classes="wgt-surface" IsVisible="{Binding HasPublicationMetadata}">
-        <TextBlock Classes="wgt-caption" Text="{Binding PublicationMetadataText}" />
-      </Border>
-    </StackPanel>
-  </ScrollViewer>
+    <TextBlock Grid.Row="3" Classes="wgt-caption" IsVisible="{Binding HasPublicationMetadata}" Text="{Binding PublicationMetadataText}" TextTrimming="CharacterEllipsis" />
+  </Grid>
 </UserControl>
