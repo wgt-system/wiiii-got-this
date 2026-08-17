@@ -103,7 +103,7 @@ public sealed class AtlasProjectionTests
             new CapabilityResolutionResult(capabilityId, Enablement.Enabled, Availability.Unavailable(AvailabilityReason.MissingPrerequisite)));
 
         var projection = new BuildAtlasProjectionUseCase().Build([integration], [capability]);
-        var node = Assert.Single(projection.Nodes.Where(item => item.Kind == AtlasNodeKind.Capability));
+        var node = Assert.Single(projection.Nodes, item => item.Kind == AtlasNodeKind.Capability);
 
         Assert.False(node.IsAvailable);
         Assert.Equal(AvailabilityReason.MissingPrerequisite, node.AvailabilityReason);
