@@ -23,10 +23,10 @@ internal sealed class IosOrientationMapPlatformHost : IOrientationMapPlatformHos
 
     public event EventHandler<OrientationCurrentPositionChangedEventArgs>? CurrentPositionChanged;
 
-    public bool TryResolveEmbedPath(string? configuredPath, out string? embedPath, out string? error)
+    public bool TryResolveEmbedPath(string? configuredPath, out string? embedPath, out string? failureMessage)
     {
         embedPath = null;
-        error = null;
+        failureMessage = null;
 
         if (!string.IsNullOrWhiteSpace(configuredPath))
         {
@@ -35,7 +35,7 @@ internal sealed class IosOrientationMapPlatformHost : IOrientationMapPlatformHos
                 var fullPath = Path.GetFullPath(configuredPath.Trim());
                 if (!File.Exists(fullPath))
                 {
-                    error = $"Orientation map host was not found at {fullPath}.";
+                    failureMessage = $"Orientation map host was not found at {fullPath}.";
                     return false;
                 }
 
@@ -44,7 +44,7 @@ internal sealed class IosOrientationMapPlatformHost : IOrientationMapPlatformHos
             }
             catch (Exception exception) when (exception is ArgumentException or NotSupportedException or PathTooLongException)
             {
-                error = "Orientation map host path is invalid.";
+                failureMessage = "Orientation map host path is invalid.";
                 return false;
             }
         }
@@ -52,7 +52,7 @@ internal sealed class IosOrientationMapPlatformHost : IOrientationMapPlatformHos
         var bundledPath = NSBundle.MainBundle.PathForResource("embed", "html", "orientation-map");
         if (string.IsNullOrWhiteSpace(bundledPath) || !File.Exists(bundledPath))
         {
-            error = "The packaged Orientation map surface is missing from the iOS application bundle.";
+            failureMessage = "The packaged Orientation map surface is missing from the iOS application bundle.";
             return false;
         }
 
@@ -60,26 +60,26 @@ internal sealed class IosOrientationMapPlatformHost : IOrientationMapPlatformHos
         return true;
     }
 
-    public bool TryConfigure(IPlatformHandle? platformHandle, string embedPath, out string? error)
+    public bool TryConfigure(IPlatformHandle? platformHandle, string embedPath, out string? failureMessage)
     {
-        error = null;
+        failureMessage = null;
         if (platformHandle is not IAppleWKWebViewPlatformHandle appleHandle || appleHandle.WKWebView == IntPtr.Zero)
         {
-            error = "The iOS Orientation map host requires an Avalonia WKWebView platform handle.";
+            failureMessage = "The iOS Orientation map host requires an Avalonia WKWebView platform handle.";
             return false;
         }
 
         var webView = Runtime.GetNSObject<WKWebView>(appleHandle.WKWebView);
         if (webView is null)
         {
-            error = "The native WKWebView instance could not be resolved.";
+            failureMessage = "The native WKWebView instance could not be resolved.";
             return false;
         }
 
         var directory = Path.GetDirectoryName(embedPath);
         if (string.IsNullOrWhiteSpace(directory))
         {
-            error = "The packaged Orientation map directory could not be resolved.";
+            failureMessage = "The packaged Orientation map directory could not be resolved.";
             return false;
         }
 
