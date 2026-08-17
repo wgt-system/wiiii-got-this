@@ -109,7 +109,7 @@ public sealed partial class ShellViewModel : ObservableObject
     public bool IsMapProjectionOpen => OpenedVocationMapProjection is not null;
     public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen && !IsVocationOpportunityOverviewOpen;
     public bool IsDesktopCapabilityDetailsVisible => !IsReferenceCapabilityOpen;
-    public bool HasStatusMessage => !string.Equals(StatusText, "Ready", StringComparison.Ordinal);
+    public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusText);
 
     public Task EnsureInitializedAsync()
     {
@@ -193,7 +193,7 @@ public sealed partial class ShellViewModel : ObservableObject
             var results = await refreshPublications.RefreshAsync();
             var failures = results.Where(x => x.Status != IntegrationRefreshStatus.Refreshed).ToArray();
             StatusText = failures.Length == 0
-                ? "Ready"
+                ? string.Empty
                 : "Some integration publications could not be refreshed.";
             await ReloadStateAsync();
         }
