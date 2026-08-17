@@ -220,6 +220,30 @@
               </Grid>
             </TabItem>
 
+            <TabItem Header="Dependencies">
+              <Grid Margin="0,10,0,0" RowDefinitions="Auto,*" RowSpacing="8">
+                <TextBlock Classes="wgt-secondary"
+                           Text="Cross-service relationships shown here come from explicit WGT composition knowledge, not visual inference."
+                           TextWrapping="Wrap" />
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding SelectedAtlasNode.Relationships}"
+                         MaxHeight="260">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:AtlasRelationshipPresentationViewModel">
+                      <StackPanel Margin="2,6" Spacing="3">
+                        <TextBlock FontWeight="SemiBold">
+                          <Run Text="{Binding Direction}" />
+                          <Run Text=" " />
+                          <Run Text="{Binding RelatedNodeTitle}" />
+                        </TextBlock>
+                        <TextBlock Classes="wgt-caption" Text="{Binding Description}" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </Grid>
+            </TabItem>
+
             <TabItem Header="System">
               <StackPanel Margin="0,10,0,0" Spacing="6">
                 <TextBlock Classes="wgt-caption" Text="NODE" />
