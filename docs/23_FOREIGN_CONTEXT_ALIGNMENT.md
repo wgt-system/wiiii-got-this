@@ -8,7 +8,9 @@ Sources of truth reviewed:
 
 - `wgt-system/illumination` branch `dev`
 - `wgt-system/vocation` branch `dev`
+- `wgt-system/orientation` branch `dev`
 - `wgt-system/conveyance` branch `dev`
+- `wgt-system/architecture` branch `dev`
 
 This document records only integration facts already accepted or explicitly planned by the owning bounded contexts. It is not a second Service Catalog or system-wide ownership source.
 
@@ -108,42 +110,44 @@ The concrete replication contract remains deferred.
 
 ## 6. Vocation Alignment
 
-Vocation's accepted architecture remains compatible with WGT without a technology rewrite.
+Vocation remains an independent bounded context and remains authoritative for the personal job-market domain.
 
-Vocation remains:
+Its current implementation direction includes:
 
-- an independent bounded context,
 - Python 3.13 + FastAPI/Pydantic backend/application host,
-- React + TypeScript + Vite standalone local web UI,
+- React + TypeScript + Vite standalone local UI,
 - SQLAlchemy/Alembic/SQLite local persistence,
-- locally authoritative,
-- independently startable.
+- local authority,
+- independent startup and operation.
 
 Its standalone UI remains useful for rich desktop-oriented workflows such as:
 
 - research/import workflows,
 - prompt workflows,
 - administrative/triage operations,
-- later rich market views.
+- rich market views.
 
-WGT does not need to replace this entire surface.
+Vocation no longer owns a competing generic map renderer or generic geocoding implementation merely because those capabilities are used inside the Vocation UI. Its current `dev` baseline delegates generic map rendering and generic geospatial provider capability to Orientation while retaining all Vocation-specific Work Location, Precision, resolution and job-market meaning.
+
+WGT does not need to replace the entire Vocation standalone surface.
 
 ## 7. Vocation → WGT Boundary
 
-Vocation's Context Map already defines:
+Vocation's Context Map defines:
 
 - Open Host Service,
 - Published Read Contracts,
 - Customer/Supplier,
-- Vocation owns job-market semantics,
-- WGT owns device/platform presentation.
+- Vocation ownership of job-market semantics,
+- WGT ownership of device/platform product composition and presentation.
 
 WGT must not:
 
 - import Vocation domain classes,
 - read the Vocation SQLite database,
 - create a WGT JobOpportunity aggregate,
-- reproduce Vocation assessment/decision logic.
+- reproduce Vocation assessment/decision logic,
+- infer Work Location or Precision semantics from Orientation presentation behavior.
 
 ## 8. Vocation Runtime Direction
 
@@ -163,7 +167,9 @@ This is compatible with WGT's provider-specific transport strategy.
 
 There is no requirement to port Vocation to .NET.
 
-## 9. Vocation Published Opportunity Overview
+Orientation does not replace this provider boundary. For the Vocation Map product surface, WGT consumes Vocation's provider-owned projection and adapts it into the separate generic Orientation renderer boundary.
+
+## 9. Vocation Published Contracts
 
 Vocation has implemented `Published Opportunity Overview 1.0` on `dev`.
 
@@ -179,57 +185,121 @@ Its local read-only publication endpoint is:
 /published/v1/opportunity-overview
 ```
 
-The contract is client-neutral, versioned, and read-only. It intentionally excludes:
+The contract is client-neutral, versioned, and read-only. It intentionally excludes personal state and later Vocation capabilities. It can be consumed without accessing Vocation's database, domain classes, or internal React API.
 
-- personal state,
-- Availability/Freshness,
-- URLs/navigation,
-- maps,
-- comparison,
-- opportunity detail.
+Vocation also owns `Published Map Projection 1.0`:
 
-It can be consumed without accessing Vocation's database, domain classes, or internal React API. It is therefore the concrete contract consumed by WGT's first Windows integration.
+```text
+schemas/published-map-projection-v1.schema.json
+```
 
-Vocation also owns the accepted `Published Map Projection 1.0`, whose canonical schema is `schemas/published-map-projection-v1.schema.json`. WGT may consume either projection only through the provider-owned contract; neither projection transfers Vocation semantics or persistence authority to WGT. These contracts do not include later Vocation contracts such as Opportunity Detail, Groups/Waves, or Availability/Freshness.
+WGT consumes this projection through the Vocation integration boundary and adapts accepted coordinates and supporting provider-published information into an Orientation Spatial Scene. Orientation renders the map but does not become the authority for Work Location, Precision, opportunity identity or other Vocation semantics.
 
-The endpoint remains outside Vocation's internal React/OpenAPI surface and does not implement relay, authentication, remote persistence, or cross-device writes.
+Neither Vocation Published Contract transfers Vocation persistence or domain ownership to WGT or Orientation.
 
-## 10. Vocation Synchronization Direction
+## 10. Vocation Mobile / Synchronization Direction
 
-For initial iPhone usage, Vocation is likely a read-oriented integration.
+Initial iPhone Vocation use remains read-oriented, but the concrete provider/data topology is not yet accepted merely because Desktop integration exists.
 
-The architecture should allow Vocation to later choose among:
+Vocation may later choose among:
 
 - read-only snapshots,
 - replicated mobile read state,
 - live remote read service,
 - another Vocation-owned publication model.
 
-WGT does not decide that mechanism for Vocation.
+WGT does not invent that mechanism for Vocation.
 
-The accepted Sync/Relay context may transport Vocation-owned snapshots/changes if Vocation later publishes a suitable synchronization contract.
+Conveyance may transport opaque protected Vocation-owned published data when an accepted delivery mode fits the concrete scenario. Conveyance does not invent the Vocation publication, authority or synchronization semantics.
+
+This means Orientation iPhone renderer readiness and Vocation iPhone data readiness are distinct gates.
 
 ## 11. Vocation UI Ownership
 
-The expected split is:
+The expected split is now:
 
 ```text
 Vocation standalone UI
 ├── research/import
 ├── prompt workflows
 ├── administration
-└── rich Vocation-specific desktop workflows
+├── rich Vocation-specific desktop workflows
+└── Orientation-hosted generic map surface where spatial presentation is needed
 
 WGT
-├── Windows capability presentation where useful
-└── iPhone capability presentation
+├── Windows capability/product presentation
+├── iPhone capability/product presentation when provider/read seams exist
+└── Orientation-hosted generic map surface where spatial presentation is needed
 ```
 
-Avoid duplicating every Vocation standalone screen inside WGT.
+Vocation and WGT may host the same Orientation renderer without sharing Vocation domain UI or business logic.
 
-A concrete Capability is added to WGT only when the cross-device/integrated use case justifies its own WGT-native view.
+Avoid duplicating every Vocation standalone screen inside WGT. A concrete Vocation Capability is added to WGT only when the integrated/cross-device use case justifies it.
 
-## 12. Conveyance Alignment
+## 12. Orientation Alignment
+
+Orientation is the accepted system owner of generic geospatial capability.
+
+Current accepted responsibility includes, according to the Orientation and system Architecture Sources of Truth:
+
+- generic spatial scene and feature rendering,
+- basemap/map-provider integration,
+- map lifecycle,
+- pan/zoom/selection and other generic map interaction,
+- clustering and generic geospatial composition,
+- place discovery/geocoding/reverse geocoding,
+- routing and generic route representation,
+- generic current-position representation.
+
+Orientation does **not** own:
+
+- Vocation Work Location or Precision semantics,
+- opportunity/job meaning,
+- WGT product navigation or device enablement,
+- OS permission prompts or platform-specific location acquisition,
+- foreign-domain publication authority.
+
+### Orientation Host Bridge
+
+`orientation.host-bridge` `1.0` is the accepted renderer-host contract.
+
+WGT may transform a provider-owned spatial projection into an Orientation scene and consume generic Orientation interaction/lifecycle events. The current Vocation Map path is:
+
+```text
+Vocation Published Map Projection 1.0
+    ↓
+WGT Vocation consumer/application seam
+    ↓
+WGT presentation adapter
+    ↓
+Orientation Host Bridge 1.0 / Spatial Scene
+    ↓
+Orientation map surface
+```
+
+The current Desktop implementation uses the packaged Orientation map artifact in Avalonia `NativeWebView`/WebView2. The previous WGT Mapsui renderer is removed and must not be reintroduced as a fallback generic renderer.
+
+### Platform and transitive dependency rules
+
+Capability availability must be evaluated by actual composed seams rather than by repository dependency alone:
+
+| Product/capability | Required on the device |
+| --- | --- |
+| Reference capability | WGT only |
+| Vocation Jobs | Vocation Opportunity Overview read seam/provider; Orientation is not required |
+| Vocation Map | Vocation Map Projection read seam/provider **and** usable Orientation map host |
+| Orientation current position | usable Orientation host **and** WGT-owned OS permission/location acquisition |
+| Future Orientation place/routing use | the corresponding Orientation application/backend capability, plus a renderer only where presentation requires it |
+
+Vocation's own use of Orientation does not make every Vocation capability transitively dependent on Orientation inside WGT.
+
+The WGT iOS composition currently contains only the Reference Integration. Therefore neither Jobs nor Vocation Map is presently available on the real iPhone host, independently of whether an Orientation WKWebView host can compile or render.
+
+### Current-location ownership
+
+Per Orientation's accepted ADR, WGT owns iOS/Windows permission prompts and platform-specific position acquisition. Orientation receives generic position fixes through its Host Bridge and owns generic validation/use/visualization. Platform SDK types must not leak into Orientation contracts or WGT domain/application semantics.
+
+## 13. Conveyance Alignment
 
 Conveyance is the accepted separate bounded context for generic durable opaque cross-device delivery.
 
@@ -244,92 +314,71 @@ Conveyance does not own:
 
 - Vocation semantics,
 - Illumination semantics,
+- Orientation geospatial semantics,
 - WGT presentation,
 - foreign merge/reconciliation rules.
 
-Its current V1 path is:
+A previously accepted candidate read path remains conceptually valid where Vocation later chooses a suitable publication/synchronization model:
 
 ```text
 Vocation
-  ↓ Published Opportunity Overview 1.0
-WGT Windows
+  ↓ provider-owned Published Contract
+WGT/provider-side client
   ↓ protect/publish
 Conveyance
   ↓ retrieve
 WGT iPhone
   ↓ verify/decrypt/validate
-WGT-native Vocation presentation
+WGT presentation
 ```
 
-Conveyance currently implements the generic Current Object delivery mode. Production
-authentication/cryptography interoperability remains gated in Conveyance; WGT must not
-treat this alignment document as a claim that production secure cross-device integration
-is complete. Retry, ordered/change, and other delivery semantics are not implied.
+If that WGT presentation contains a map, Orientation remains the generic renderer owner; Conveyance does not become spatially aware.
 
-## 13. First Real Integration Ordering
+Conveyance currently implements the generic Current Object delivery mode. Production authentication/cryptography interoperability remains separately gated. Retry, ordered/change, and other delivery semantics are not implied.
 
-Vocation Published Opportunity Overview 1.0 is the implemented first real WGT Windows integration because it is an accepted, versioned, consumer-ready read-only contract. The current `dev` baseline consumes it through the local HTTP adapter and presents it WGT-natively.
+## 14. First Real Integration Ordering
 
-Repository reality now adds an important condition:
+Vocation Published Opportunity Overview 1.0 was the implemented first real WGT Windows integration because it was the first accepted, versioned, consumer-ready Published Contract.
 
-> The first real WGT integration was selected by the provider with the first **accepted, versioned, consumer-ready Published Contract**.
+Repository reality now additionally includes:
 
-Therefore:
+- Vocation Published Map Projection 1.0 as a second consumed Vocation capability;
+- Orientation Host Bridge 1.0 as the accepted generic map-renderer boundary;
+- completed Windows integration of the Vocation Map Projection through Orientation;
+- outstanding iPhone provider/data and physical Orientation-host gates.
 
-- Vocation is the current first Windows integration through Published Opportunity Overview 1.0; its iPhone provider acceptance remains gated by the real Apple runtime smoke.
-- Illumination may become first if its WGT Integration Surface becomes contract-ready earlier.
-- WGT Core/reference-provider development does not wait for either project.
+Future integrations remain selected by actual provider-contract readiness rather than project preference.
 
-Do not couple WGT bootstrap progress to foreign contract scheduling.
+## 15. Shared Findings
 
-## 14. Shared Findings
+Current foreign-context alignment preserves these invariants:
 
-Both foreign contexts agree with WGT on these invariants:
-
-1. no shared database,
+1. no shared database across bounded contexts,
 2. no cross-context domain-class imports,
 3. no shared business-logic library that bypasses contracts,
-4. published contracts are explicit and versioned,
+4. published/application contracts are explicit where frozen,
 5. presentation does not transfer domain ownership,
 6. physical/process co-location does not transfer domain ownership,
 7. server/Docker infrastructure is optional and must not silently change data ownership,
-8. synchronization mechanics and domain merge semantics are separate concerns.
+8. synchronization mechanics and domain merge semantics are separate concerns,
+9. generic map/geospatial capability belongs to Orientation rather than being duplicated in WGT or provider contexts,
+10. transitive service use does not make every product capability depend on every nested service; availability follows the concrete required seams.
 
-## 15. WGT Consequence
+## 16. WGT Consequence
 
-No WGT architecture reversal is required.
+No WGT domain reversal is required.
 
-The WGT repository can be bootstrapped now using:
+WGT continues to own:
 
-- Reference Integration,
-- fake/reference contracts,
-- accepted WGT Domain/Application semantics.
+- Device/Platform capability resolution,
+- Service Integration and availability interpretation,
+- product navigation/composition,
+- WGT presentation around integrated surfaces,
+- platform permissions and host adapters.
 
-Further real provider integration work begins only when the owning provider has accepted the relevant contract. The Vocation Windows integration is released in v0.3.0; this does not claim iPhone acceptance.
+WGT must not own a competing generic map renderer. The current Windows Vocation Map correctly composes Vocation-owned published semantics with the Orientation-owned renderer.
 
-## 16. Provider Readiness Checklist
-
-Before adding a real Service Integration Adapter:
-
-### Provider must supply
-
-- stable Service identity semantics,
-- concrete Capability identity,
-- versioned Published Contract,
-- compatibility/version rules,
-- error semantics,
-- required data/command semantics,
-- runtime/deployment expectations,
-- tests/fixtures suitable for consumer contract testing.
-
-### WGT must supply
-
-- Integration Adapter,
-- WGT-native presentation,
-- current Device/Platform Capability Resolution,
-- availability/error mapping,
-- WGT-side contract tests,
-- no foreign domain/persistence dependency.
+For iPhone, implement and validate the Orientation platform host separately from Vocation mobile-data/provider readiness. Do not expose dead Jobs or Map destinations when their actual provider/read seams are absent.
 
 ## 17. Current Readiness
 
@@ -349,20 +398,36 @@ Architecture relationship: **accepted**
 
 Standalone runtime/UI: **implemented direction remains valid**
 
-Published Opportunity Overview 1.0: **implemented on `dev`, consumed by WGT's released Windows v0.3.0 baseline**
+Published Opportunity Overview 1.0: **implemented and consumed on Windows**
 
-Later Opportunity Detail, Groups/Waves, and Availability/Freshness contracts: **not part of Published Opportunity Overview 1.0**
+Published Map Projection 1.0: **implemented and consumed on Windows**
+
+Generic map/geocoding duplication: **migrated toward Orientation ownership on current `dev`**
+
+Vocation iPhone provider/read topology: **not yet accepted/composed in WGT iOS**
+
+### Orientation
+
+Architecture relationship: **accepted as separate generic geospatial bounded context**
+
+Host Bridge 1.0: **accepted and consumed by WGT Desktop**
+
+WGT Desktop Orientation host: **implemented/validated**
+
+WGT iPhone Orientation host: **implementation + physical-device validation outstanding**
+
+Current-position permission/acquisition on WGT iPhone: **WGT-owned implementation/runtime gate outstanding**
 
 ### Conveyance
 
 Architecture relationship: **accepted as separate Conveyance bounded context**
 
-V1 Current Object delivery: **implemented direction/contract available on `dev`**
+V1 Current Object delivery: **implemented direction/contract available**
 
-Production security interoperability and WGT foreign-context integration: **not yet complete**
+Production security interoperability and concrete WGT foreign-context mobile delivery: **separately gated/not implied by this document**
 
 ## 18. Rule
 
-Foreign repository state outranks earlier WGT assumptions about foreign implementation details.
+Foreign repository state and the current `wgt-system/architecture` Source of Truth outrank earlier WGT assumptions about foreign implementation details.
 
-When Vocation or Illumination accepts a new integration ADR or published contract, WGT must consume that accepted boundary rather than preserve stale assumptions.
+When Vocation, Illumination, Orientation or Conveyance accepts a new relevant integration ADR or published/application contract, WGT must consume that accepted boundary rather than preserve stale assumptions.
