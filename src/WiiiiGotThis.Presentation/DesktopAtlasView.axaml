@@ -154,6 +154,12 @@
                     <TextBlock Classes="wgt-caption" Text="THIS DEVICE" />
                     <TextBlock Text="{Binding SelectedIntegration.EffectiveEnablementText}" FontWeight="SemiBold" />
                     <TextBlock Classes="wgt-secondary" Text="{Binding SelectedIntegration.ConnectionHealthDescription}" TextWrapping="Wrap" />
+                    <Button IsVisible="{Binding SelectedAtlasNode.CanOpenProductSurface}"
+                            Classes="wgt-action-button"
+                            Content="Open Vocation"
+                            Click="OnOpenProductSurface"
+                            HorizontalAlignment="Left"
+                            AutomationProperties.Name="Open full Vocation product" />
                     <WrapPanel>
                       <Button IsVisible="{Binding SelectedIntegration.ShowEnableOnDeviceAction}"
                               Command="{Binding EnableOnThisDeviceCommand}"
@@ -179,7 +185,7 @@
                             Content="Open current surface"
                             HorizontalAlignment="Left" />
                     <TextBlock Classes="wgt-caption"
-                               Text="Current WGT-native Vocation surfaces are transitional integration slices; full service entry is handled by the later hosting slice."
+                               Text="Current WGT-native Vocation surfaces are transitional integration slices; full service entry is handled by the provider-specific Vocation host."
                                TextWrapping="Wrap" />
                   </StackPanel>
                 </StackPanel>
