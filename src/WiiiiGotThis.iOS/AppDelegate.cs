@@ -24,7 +24,7 @@ internal sealed class AppDelegate : UIApplicationDelegate, IAvaloniaAppDelegate
         orientationMapHost = new IosOrientationMapPlatformHost();
         OrientationMapPlatformServices.Host = orientationMapHost;
 
-        var shell = CreateShell();
+        var shell = CreateShell(isOrientationMapSurfaceComposed: true);
         BuildAvaloniaApp(shell, this).SetupWithoutStarting();
         return true;
     }
@@ -44,7 +44,7 @@ internal sealed class AppDelegate : UIApplicationDelegate, IAvaloniaAppDelegate
         base.WillTerminate(application);
     }
 
-    private static ShellViewModel CreateShell()
+    private static ShellViewModel CreateShell(bool isOrientationMapSurfaceComposed)
     {
         var dataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -77,7 +77,8 @@ internal sealed class AppDelegate : UIApplicationDelegate, IAvaloniaAppDelegate
             deviceOverride,
             clearOverride,
             catalog,
-            "iPhone");
+            "iPhone",
+            isOrientationMapSurfaceComposed: isOrientationMapSurfaceComposed);
     }
 
     private static AppBuilder BuildAvaloniaApp(ShellViewModel shell, IAvaloniaAppDelegate appDelegate) =>
