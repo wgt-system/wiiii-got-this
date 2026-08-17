@@ -4,6 +4,8 @@
 <dict>
   <key>CFBundleDisplayName</key>
   <string>Wiiii Got This</string>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>Wiiii Got This uses your location to show your current position on Orientation maps.</string>
   <key>UISupportedInterfaceOrientations</key>
   <array>
     <string>UIInterfaceOrientationPortrait</string>
