@@ -20,12 +20,12 @@
     <PackageReference Include="Avalonia.iOS" Condition="'$(BuildiOS)' == 'true'" />
   </ItemGroup>
   <ItemGroup Condition="'$(BuildiOS)' == 'true'">
-    <BundleResource Include="..\WiiiiGotThis.Desktop\orientation-map\embed.html" LogicalName="orientation-map/embed.html" />
-    <BundleResource Include="..\WiiiiGotThis.Desktop\orientation-map\ORIENTATION_SOURCE_SHA.txt" LogicalName="orientation-map/ORIENTATION_SOURCE_SHA.txt" />
-    <BundleResource Include="..\WiiiiGotThis.Desktop\orientation-map\assets\embed-BqSQ54JR.js" LogicalName="orientation-map/assets/embed-BqSQ54JR.js" />
-    <BundleResource Include="..\WiiiiGotThis.Desktop\orientation-map\assets\feature-details-BesweY1v.css" LogicalName="orientation-map/assets/feature-details-BesweY1v.css" />
-    <BundleResource Include="..\WiiiiGotThis.Desktop\orientation-map\assets\feature-details-BUjUJ-S9.js" LogicalName="orientation-map/assets/feature-details-BUjUJ-S9.js" />
-    <BundleResource Include="..\WiiiiGotThis.Desktop\orientation-map\assets\maplibre-gl-worker-DagF8W22.js" LogicalName="orientation-map/assets/maplibre-gl-worker-DagF8W22.js" />
-    <BundleResource Include="..\WiiiiGotThis.Desktop\orientation-map\assets\reference-DFaAhDcG.js" LogicalName="orientation-map/assets/reference-DFaAhDcG.js" />
+    <BundleResource Include="..\WiiiiGotThis.Presentation\orientation-map\embed.html" LogicalName="orientation-map/embed.html" />
+    <BundleResource Include="..\WiiiiGotThis.Presentation\orientation-map\ORIENTATION_SOURCE_SHA.txt" LogicalName="orientation-map/ORIENTATION_SOURCE_SHA.txt" />
+    <BundleResource Include="..\WiiiiGotThis.Presentation\orientation-map\assets\embed-BqSQ54JR.js" LogicalName="orientation-map/assets/embed-BqSQ54JR.js" />
+    <BundleResource Include="..\WiiiiGotThis.Presentation\orientation-map\assets\feature-details-BesweY1v.css" LogicalName="orientation-map/assets/feature-details-BesweY1v.css" />
+    <BundleResource Include="..\WiiiiGotThis.Presentation\orientation-map\assets\feature-details-BUjUJ-S9.js" LogicalName="orientation-map/assets/feature-details-BUjUJ-S9.js" />
+    <BundleResource Include="..\WiiiiGotThis.Presentation\orientation-map\assets\maplibre-gl-worker-DagF8W22.js" LogicalName="orientation-map/assets/maplibre-gl-worker-DagF8W22.js" />
+    <BundleResource Include="..\WiiiiGotThis.Presentation\orientation-map\assets\reference-DFaAhDcG.js" LogicalName="orientation-map/assets/reference-DFaAhDcG.js" />
   </ItemGroup>
 </Project>
