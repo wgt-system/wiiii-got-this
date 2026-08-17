@@ -33,61 +33,61 @@
                AutomationProperties.Name="Search Wiiii Got This"
                AutomationProperties.AutomationId="AtlasSearch" />
 
-      <StackPanel IsHitTestVisible="True"
-                  HorizontalAlignment="Right"
-                  VerticalAlignment="Top"
-                  Spacing="8">
-        <Button Width="44"
+      <Canvas Width="260"
+              Height="104"
+              IsHitTestVisible="True"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Top">
+        <Button Canvas.Right="0"
+                Canvas.Top="0"
+                Width="44"
                 Height="44"
                 CornerRadius="22"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
                 Command="{Binding ToggleAtlasSettingsCommand}"
                 Content="⚙"
+                ToolTip.Tip="WGT settings"
                 AutomationProperties.Name="WGT settings"
                 AutomationProperties.AutomationId="AtlasSettings" />
-        <Border x:Name="SettingsPopover"
-                Classes="wgt-atlas-popover"
+
+        <Button x:Name="ThemeMenuButton"
+                Canvas.Right="0"
+                Canvas.Top="54"
+                Width="40"
+                Height="40"
+                CornerRadius="20"
+                Padding="0"
                 IsVisible="{Binding AtlasSettingsExpanded}"
-                Padding="10">
-          <StackPanel Spacing="8">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-              <StackPanel Spacing="1" VerticalAlignment="Center">
-                <TextBlock Classes="wgt-caption" Text="WGT" />
-                <TextBlock FontWeight="SemiBold" Text="Presentation" />
-              </StackPanel>
-              <Button x:Name="ThemeMenuButton"
-                      Grid.Column="1"
-                      Width="40"
-                      Height="40"
-                      CornerRadius="20"
-                      Padding="0"
-                      Content="◐"
-                      Click="OnToggleThemeMenu"
-                      ToolTip.Tip="Theme"
-                      AutomationProperties.Name="Choose Atlas theme" />
-            </Grid>
+                Content="◐"
+                Click="OnToggleThemeMenu"
+                ToolTip.Tip="Theme"
+                AutomationProperties.Name="Choose Atlas theme" />
 
-            <Grid x:Name="ThemeChoices"
-                  IsVisible="False"
-                  ColumnDefinitions="Auto,Auto,Auto,Auto"
-                  ColumnSpacing="6">
-              <Button Width="38" Height="38" CornerRadius="19" Padding="0" Content="T"
-                      Click="OnTechnicalTheme" ToolTip.Tip="Technical" AutomationProperties.Name="Technical theme" />
-              <Button Grid.Column="1" Width="38" Height="38" CornerRadius="19" Padding="0" Content="E"
-                      Click="OnElegantTheme" ToolTip.Tip="Elegant" AutomationProperties.Name="Elegant theme" />
-              <Button Grid.Column="2" Width="38" Height="38" CornerRadius="19" Padding="0" Content="M"
-                      Click="OnMachineTheme" ToolTip.Tip="Machine" AutomationProperties.Name="Machine theme" />
-              <Button Grid.Column="3" Width="38" Height="38" CornerRadius="19" Padding="0" Content="W"
-                      Click="OnWorldTheme" ToolTip.Tip="World" AutomationProperties.Name="World theme" />
-            </Grid>
-
-            <TextBlock x:Name="CurrentThemeLabel"
-                       Classes="wgt-caption"
-                       Text="Technical theme" />
-          </StackPanel>
-        </Border>
-      </StackPanel>
+        <StackPanel x:Name="ThemeChoices"
+                    Canvas.Right="48"
+                    Canvas.Top="55"
+                    Orientation="Horizontal"
+                    Spacing="6"
+                    IsVisible="False">
+          <Button x:Name="TechnicalThemeButton"
+                  Classes="wgt-theme-choice"
+                  Width="38" Height="38" CornerRadius="19" Padding="0" Content="T"
+                  Click="OnTechnicalTheme" ToolTip.Tip="Technical" AutomationProperties.Name="Technical theme" />
+          <Button x:Name="ElegantThemeButton"
+                  Classes="wgt-theme-choice"
+                  Width="38" Height="38" CornerRadius="19" Padding="0" Content="E"
+                  Click="OnElegantTheme" ToolTip.Tip="Elegant" AutomationProperties.Name="Elegant theme" />
+          <Button x:Name="MachineThemeButton"
+                  Classes="wgt-theme-choice"
+                  Width="38" Height="38" CornerRadius="19" Padding="0" Content="M"
+                  Click="OnMachineTheme" ToolTip.Tip="Machine" AutomationProperties.Name="Machine theme" />
+          <Button x:Name="WorldThemeButton"
+                  Classes="wgt-theme-choice"
+                  Width="38" Height="38" CornerRadius="19" Padding="0" Content="W"
+                  Click="OnWorldTheme" ToolTip.Tip="World" AutomationProperties.Name="World theme" />
+        </StackPanel>
+      </Canvas>
 
       <Border x:Name="ControlHint"
               Classes="wgt-atlas-controls"
