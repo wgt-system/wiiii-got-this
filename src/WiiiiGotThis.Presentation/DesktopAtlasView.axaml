@@ -1,0 +1,194 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WiiiiGotThis.Presentation"
+             x:Class="WiiiiGotThis.Presentation.DesktopAtlasView"
+             x:DataType="vm:ShellViewModel"
+             Focusable="True"
+             KeyDown="OnKeyDown"
+             SizeChanged="OnSizeChanged">
+  <Grid x:Name="AtlasViewport"
+        ClipToBounds="True"
+        Background="{DynamicResource WgtAtlasBackgroundBrush}"
+        PointerPressed="OnPointerPressed"
+        PointerMoved="OnPointerMoved"
+        PointerReleased="OnPointerReleased"
+        PointerWheelChanged="OnPointerWheelChanged">
+    <Canvas x:Name="SceneCanvas"
+            Width="1800"
+            Height="1200"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top" />
+
+    <Grid Margin="24" IsHitTestVisible="False">
+      <TextBox x:Name="AtlasSearch"
+               IsHitTestVisible="True"
+               Width="390"
+               Height="42"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Top"
+               Watermark="Search WGT…"
+               Text="{Binding AtlasSearchText, Mode=TwoWay}"
+               KeyDown="OnSearchKeyDown"
+               AutomationProperties.Name="Search Wiiii Got This"
+               AutomationProperties.AutomationId="AtlasSearch" />
+
+      <StackPanel IsHitTestVisible="True"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Top"
+                  Spacing="8">
+        <Button Width="44"
+                Height="44"
+                CornerRadius="22"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Command="{Binding ToggleAtlasSettingsCommand}"
+                Content="⚙"
+                AutomationProperties.Name="WGT settings"
+                AutomationProperties.AutomationId="AtlasSettings" />
+        <Border Classes="wgt-atlas-popover"
+                IsVisible="{Binding AtlasSettingsExpanded}"
+                Padding="12">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="wgt-caption" Text="WGT" />
+            <TextBlock FontWeight="SemiBold" Text="Presentation settings" />
+            <TextBlock Classes="wgt-secondary"
+                       MaxWidth="210"
+                       Text="Theme, sound and motion controls live here as the Atlas theme system lands. Service settings stay with their nodes."
+                       TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+      <Border Classes="wgt-atlas-controls"
+              IsHitTestVisible="False"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Bottom"
+              Padding="10,8">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="wgt-caption" HorizontalAlignment="Center" Text="↑   drag" />
+          <TextBlock Classes="wgt-caption" HorizontalAlignment="Center" Text="← ↓ →   ·   wheel to zoom" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <Canvas x:Name="InspectorLayer" IsHitTestVisible="False">
+      <Border x:Name="InspectorCard"
+              Classes="wgt-atlas-inspector"
+              IsHitTestVisible="True"
+              IsVisible="{Binding HasSelectedAtlasNode}"
+              Width="336"
+              MaxHeight="520"
+              Padding="16">
+        <Grid RowDefinitions="Auto,Auto,*" RowSpacing="10">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="wgt-caption" Text="{Binding SelectedAtlasNode.KindLabel}" />
+              <TextBlock Classes="wgt-section-title" FontSize="19" Text="{Binding SelectedAtlasNode.Title}" TextWrapping="Wrap" />
+              <TextBlock Classes="wgt-secondary" Text="{Binding SelectedAtlasNode.AvailabilityText}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Button Grid.Column="1"
+                    Width="30"
+                    Height="30"
+                    CornerRadius="15"
+                    Padding="0"
+                    Content="×"
+                    Command="{Binding SelectAtlasNodeCommand}"
+                    AutomationProperties.Name="Close node details" />
+          </Grid>
+
+          <Separator Grid.Row="1" />
+
+          <TabControl Grid.Row="2">
+            <TabItem Header="Overview">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,10,0,0" Spacing="10">
+                  <TextBlock IsVisible="{Binding IsSelectedAtlasCore}"
+                             Classes="wgt-secondary"
+                             Text="The Atlas is the root of Wiiii Got This. Services and their capabilities appear from real integration state rather than a separate hard-coded service catalog."
+                             TextWrapping="Wrap" />
+
+                  <StackPanel IsVisible="{Binding IsSelectedAtlasService}" Spacing="7">
+                    <TextBlock Classes="wgt-caption" Text="THIS DEVICE" />
+                    <TextBlock Text="{Binding SelectedIntegration.EffectiveEnablementText}" FontWeight="SemiBold" />
+                    <TextBlock Classes="wgt-secondary" Text="{Binding SelectedIntegration.ConnectionHealthDescription}" TextWrapping="Wrap" />
+                    <WrapPanel>
+                      <Button IsVisible="{Binding SelectedIntegration.ShowEnableOnDeviceAction}"
+                              Command="{Binding EnableOnThisDeviceCommand}"
+                              Content="Enable here"
+                              Margin="0,0,6,6" />
+                      <Button IsVisible="{Binding SelectedIntegration.ShowDisableOnDeviceAction}"
+                              Command="{Binding DisableOnThisDeviceCommand}"
+                              Content="Disable here"
+                              Margin="0,0,6,6" />
+                      <Button IsVisible="{Binding SelectedIntegration.HasDeviceOverride}"
+                              Command="{Binding InheritGlobalSettingCommand}"
+                              Content="Use global"
+                              Margin="0,0,6,6" />
+                    </WrapPanel>
+                  </StackPanel>
+
+                  <StackPanel IsVisible="{Binding IsSelectedAtlasCapability}" Spacing="7">
+                    <TextBlock Classes="wgt-caption" Text="CURRENT CAPABILITY" />
+                    <TextBlock Classes="wgt-secondary" Text="{Binding SelectedCapability.StatusText}" TextWrapping="Wrap" />
+                    <Button Classes="wgt-action-button"
+                            IsEnabled="{Binding SelectedCapability.CanOpen}"
+                            Command="{Binding OpenCapabilityCommand}"
+                            Content="Open current surface"
+                            HorizontalAlignment="Left" />
+                    <TextBlock Classes="wgt-caption"
+                               Text="Current WGT-native Vocation surfaces are transitional integration slices; full service entry is handled by the next hosting slice."
+                               TextWrapping="Wrap" />
+                  </StackPanel>
+                </StackPanel>
+              </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Capabilities">
+              <Grid Margin="0,10,0,0" RowDefinitions="Auto,*" RowSpacing="8">
+                <TextBlock Classes="wgt-secondary"
+                           Text="Capabilities currently published and resolved for this service."
+                           TextWrapping="Wrap" />
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding SelectedIntegrationCapabilities}"
+                         SelectedItem="{Binding SelectedCapability, Mode=TwoWay}"
+                         MaxHeight="260">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:CapabilityPresentationViewModel">
+                      <StackPanel Margin="2,6" Spacing="2">
+                        <TextBlock FontWeight="SemiBold" Text="{Binding CapabilityTitle}" TextWrapping="Wrap" />
+                        <TextBlock Classes="wgt-caption" Text="{Binding StatusText}" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </Grid>
+            </TabItem>
+
+            <TabItem Header="System">
+              <StackPanel Margin="0,10,0,0" Spacing="6">
+                <TextBlock Classes="wgt-caption" Text="NODE" />
+                <TextBlock Text="{Binding SelectedAtlasNode.NodeId}" TextWrapping="Wrap" />
+                <TextBlock IsVisible="{Binding IsSelectedAtlasService}" Classes="wgt-caption" Margin="0,6,0,0" Text="CONNECTION" />
+                <TextBlock IsVisible="{Binding IsSelectedAtlasService}" Classes="wgt-secondary" Text="{Binding SelectedIntegration.PublicationRefreshStatusText}" TextWrapping="Wrap" />
+                <Button IsVisible="{Binding IsSelectedAtlasService}"
+                        Command="{Binding RefreshCommand}"
+                        Content="Refresh service state"
+                        HorizontalAlignment="Left"
+                        Margin="0,6,0,0" />
+              </StackPanel>
+            </TabItem>
+          </TabControl>
+        </Grid>
+      </Border>
+    </Canvas>
+
+    <Border IsVisible="{Binding HasStatusMessage}"
+            Classes="wgt-state-banner"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Margin="24"
+            Padding="12,8">
+      <TextBlock Classes="wgt-secondary" Text="{Binding StatusText}" TextWrapping="Wrap" />
+    </Border>
+  </Grid>
+</UserControl>
