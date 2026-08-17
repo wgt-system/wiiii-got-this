@@ -15,6 +15,11 @@ public enum AtlasConnectionKind
     CapabilityOwnership
 }
 
+public sealed record AtlasProductService(
+    ServiceIdentity ServiceIdentity,
+    string DisplayName,
+    string Description);
+
 public sealed record AtlasNode(
     string NodeId,
     AtlasNodeKind Kind,
@@ -24,7 +29,9 @@ public sealed record AtlasNode(
     CapabilityIdentity? CapabilityIdentity = null,
     bool IsEnabled = true,
     bool IsAvailable = true,
-    AvailabilityReason? AvailabilityReason = null);
+    AvailabilityReason? AvailabilityReason = null,
+    bool IsIntegrated = true,
+    string? Description = null);
 
 public sealed record AtlasConnection(
     string ConnectionId,
@@ -41,7 +48,30 @@ public sealed class BuildAtlasProjectionUseCase
     public const string CoreNodeId = "wgt.core";
     private const string ReferenceDeveloperServiceId = "reference-service";
 
+    private static readonly IReadOnlyList<AtlasProductService> DefaultProductServices = Array.AsReadOnly<AtlasProductService>(
+    [
+        new(new ServiceIdentity("vocation"), "Vocation", "Personal job-market, research and application work."),
+        new(new ServiceIdentity("illumination"), "Illumination", "Learning, review, study and learning insight."),
+        new(new ServiceIdentity("orientation"), "Orientation", "Spatial discovery, exploration, navigation and mobility.")
+    ]);
+
     private readonly StringComparer titleComparer = StringComparer.OrdinalIgnoreCase;
+    private readonly IReadOnlyList<AtlasProductService> productServices;
+
+    public BuildAtlasProjectionUseCase(IEnumerable<AtlasProductService>? productServices = null)
+    {
+        var configured = (productServices ?? DefaultProductServices).ToArray();
+        var identities = new HashSet<ServiceIdentity>();
+        foreach (var service in configured)
+        {
+            ArgumentNullException.ThrowIfNull(service);
+            ArgumentException.ThrowIfNullOrWhiteSpace(service.DisplayName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(service.Description);
+            if (!identities.Add(service.ServiceIdentity))
+                throw new ArgumentException($"Duplicate Atlas product Service '{service.ServiceIdentity.Value}'.", nameof(productServices));
+        }
+        this.productServices = Array.AsReadOnly(configured);
+    }
 
     public AtlasProjection Build(
         IReadOnlyCollection<ServiceIntegrationListItem> integrations,
@@ -53,40 +83,66 @@ public sealed class BuildAtlasProjectionUseCase
 
         var visibleIntegrations = integrations
             .Where(integration => includeDeveloperIntegrations || !IsDeveloperIntegration(integration.ServiceIdentity))
-            .OrderBy(integration => integration.DisplayName, titleComparer)
-            .ThenBy(integration => integration.ServiceIdentity.Value, StringComparer.Ordinal)
+            .ToDictionary(integration => integration.ServiceIdentity);
+        var knownProducts = productServices.ToDictionary(service => service.ServiceIdentity);
+
+        var serviceEntries = visibleIntegrations.Keys
+            .Concat(knownProducts.Keys)
+            .Distinct()
+            .Select(identity =>
+            {
+                visibleIntegrations.TryGetValue(identity, out var integration);
+                knownProducts.TryGetValue(identity, out var product);
+                return new
+                {
+                    Identity = identity,
+                    Integration = integration,
+                    Product = product,
+                    Title = product?.DisplayName ?? integration?.DisplayName ?? identity.Value
+                };
+            })
+            .OrderBy(entry => entry.Title, titleComparer)
+            .ThenBy(entry => entry.Identity.Value, StringComparer.Ordinal)
             .ToArray();
 
-        var nodes = new List<AtlasNode>(1 + visibleIntegrations.Length + capabilities.Count)
+        var nodes = new List<AtlasNode>(1 + serviceEntries.Length + capabilities.Count)
         {
             new(
                 CoreNodeId,
                 AtlasNodeKind.Core,
                 "Wiiii Got This",
-                "Your service and capability system")
+                "System ready",
+                Description: "Your service and capability system.")
         };
         var connections = new List<AtlasConnection>();
 
-        foreach (var integration in visibleIntegrations)
+        foreach (var entry in serviceEntries)
         {
-            var serviceNodeId = ServiceNodeId(integration.ServiceIdentity);
-            var serviceAvailable = integration.IsEffectivelyEnabled && integration.HasLastKnownPublication;
+            var integration = entry.Integration;
+            var integrated = integration is not null;
+            var serviceAvailable = integrated && integration!.IsEffectivelyEnabled && integration.HasLastKnownPublication;
+            var serviceNodeId = ServiceNodeId(entry.Identity);
             nodes.Add(new(
                 serviceNodeId,
                 AtlasNodeKind.Service,
-                integration.DisplayName,
-                DescribeService(integration),
-                integration.ServiceIdentity,
-                IsEnabled: integration.IsEffectivelyEnabled,
-                IsAvailable: serviceAvailable));
+                entry.Title,
+                integrated ? DescribeService(integration!) : "Not composed on this client yet",
+                entry.Identity,
+                IsEnabled: integrated && integration!.IsEffectivelyEnabled,
+                IsAvailable: serviceAvailable,
+                IsIntegrated: integrated,
+                Description: entry.Product?.Description));
             connections.Add(new(
-                $"composition:{integration.ServiceIdentity.Value}",
+                $"composition:{entry.Identity.Value}",
                 AtlasConnectionKind.Composition,
                 CoreNodeId,
                 serviceNodeId));
 
+            if (!integrated)
+                continue;
+
             foreach (var capability in capabilities
-                         .Where(capability => capability.ServiceIdentity == integration.ServiceIdentity)
+                         .Where(capability => capability.ServiceIdentity == entry.Identity)
                          .OrderBy(capability => capability.CapabilityTitle, titleComparer)
                          .ThenBy(capability => capability.CapabilityIdentity.Value, StringComparer.Ordinal))
             {
@@ -98,7 +154,7 @@ public sealed class BuildAtlasProjectionUseCase
                     capability.Resolution.Availability.IsAvailable ? "Available" : "Unavailable",
                     capability.ServiceIdentity,
                     capability.CapabilityIdentity,
-                    integration.IsEffectivelyEnabled,
+                    integration!.IsEffectivelyEnabled,
                     capability.Resolution.Availability.IsAvailable,
                     capability.Resolution.Availability.IsAvailable ? null : capability.Resolution.Availability.Reason));
                 connections.Add(new(
@@ -133,7 +189,9 @@ public sealed class BuildAtlasProjectionUseCase
         if (!integration.IsEffectivelyEnabled)
             return "Disabled on this device";
         if (!integration.HasLastKnownPublication)
-            return "Waiting for a valid service publication";
+            return integration.HasRefreshBeenAttempted
+                ? "No valid service publication available"
+                : "Waiting for a valid service publication";
         return integration.LatestRefreshResult switch
         {
             IntegrationRefreshStatus.Refreshed => "Connected",
