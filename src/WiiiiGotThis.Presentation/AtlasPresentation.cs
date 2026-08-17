@@ -18,6 +18,7 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     public bool IsAvailable => Model.IsAvailable;
     public bool IsIntegrated => Model.IsIntegrated;
     public bool IsKnownOnlyService => IsService && !IsIntegrated;
+    public bool IsIntegratedService => IsService && IsIntegrated;
     public AvailabilityReason? AvailabilityReason => Model.AvailabilityReason;
     public double X { get; } = x;
     public double Y { get; } = y;
