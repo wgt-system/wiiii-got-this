@@ -10,7 +10,7 @@ public sealed class IntegrationSettingsUxTests
     [Fact]
     public void Presentation_exposes_only_contextually_relevant_enablement_actions_and_user_facing_health()
     {
-        var service = new ServiceIdentity("reference");
+        var service = new ServiceIdentity("reference-service");
         var pending = new ServiceIntegrationPresentationViewModel(new ServiceIntegrationListItem(
             service,
             "Reference Integration",
