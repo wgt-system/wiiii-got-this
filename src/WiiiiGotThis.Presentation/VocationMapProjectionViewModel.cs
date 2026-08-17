@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using WiiiiGotThis.Application;
@@ -49,6 +50,10 @@ public sealed partial class VocationMapProjectionViewModel : ObservableObject
     public bool IsUnavailable => State == VocationMapProjectionPresentationState.Unavailable;
     public bool IsInvalidContract => State == VocationMapProjectionPresentationState.InvalidContract;
     public bool IsIncompatibleContract => State == VocationMapProjectionPresentationState.IncompatibleContract;
+    public bool IsStateBannerVisible => !IsLoaded;
+    public string FeatureCountText => IsLoaded
+        ? $"{Features.Count.ToString(CultureInfo.InvariantCulture)} {(Features.Count == 1 ? "location" : "locations")}"
+        : string.Empty;
     public string StateTitle => State switch
     {
         VocationMapProjectionPresentationState.Loading => "Loading map",
@@ -76,6 +81,7 @@ public sealed partial class VocationMapProjectionViewModel : ObservableObject
     }.Where(value => value is not null));
     public bool HasPublicationMetadata => !string.IsNullOrWhiteSpace(PublicationMetadataText);
     public bool IsFeatureSelected => SelectedFeature is not null;
+    public bool IsFeatureSelectionEmpty => IsLoaded && SelectedFeature is null;
 
     partial void OnStateChanged(VocationMapProjectionPresentationState value)
     {
@@ -85,6 +91,9 @@ public sealed partial class VocationMapProjectionViewModel : ObservableObject
         OnPropertyChanged(nameof(IsUnavailable));
         OnPropertyChanged(nameof(IsInvalidContract));
         OnPropertyChanged(nameof(IsIncompatibleContract));
+        OnPropertyChanged(nameof(IsStateBannerVisible));
+        OnPropertyChanged(nameof(FeatureCountText));
+        OnPropertyChanged(nameof(IsFeatureSelectionEmpty));
         OnPropertyChanged(nameof(StateTitle));
         OnPropertyChanged(nameof(StateDescription));
     }
@@ -101,7 +110,11 @@ public sealed partial class VocationMapProjectionViewModel : ObservableObject
         OnPropertyChanged(nameof(HasPublicationMetadata));
     }
 
-    partial void OnSelectedFeatureChanged(VocationMapFeaturePresentationViewModel? value) => OnPropertyChanged(nameof(IsFeatureSelected));
+    partial void OnSelectedFeatureChanged(VocationMapFeaturePresentationViewModel? value)
+    {
+        OnPropertyChanged(nameof(IsFeatureSelected));
+        OnPropertyChanged(nameof(IsFeatureSelectionEmpty));
+    }
 
     public void SelectFeature(VocationMapFeaturePresentationViewModel? feature) => SelectedFeature = feature;
 
@@ -123,6 +136,7 @@ public sealed partial class VocationMapProjectionViewModel : ObservableObject
             State = Features.Count == 0
                 ? VocationMapProjectionPresentationState.Empty
                 : VocationMapProjectionPresentationState.Loaded;
+            OnPropertyChanged(nameof(FeatureCountText));
         }
         else
         {
