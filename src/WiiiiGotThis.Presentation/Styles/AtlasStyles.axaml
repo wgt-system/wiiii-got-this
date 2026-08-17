@@ -8,6 +8,19 @@
     <SolidColorBrush x:Key="WgtAtlasSelectedBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.15" />
   </Styles.Resources>
 
+  <Style Selector="Grid.wgt-atlas-root">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasBackgroundBrush}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant">
+    <Setter Property="Background" Value="{DynamicResource WgtSurfaceBrush}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasBackgroundBrush}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world">
+    <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
+  </Style>
+
   <Style Selector="Button.wgt-atlas-node">
     <Setter Property="Background" Value="{DynamicResource WgtAtlasNodeBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasNodeBorderBrush}" />
@@ -34,6 +47,47 @@
     <Setter Property="Opacity" Value="0.62" />
   </Style>
 
+  <!-- Technical keeps the architecture-native precision baseline. -->
+  <Style Selector="Button.wgt-atlas-node.theme-technical">
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-technical">
+    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+
+  <!-- Elegant softens geometry and de-emphasizes infrastructure. -->
+  <Style Selector="Button.wgt-atlas-node.theme-elegant">
+    <Setter Property="CornerRadius" Value="30" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Opacity" Value="0.96" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-elegant">
+    <Setter Property="CornerRadius" Value="40" />
+  </Style>
+
+  <!-- Machine is deliberately modular and mechanical rather than generic cyberpunk chrome. -->
+  <Style Selector="Button.wgt-atlas-node.theme-machine">
+    <Setter Property="CornerRadius" Value="2" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.theme-machine">
+    <Setter Property="CornerRadius" Value="2" />
+  </Style>
+
+  <!-- World is the low-cost structural shell for later diorama artwork, not the final miniature-world art. -->
+  <Style Selector="Button.wgt-atlas-node.theme-world">
+    <Setter Property="CornerRadius" Value="28" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-world">
+    <Setter Property="CornerRadius" Value="44" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.theme-world">
+    <Setter Property="CornerRadius" Value="30" />
+  </Style>
+
   <Style Selector="Line.wgt-atlas-connection">
     <Setter Property="Stroke" Value="{DynamicResource WgtAtlasConnectionBrush}" />
     <Setter Property="StrokeThickness" Value="1.5" />
@@ -41,6 +95,21 @@
   <Style Selector="Line.wgt-atlas-connection.capability">
     <Setter Property="Stroke" Value="{DynamicResource WgtAtlasCapabilityConnectionBrush}" />
     <Setter Property="StrokeThickness" Value="1.25" />
+  </Style>
+  <Style Selector="Line.wgt-atlas-connection.theme-elegant">
+    <Setter Property="StrokeThickness" Value="1" />
+    <Setter Property="Opacity" Value="0.62" />
+  </Style>
+  <Style Selector="Line.wgt-atlas-connection.theme-machine">
+    <Setter Property="StrokeThickness" Value="2.5" />
+  </Style>
+  <Style Selector="Line.wgt-atlas-connection.capability.theme-machine">
+    <Setter Property="StrokeThickness" Value="2" />
+  </Style>
+  <Style Selector="Line.wgt-atlas-connection.theme-world">
+    <Setter Property="Stroke" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="StrokeThickness" Value="2.25" />
+    <Setter Property="Opacity" Value="0.5" />
   </Style>
 
   <Style Selector="Border.wgt-atlas-inspector">
@@ -50,6 +119,18 @@
     <Setter Property="CornerRadius" Value="16" />
     <Setter Property="BoxShadow" Value="0 12 32 0 #44000000" />
   </Style>
+  <Style Selector="Border.wgt-atlas-inspector.theme-elegant">
+    <Setter Property="CornerRadius" Value="24" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-inspector.theme-machine">
+    <Setter Property="CornerRadius" Value="2" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-inspector.theme-world">
+    <Setter Property="CornerRadius" Value="22" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+  </Style>
+
   <Style Selector="Border.wgt-atlas-popover">
     <Setter Property="Background" Value="{DynamicResource WgtSurfaceBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
@@ -63,5 +144,18 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="12" />
     <Setter Property="Opacity" Value="0.82" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-controls.theme-machine">
+    <Setter Property="CornerRadius" Value="2" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-controls.theme-elegant">
+    <Setter Property="CornerRadius" Value="18" />
+    <Setter Property="Opacity" Value="0.7" />
+  </Style>
+
+  <Style Selector="Button.wgt-theme-choice.selected">
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
+    <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
 </Styles>
