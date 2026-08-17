@@ -203,7 +203,7 @@
                       </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <StackPanel Grid.Column="1" IsVisible="{Binding IsCapabilityDetailsVisible}" Spacing="8">
+                    <StackPanel Grid.Column="1" IsVisible="{Binding IsDesktopCapabilityDetailsVisible}" Spacing="8">
                       <TextBlock Classes="wgt-caption" Text="SELECTED CAPABILITY" />
                       <TextBlock Classes="wgt-section-title" FontSize="18" Text="{Binding SelectedCapability.CapabilityTitle}" TextWrapping="Wrap" />
                       <TextBlock Classes="wgt-secondary" Text="{Binding SelectedCapability.StatusText}" TextWrapping="Wrap" />
