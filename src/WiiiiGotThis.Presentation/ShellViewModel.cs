@@ -26,6 +26,7 @@ public sealed partial class ShellViewModel : ObservableObject
     private readonly ResolveCapabilityCatalogUseCase resolveCapabilityCatalog;
     private readonly GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview;
     private readonly GetVocationMapProjectionUseCase? readVocationMapProjection;
+    private readonly bool isOrientationMapSurfaceComposed;
     private readonly string suggestedDeviceName;
     private readonly object initializationGate = new();
     private Task? initializationTask;
@@ -51,7 +52,8 @@ public sealed partial class ShellViewModel : ObservableObject
         ResolveCapabilityCatalogUseCase resolveCapabilityCatalog,
         string suggestedDeviceName,
         GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview = null,
-        GetVocationMapProjectionUseCase? readVocationMapProjection = null)
+        GetVocationMapProjectionUseCase? readVocationMapProjection = null,
+        bool isOrientationMapSurfaceComposed = true)
     {
         this.ensureCurrentDevice = ensureCurrentDevice;
         this.registerKnownIntegrations = registerKnownIntegrations;
@@ -63,6 +65,7 @@ public sealed partial class ShellViewModel : ObservableObject
         this.resolveCapabilityCatalog = resolveCapabilityCatalog;
         this.readVocationOpportunityOverview = readVocationOpportunityOverview;
         this.readVocationMapProjection = readVocationMapProjection;
+        this.isOrientationMapSurfaceComposed = isOrientationMapSurfaceComposed;
         this.suggestedDeviceName = suggestedDeviceName;
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
@@ -268,7 +271,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
     private bool CanManageSelectedIntegration() => SelectedIntegration is not null && CurrentDeviceIdentity is not null;
     private bool CanShowJobs() => readVocationOpportunityOverview is not null && Integrations.Any(integration => integration.ServiceIdentity.Value == "vocation" && integration.IsEffectivelyEnabled);
-    private bool CanShowMap() => readVocationMapProjection is not null && Integrations.Any(integration => integration.ServiceIdentity.Value == "vocation" && integration.IsEffectivelyEnabled);
+    private bool CanShowMap() => isOrientationMapSurfaceComposed && readVocationMapProjection is not null && Integrations.Any(integration => integration.ServiceIdentity.Value == "vocation" && integration.IsEffectivelyEnabled);
     private bool CanOpenSelectedCapability()
     {
         var selected = SelectedCapability;
