@@ -179,9 +179,8 @@ internal sealed class IosOrientationMapPlatformHost : IOrientationMapPlatformHos
             return;
 
         disposed = true;
-        locationManager.Delegate = null;
-        locationDelegate.Dispose();
         locationManager.Dispose();
+        locationDelegate.Dispose();
     }
 
     private sealed class LocationDelegate(IosOrientationMapPlatformHost owner) : CLLocationManagerDelegate
