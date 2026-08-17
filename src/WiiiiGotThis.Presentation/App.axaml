@@ -2,5 +2,6 @@
   <Application.Styles>
     <fluent:FluentTheme />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/WgtStyles.axaml" />
+    <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasStyles.axaml" />
   </Application.Styles>
 </Application>
