@@ -11,6 +11,10 @@ public sealed class WgtMapView : Grid, IDisposable
     {
         Text = "Orientation map host is unavailable.",
         TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+        TextAlignment = Avalonia.Media.TextAlignment.Center,
+        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+        MaxWidth = 420,
         IsVisible = false,
     };
 
@@ -179,10 +183,15 @@ public sealed class WgtMapView : Grid, IDisposable
     private void ShowHostError(string message)
     {
         hostStatus.Text = message;
+        webView.IsVisible = false;
         hostStatus.IsVisible = true;
     }
 
-    private void HideHostError() => hostStatus.IsVisible = false;
+    private void HideHostError()
+    {
+        hostStatus.IsVisible = false;
+        webView.IsVisible = true;
+    }
 
     public void Dispose()
     {
