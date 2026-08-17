@@ -71,4 +71,18 @@ jobs:
         run: dotnet restore src/WiiiiGotThis.iOS/WiiiiGotThis.iOS.csproj -p:BuildiOS=true -p:RuntimeIdentifier=iossimulator-arm64 -p:ApplicationId=dev.wgtsystem.wiiiigotthis.ci
 
       - name: Compile iOS simulator target
-        run: dotnet build src/WiiiiGotThis.iOS/WiiiiGotThis.iOS.csproj -c Release --no-restore -p:BuildiOS=true -p:RuntimeIdentifier=iossimulator-arm64 -p:ApplicationId=dev.wgtsystem.wiiiigotthis.ci
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet build src/WiiiiGotThis.iOS/WiiiiGotThis.iOS.csproj -c Release --no-restore -p:BuildiOS=true -p:RuntimeIdentifier=iossimulator-arm64 -p:ApplicationId=dev.wgtsystem.wiiiigotthis.ci 2>&1 | tee ios-build.log
+
+      - name: Reject unexpected iOS linker warnings
+        shell: bash
+        run: |
+          linker_warnings="$(grep -E 'warning IL[0-9]+' ios-build.log || true)"
+          unexpected="$(printf '%s\n' "$linker_warnings" | grep -v -E '^$|Avalonia\.DesignerSupport\.dll .*warning IL2104:' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "Unexpected iOS linker warnings:"
+            printf '%s\n' "$unexpected"
+            exit 1
+          fi
