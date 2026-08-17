@@ -37,7 +37,19 @@ internal static class Program
         var catalog = new ResolveCapabilityCatalogUseCase(adapters, integrationStore, publicationStore);
         var readVocationOpportunityOverview = new GetVocationOpportunityOverviewUseCase(vocationSource);
         var readVocationMapProjection = new GetVocationMapProjectionUseCase(vocationMapSource);
-        var shell = new ShellViewModel(ensureDevice, register, refresh, list, global, deviceOverride, clearOverride, catalog, "Windows PC", readVocationOpportunityOverview, readVocationMapProjection);
+        var shell = new ShellViewModel(
+            ensureDevice,
+            register,
+            refresh,
+            list,
+            global,
+            deviceOverride,
+            clearOverride,
+            catalog,
+            "Windows PC",
+            readVocationOpportunityOverview,
+            readVocationMapProjection,
+            isOrientationMapSurfaceComposed: true);
 
         BuildAvaloniaApp(shell).StartWithClassicDesktopLifetime(args);
     }
