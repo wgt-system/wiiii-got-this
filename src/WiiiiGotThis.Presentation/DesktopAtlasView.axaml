@@ -112,10 +112,14 @@
               Padding="16">
         <Grid RowDefinitions="Auto,Auto,*" RowSpacing="10">
           <Grid ColumnDefinitions="*,Auto">
-            <StackPanel Spacing="2">
+            <StackPanel Spacing="3">
               <TextBlock Classes="wgt-caption" Text="{Binding SelectedAtlasNode.KindLabel}" />
               <TextBlock Classes="wgt-section-title" FontSize="19" Text="{Binding SelectedAtlasNode.Title}" TextWrapping="Wrap" />
               <TextBlock Classes="wgt-secondary" Text="{Binding SelectedAtlasNode.AvailabilityText}" TextWrapping="Wrap" />
+              <TextBlock IsVisible="{Binding SelectedAtlasNode.HasDescription}"
+                         Margin="0,4,0,0"
+                         Text="{Binding SelectedAtlasNode.Description}"
+                         TextWrapping="Wrap" />
             </StackPanel>
             <Button Grid.Column="1"
                     Width="30"
@@ -135,10 +139,18 @@
                 <StackPanel Margin="0,10,0,0" Spacing="10">
                   <TextBlock IsVisible="{Binding IsSelectedAtlasCore}"
                              Classes="wgt-secondary"
-                             Text="The Atlas is the root of Wiiii Got This. Services and their capabilities appear from real integration state rather than a separate hard-coded service catalog."
+                             Text="The Atlas is the root of Wiiii Got This. Services and their capabilities appear from WGT product identity plus real integration state."
                              TextWrapping="Wrap" />
 
-                  <StackPanel IsVisible="{Binding IsSelectedAtlasService}" Spacing="7">
+                  <StackPanel IsVisible="{Binding SelectedAtlasNode.IsKnownOnlyService}" Spacing="7">
+                    <TextBlock Classes="wgt-caption" Text="WGT PRODUCT SERVICE" />
+                    <TextBlock FontWeight="SemiBold" Text="Known to WGT, not composed on this client yet" TextWrapping="Wrap" />
+                    <TextBlock Classes="wgt-secondary"
+                               Text="This node represents the real service identity. No capability or provider contract is being invented: its full client integration will appear here only after an explicit service boundary is implemented."
+                               TextWrapping="Wrap" />
+                  </StackPanel>
+
+                  <StackPanel IsVisible="{Binding SelectedAtlasNode.IsIntegratedService}" Spacing="7">
                     <TextBlock Classes="wgt-caption" Text="THIS DEVICE" />
                     <TextBlock Text="{Binding SelectedIntegration.EffectiveEnablementText}" FontWeight="SemiBold" />
                     <TextBlock Classes="wgt-secondary" Text="{Binding SelectedIntegration.ConnectionHealthDescription}" TextWrapping="Wrap" />
@@ -167,7 +179,7 @@
                             Content="Open current surface"
                             HorizontalAlignment="Left" />
                     <TextBlock Classes="wgt-caption"
-                               Text="Current WGT-native Vocation surfaces are transitional integration slices; full service entry is handled by the next hosting slice."
+                               Text="Current WGT-native Vocation surfaces are transitional integration slices; full service entry is handled by the later hosting slice."
                                TextWrapping="Wrap" />
                   </StackPanel>
                 </StackPanel>
@@ -175,11 +187,18 @@
             </TabItem>
 
             <TabItem Header="Capabilities">
-              <Grid Margin="0,10,0,0" RowDefinitions="Auto,*" RowSpacing="8">
-                <TextBlock Classes="wgt-secondary"
+              <Grid Margin="0,10,0,0" RowDefinitions="Auto,Auto,*" RowSpacing="8">
+                <TextBlock IsVisible="{Binding SelectedAtlasNode.IsKnownOnlyService}"
+                           Classes="wgt-secondary"
+                           Text="No capabilities are composed for this service on this client yet."
+                           TextWrapping="Wrap" />
+                <TextBlock Grid.Row="1"
+                           IsVisible="{Binding SelectedAtlasNode.IsIntegratedService}"
+                           Classes="wgt-secondary"
                            Text="Capabilities currently published and resolved for this service."
                            TextWrapping="Wrap" />
-                <ListBox Grid.Row="1"
+                <ListBox Grid.Row="2"
+                         IsVisible="{Binding SelectedAtlasNode.IsIntegratedService}"
                          ItemsSource="{Binding SelectedIntegrationCapabilities}"
                          SelectedItem="{Binding SelectedCapability, Mode=TwoWay}"
                          MaxHeight="260">
@@ -199,9 +218,14 @@
               <StackPanel Margin="0,10,0,0" Spacing="6">
                 <TextBlock Classes="wgt-caption" Text="NODE" />
                 <TextBlock Text="{Binding SelectedAtlasNode.NodeId}" TextWrapping="Wrap" />
-                <TextBlock IsVisible="{Binding IsSelectedAtlasService}" Classes="wgt-caption" Margin="0,6,0,0" Text="CONNECTION" />
-                <TextBlock IsVisible="{Binding IsSelectedAtlasService}" Classes="wgt-secondary" Text="{Binding SelectedIntegration.PublicationRefreshStatusText}" TextWrapping="Wrap" />
-                <Button IsVisible="{Binding IsSelectedAtlasService}"
+                <TextBlock IsVisible="{Binding SelectedAtlasNode.IsKnownOnlyService}"
+                           Classes="wgt-secondary"
+                           Margin="0,6,0,0"
+                           Text="No runtime adapter or service publication is attached on this client yet."
+                           TextWrapping="Wrap" />
+                <TextBlock IsVisible="{Binding SelectedAtlasNode.IsIntegratedService}" Classes="wgt-caption" Margin="0,6,0,0" Text="CONNECTION" />
+                <TextBlock IsVisible="{Binding SelectedAtlasNode.IsIntegratedService}" Classes="wgt-secondary" Text="{Binding SelectedIntegration.PublicationRefreshStatusText}" TextWrapping="Wrap" />
+                <Button IsVisible="{Binding SelectedAtlasNode.IsIntegratedService}"
                         Command="{Binding RefreshCommand}"
                         Content="Refresh service state"
                         HorizontalAlignment="Left"
