@@ -5,10 +5,10 @@
         <TextBlock Classes="wgt-secondary" IsVisible="{Binding IsLoaded}" Text="{Binding FeatureCountText}" />
         <TextBlock Classes="wgt-caption" IsVisible="{Binding HasPublicationMetadata}" Text="{Binding PublicationMetadataText}" TextTrimming="CharacterEllipsis" MaxWidth="520" />
       </StackPanel>
-      <Button Grid.Column="1" Classes="wgt-action-button" Command="{Binding RefreshCommand}" Content="Refresh" />
+      <Button x:Name="MapRefreshButton" Grid.Column="1" Classes="wgt-action-button" AutomationProperties.Name="Refresh map data" AutomationProperties.AutomationId="MapRefresh" Command="{Binding RefreshCommand}" Content="_Refresh" />
     </Grid>
 
-    <Border Grid.Row="1" Classes="wgt-state-banner" IsVisible="{Binding IsStateBannerVisible}">
+    <Border Grid.Row="1" Classes="wgt-state-banner" IsVisible="{Binding IsStateBannerVisible}" AutomationProperties.Name="Map status">
       <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
         <TextBlock Classes="wgt-section-title" Text="{Binding StateTitle}" />
         <TextBlock Grid.Row="1" Classes="wgt-secondary" Text="{Binding StateDescription}" TextWrapping="Wrap" />
@@ -21,7 +21,7 @@
         <v:WgtMapView DataContext="{Binding}" />
       </Border>
 
-      <Border Grid.Column="1" Classes="wgt-surface">
+      <Border Grid.Column="1" Classes="wgt-surface" AutomationProperties.Name="Selected map location">
         <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
           <StackPanel Spacing="3">
             <TextBlock Classes="wgt-caption" Text="SELECTED LOCATION" />
