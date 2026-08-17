@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -66,19 +65,15 @@ public sealed partial class DesktopShellView : UserControl
         switch (currentShell.CurrentSurface)
         {
             case ShellSurface.Home:
-                HomeNavigation.Focus();
+                AtlasWorkspace.FocusPrimaryControl();
                 break;
             case ShellSurface.Jobs:
-                if (!JobsWorkspace.FocusPrimaryControl())
-                    JobsNavigation.Focus();
+                JobsWorkspace.FocusPrimaryControl();
                 break;
             case ShellSurface.Map:
-                if (!MapWorkspace.FocusPrimaryControl())
-                    MapNavigation.Focus();
+                MapWorkspace.FocusPrimaryControl();
                 break;
             case ShellSurface.Settings:
-                if (!SettingsConnectionsList.Focus())
-                    SettingsNavigation.Focus();
                 break;
         }
     }
