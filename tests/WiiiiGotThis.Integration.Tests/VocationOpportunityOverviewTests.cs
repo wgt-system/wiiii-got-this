@@ -152,7 +152,8 @@ public sealed class VocationOpportunityOverviewTests
             new ResolveCapabilityCatalogUseCase(adapters, integrations, publications),
             "Windows PC",
             new GetVocationOpportunityOverviewUseCase(overviewSource),
-            new GetVocationMapProjectionUseCase(mapSource));
+            new GetVocationMapProjectionUseCase(mapSource),
+            isOrientationMapSurfaceComposed: true);
 
         await shell.EnsureInitializedAsync();
         Assert.False(shell.IsMapAvailable);
