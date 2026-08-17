@@ -40,6 +40,8 @@ public sealed class BuildAtlasProjectionUseCase
 {
     public const string CoreNodeId = "wgt.core";
 
+    private readonly StringComparer titleComparer = StringComparer.OrdinalIgnoreCase;
+
     public AtlasProjection Build(
         IReadOnlyCollection<ServiceIntegrationListItem> integrations,
         IReadOnlyCollection<CapabilityCatalogEntry> capabilities,
@@ -50,7 +52,7 @@ public sealed class BuildAtlasProjectionUseCase
 
         var visibleIntegrations = integrations
             .Where(integration => includeDeveloperIntegrations || !IsDeveloperIntegration(integration.ServiceIdentity))
-            .OrderBy(integration => integration.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(integration => integration.DisplayName, titleComparer)
             .ThenBy(integration => integration.ServiceIdentity.Value, StringComparer.Ordinal)
             .ToArray();
 
@@ -84,7 +86,7 @@ public sealed class BuildAtlasProjectionUseCase
 
             foreach (var capability in capabilities
                          .Where(capability => capability.ServiceIdentity == integration.ServiceIdentity)
-                         .OrderBy(capability => capability.CapabilityTitle, StringComparer.OrdinalIgnoreCase)
+                         .OrderBy(capability => capability.CapabilityTitle, titleComparer)
                          .ThenBy(capability => capability.CapabilityIdentity.Value, StringComparer.Ordinal))
             {
                 var capabilityNodeId = CapabilityNodeId(capability.ServiceIdentity, capability.CapabilityIdentity);
