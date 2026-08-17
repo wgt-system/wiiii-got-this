@@ -5,6 +5,7 @@
     <SolidColorBrush x:Key="WgtAtlasNodeBorderBrush" Color="{DynamicResource SystemBaseLowColor}" />
     <SolidColorBrush x:Key="WgtAtlasConnectionBrush" Color="{DynamicResource SystemBaseMediumColor}" Opacity="0.45" />
     <SolidColorBrush x:Key="WgtAtlasCapabilityConnectionBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.38" />
+    <SolidColorBrush x:Key="WgtAtlasDependencyConnectionBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.72" />
     <SolidColorBrush x:Key="WgtAtlasSelectedBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.15" />
   </Styles.Resources>
 
@@ -96,9 +97,18 @@
     <Setter Property="Stroke" Value="{DynamicResource WgtAtlasCapabilityConnectionBrush}" />
     <Setter Property="StrokeThickness" Value="1.25" />
   </Style>
+  <Style Selector="Line.wgt-atlas-connection.dependency">
+    <Setter Property="Stroke" Value="{DynamicResource WgtAtlasDependencyConnectionBrush}" />
+    <Setter Property="StrokeThickness" Value="2.25" />
+    <Setter Property="StrokeDashArray" Value="7,4" />
+  </Style>
   <Style Selector="Line.wgt-atlas-connection.theme-elegant">
     <Setter Property="StrokeThickness" Value="1" />
     <Setter Property="Opacity" Value="0.62" />
+  </Style>
+  <Style Selector="Line.wgt-atlas-connection.dependency.theme-elegant">
+    <Setter Property="StrokeThickness" Value="1.5" />
+    <Setter Property="StrokeDashArray" Value="4,5" />
   </Style>
   <Style Selector="Line.wgt-atlas-connection.theme-machine">
     <Setter Property="StrokeThickness" Value="2.5" />
@@ -106,10 +116,19 @@
   <Style Selector="Line.wgt-atlas-connection.capability.theme-machine">
     <Setter Property="StrokeThickness" Value="2" />
   </Style>
+  <Style Selector="Line.wgt-atlas-connection.dependency.theme-machine">
+    <Setter Property="StrokeThickness" Value="3" />
+    <Setter Property="StrokeDashArray" Value="10,3" />
+  </Style>
   <Style Selector="Line.wgt-atlas-connection.theme-world">
     <Setter Property="Stroke" Value="{DynamicResource WgtAccentBrush}" />
     <Setter Property="StrokeThickness" Value="2.25" />
     <Setter Property="Opacity" Value="0.5" />
+  </Style>
+  <Style Selector="Line.wgt-atlas-connection.dependency.theme-world">
+    <Setter Property="StrokeThickness" Value="3" />
+    <Setter Property="StrokeDashArray" Value="2,5" />
+    <Setter Property="Opacity" Value="0.72" />
   </Style>
 
   <Style Selector="Border.wgt-atlas-inspector">
