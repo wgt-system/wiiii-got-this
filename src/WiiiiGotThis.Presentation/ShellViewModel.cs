@@ -72,7 +72,7 @@ public sealed partial class ShellViewModel : ObservableObject
         DisableOnThisDeviceCommand = new AsyncRelayCommand(DisableOnThisDeviceAsync, CanManageSelectedIntegration);
         InheritGlobalSettingCommand = new AsyncRelayCommand(InheritGlobalSettingAsync, CanManageSelectedIntegration);
         OpenCapabilityCommand = new AsyncRelayCommand(OpenCapabilityAsync, CanOpenSelectedCapability);
-        BackToCatalogCommand = new RelayCommand(() => { OpenedReferenceCapability = null; OpenedVocationOpportunityOverview = null; OpenedVocationMapProjection = null; });
+        BackToCatalogCommand = new RelayCommand(() => OpenedReferenceCapability = null);
         ShowHomeCommand = new RelayCommand(() => CurrentSurface = ShellSurface.Home);
         ShowJobsCommand = new AsyncRelayCommand(ShowJobsAsync, CanShowJobs);
         ShowMapCommand = new AsyncRelayCommand(ShowMapAsync, CanShowMap);
@@ -81,6 +81,7 @@ public sealed partial class ShellViewModel : ObservableObject
 
     public ObservableCollection<ServiceIntegrationPresentationViewModel> Integrations { get; } = [];
     public ObservableCollection<CapabilityPresentationViewModel> Capabilities { get; } = [];
+    public ObservableCollection<CapabilityPresentationViewModel> SelectedIntegrationCapabilities { get; } = [];
     public IAsyncRelayCommand RefreshCommand { get; }
     public IAsyncRelayCommand EnableGloballyCommand { get; }
     public IAsyncRelayCommand DisableGloballyCommand { get; }
@@ -106,7 +107,7 @@ public sealed partial class ShellViewModel : ObservableObject
     public bool IsReferenceCapabilityOpen => OpenedReferenceCapability is not null;
     public bool IsVocationOpportunityOverviewOpen => OpenedVocationOpportunityOverview is not null;
     public bool IsMapProjectionOpen => OpenedVocationMapProjection is not null;
-    public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen && !IsVocationOpportunityOverviewOpen;
+    public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen;
 
     public Task EnsureInitializedAsync()
     {
@@ -116,11 +117,14 @@ public sealed partial class ShellViewModel : ObservableObject
 
     partial void OnSelectedIntegrationChanged(ServiceIntegrationPresentationViewModel? value)
     {
+        RebuildSelectedIntegrationCapabilities();
+        OpenedReferenceCapability = null;
         RefreshCommandStates();
     }
 
     partial void OnSelectedCapabilityChanged(CapabilityPresentationViewModel? value)
     {
+        OpenedReferenceCapability = null;
         RefreshCommandStates();
     }
 
@@ -133,7 +137,6 @@ public sealed partial class ShellViewModel : ObservableObject
     partial void OnOpenedVocationOpportunityOverviewChanged(VocationOpportunityOverviewViewModel? value)
     {
         OnPropertyChanged(nameof(IsVocationOpportunityOverviewOpen));
-        OnPropertyChanged(nameof(IsCapabilityDetailsVisible));
     }
 
     partial void OnOpenedVocationMapProjectionChanged(VocationMapProjectionViewModel? value)
@@ -199,20 +202,18 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         if (CurrentDeviceIdentity is null) return;
         var selectedServiceIdentity = SelectedIntegration?.ServiceIdentity;
+        var selectedCapabilityIdentity = SelectedCapability?.CapabilityIdentity;
         var integrations = await listServiceIntegrations.ListAsync(CurrentDeviceIdentity);
         Replace(Integrations, integrations.Select(item => new ServiceIntegrationPresentationViewModel(item)));
-        SelectedIntegration = SelectedIntegration is not null
-            ? Integrations.FirstOrDefault(x => x.ServiceIdentity == selectedServiceIdentity)
+        SelectedIntegration = selectedServiceIdentity is not null
+            ? Integrations.FirstOrDefault(x => x.ServiceIdentity == selectedServiceIdentity) ?? Integrations.FirstOrDefault()
             : Integrations.FirstOrDefault();
 
         var entries = await resolveCapabilityCatalog.ResolveAsync(CurrentDeviceIdentity);
-        var selectedId = SelectedCapability?.CapabilityIdentity;
         Replace(Capabilities, entries.Select(x => new CapabilityPresentationViewModel(x)));
-        SelectedCapability = selectedId is null
-            ? Capabilities.FirstOrDefault()
-            : Capabilities.FirstOrDefault(x => x.CapabilityIdentity == selectedId);
+        RebuildSelectedIntegrationCapabilities(selectedCapabilityIdentity);
         if (OpenedReferenceCapability is not null)
-            OpenedReferenceCapability = Capabilities.FirstOrDefault(x => x.CapabilityIdentity == OpenedReferenceCapability.CapabilityIdentity && x.CanOpen);
+            OpenedReferenceCapability = SelectedIntegrationCapabilities.FirstOrDefault(x => x.CapabilityIdentity == OpenedReferenceCapability.CapabilityIdentity && x.CanOpen);
         RefreshCommandStates();
     }
 
@@ -221,18 +222,18 @@ public sealed partial class ShellViewModel : ObservableObject
     private async Task EnableOnThisDeviceAsync() { if (SelectedIntegration is { } selected && CurrentDeviceIdentity is { } device) { await setDeviceOverride.SetAsync(selected.ServiceIdentity, device, true); await ReloadStateAsync(); } }
     private async Task DisableOnThisDeviceAsync() { if (SelectedIntegration is { } selected && CurrentDeviceIdentity is { } device) { await setDeviceOverride.SetAsync(selected.ServiceIdentity, device, false); await ReloadStateAsync(); } }
     private async Task InheritGlobalSettingAsync() { if (SelectedIntegration is { } selected && CurrentDeviceIdentity is { } device) { await clearDeviceOverride.ClearAsync(selected.ServiceIdentity, device); await ReloadStateAsync(); } }
+
     private async Task OpenCapabilityAsync()
     {
         if (SelectedCapability is not { CanOpen: true } capability) return;
         if (string.Equals(capability.CapabilityIdentity.Value, "reference.available", StringComparison.Ordinal))
         {
-            OpenedVocationOpportunityOverview = null;
             OpenedReferenceCapability = capability;
             return;
         }
 
         if (string.Equals(capability.CapabilityIdentity.Value, "vocation.opportunity_overview", StringComparison.Ordinal))
-            await LoadVocationOverviewAsync();
+            await ShowJobsAsync();
     }
 
     private async Task ShowJobsAsync()
@@ -261,9 +262,21 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         if (readVocationMapProjection is null) return;
         OpenedReferenceCapability = null;
-        OpenedVocationOpportunityOverview = null;
         OpenedVocationMapProjection ??= new VocationMapProjectionViewModel(readVocationMapProjection);
         await OpenedVocationMapProjection.RefreshAsync();
+    }
+
+    private void RebuildSelectedIntegrationCapabilities(CapabilityIdentity? preferredCapability = null)
+    {
+        var selectedServiceIdentity = SelectedIntegration?.ServiceIdentity;
+        var filtered = selectedServiceIdentity is null
+            ? []
+            : Capabilities.Where(capability => capability.ServiceIdentity == selectedServiceIdentity).ToArray();
+        Replace(SelectedIntegrationCapabilities, filtered);
+
+        SelectedCapability = preferredCapability is not null
+            ? SelectedIntegrationCapabilities.FirstOrDefault(capability => capability.CapabilityIdentity == preferredCapability) ?? SelectedIntegrationCapabilities.FirstOrDefault()
+            : SelectedIntegrationCapabilities.FirstOrDefault();
     }
 
     private bool CanManageSelectedIntegration() => SelectedIntegration is not null && CurrentDeviceIdentity is not null;
@@ -274,6 +287,7 @@ public sealed partial class ShellViewModel : ObservableObject
         var selected = SelectedCapability;
         return selected?.CanOpen == true && (!string.Equals(selected.CapabilityIdentity.Value, "vocation.opportunity_overview", StringComparison.Ordinal) || readVocationOpportunityOverview is not null);
     }
+
     private void RefreshCommandStates()
     {
         EnableGloballyCommand.NotifyCanExecuteChanged();
