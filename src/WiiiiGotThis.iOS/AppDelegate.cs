@@ -23,8 +23,12 @@ internal sealed class AppDelegate : UIApplicationDelegate, IAvaloniaAppDelegate
     {
         orientationMapHost = new IosOrientationMapPlatformHost();
         OrientationMapPlatformServices.Host = orientationMapHost;
+        var isOrientationMapSurfaceComposed = orientationMapHost.TryResolveEmbedPath(
+            Environment.GetEnvironmentVariable("WGT_ORIENTATION_EMBED_PATH"),
+            out _,
+            out _);
 
-        var shell = CreateShell(isOrientationMapSurfaceComposed: true);
+        var shell = CreateShell(isOrientationMapSurfaceComposed);
         BuildAvaloniaApp(shell, this).SetupWithoutStarting();
         return true;
     }
