@@ -27,6 +27,8 @@ public sealed partial class ShellViewModel : ObservableObject
     private readonly ResolveCapabilityCatalogUseCase resolveCapabilityCatalog;
     private readonly GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview;
     private readonly GetVocationMapProjectionUseCase? readVocationMapProjection;
+    private readonly GetAtlasAppearancePreferenceUseCase? readAtlasAppearance;
+    private readonly SetAtlasAppearancePreferenceUseCase? writeAtlasAppearance;
     private readonly BuildAtlasProjectionUseCase buildAtlasProjection = new();
     private readonly string suggestedDeviceName;
     private readonly object initializationGate = new();
@@ -40,6 +42,7 @@ public sealed partial class ShellViewModel : ObservableObject
     [ObservableProperty] private VocationOpportunityOverviewViewModel? openedVocationOpportunityOverview;
     [ObservableProperty] private VocationMapProjectionViewModel? openedVocationMapProjection;
     [ObservableProperty] private AtlasNodePresentationViewModel? selectedAtlasNode;
+    [ObservableProperty] private AtlasThemePreference atlasTheme = AtlasThemePreference.Technical;
     [ObservableProperty] private string atlasSearchText = string.Empty;
     [ObservableProperty] private bool atlasSettingsExpanded;
     [ObservableProperty] private string statusText = "Starting…";
@@ -56,7 +59,9 @@ public sealed partial class ShellViewModel : ObservableObject
         ResolveCapabilityCatalogUseCase resolveCapabilityCatalog,
         string suggestedDeviceName,
         GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview = null,
-        GetVocationMapProjectionUseCase? readVocationMapProjection = null)
+        GetVocationMapProjectionUseCase? readVocationMapProjection = null,
+        GetAtlasAppearancePreferenceUseCase? readAtlasAppearance = null,
+        SetAtlasAppearancePreferenceUseCase? writeAtlasAppearance = null)
     {
         this.ensureCurrentDevice = ensureCurrentDevice;
         this.registerKnownIntegrations = registerKnownIntegrations;
@@ -68,6 +73,8 @@ public sealed partial class ShellViewModel : ObservableObject
         this.resolveCapabilityCatalog = resolveCapabilityCatalog;
         this.readVocationOpportunityOverview = readVocationOpportunityOverview;
         this.readVocationMapProjection = readVocationMapProjection;
+        this.readAtlasAppearance = readAtlasAppearance;
+        this.writeAtlasAppearance = writeAtlasAppearance;
         this.suggestedDeviceName = suggestedDeviceName;
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
@@ -137,6 +144,26 @@ public sealed partial class ShellViewModel : ObservableObject
             return initializationTask ??= InitializeCoreAsync();
     }
 
+    public async Task SetAtlasThemeAsync(AtlasThemePreference theme, CancellationToken cancellationToken = default)
+    {
+        AtlasTheme = theme;
+        if (writeAtlasAppearance is null)
+            return;
+
+        try
+        {
+            await writeAtlasAppearance.SetThemeAsync(theme, cancellationToken);
+        }
+        catch (IOException)
+        {
+            StatusText = "Theme changed for this session but could not be saved.";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            StatusText = "Theme changed for this session but could not be saved.";
+        }
+    }
+
     partial void OnSelectedIntegrationChanged(ServiceIntegrationPresentationViewModel? value)
     {
         RebuildSelectedIntegrationCapabilities();
@@ -200,6 +227,9 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         try
         {
+            if (readAtlasAppearance is not null)
+                AtlasTheme = await readAtlasAppearance.GetThemeAsync() ?? AtlasThemePreference.Technical;
+
             var device = await ensureCurrentDevice.GetOrCreateAsync(suggestedDeviceName);
             CurrentDeviceIdentity = device.DeviceIdentity;
             CurrentDeviceName = device.DisplayName;
