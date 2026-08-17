@@ -111,6 +111,8 @@ public sealed partial class DesktopAtlasView : UserControl
             line.Classes.Add("wgt-atlas-connection");
             if (connection.Kind == AtlasConnectionKind.CapabilityOwnership)
                 line.Classes.Add("capability");
+            else if (connection.Kind == AtlasConnectionKind.CapabilityDependency)
+                line.Classes.Add("dependency");
             ApplyThemeClass(line);
             SceneCanvas.Children.Add(line);
         }
