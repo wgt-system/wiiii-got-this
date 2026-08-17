@@ -1,6 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:v="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.VocationMapProjectionView" x:DataType="v:VocationMapProjectionViewModel">
-  <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
-    <Border Classes="wgt-state-banner">
+  <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12">
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <TextBlock Classes="wgt-secondary" IsVisible="{Binding IsLoaded}" Text="{Binding FeatureCountText}" />
+        <TextBlock Classes="wgt-caption" IsVisible="{Binding HasPublicationMetadata}" Text="{Binding PublicationMetadataText}" TextTrimming="CharacterEllipsis" MaxWidth="520" />
+      </StackPanel>
+      <Button Grid.Column="1" Classes="wgt-action-button" Command="{Binding RefreshCommand}" Content="Refresh" />
+    </Grid>
+
+    <Border Grid.Row="1" Classes="wgt-state-banner" IsVisible="{Binding IsStateBannerVisible}">
       <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
         <TextBlock Classes="wgt-section-title" Text="{Binding StateTitle}" />
         <TextBlock Grid.Row="1" Classes="wgt-secondary" Text="{Binding StateDescription}" TextWrapping="Wrap" />
@@ -8,18 +16,40 @@
       </Grid>
     </Border>
 
-    <v:WgtMapView Grid.Row="1" IsVisible="{Binding IsLoaded}" DataContext="{Binding}" MinHeight="420" />
-
-    <Grid Grid.Row="2" RowDefinitions="Auto,Auto" RowSpacing="8">
-      <Border Classes="wgt-surface" IsVisible="{Binding IsFeatureSelected}">
-        <StackPanel Spacing="4">
-          <TextBlock Classes="wgt-section-title" Text="{Binding SelectedFeature.Title}" TextWrapping="Wrap" />
-          <TextBlock Classes="wgt-body" Text="{Binding SelectedFeature.CompanyName}" />
-          <TextBlock Classes="wgt-secondary" Text="{Binding SelectedFeature.WorkLocationLabel}" TextWrapping="Wrap" />
-          <TextBlock Classes="wgt-caption" Text="{Binding SelectedFeature.WorkLocationPrecision}" />
-        </StackPanel>
+    <Grid Grid.Row="2" IsVisible="{Binding IsLoaded}" ColumnDefinitions="*,280" ColumnSpacing="12" MinHeight="440">
+      <Border Classes="wgt-map-surface" ClipToBounds="True">
+        <v:WgtMapView DataContext="{Binding}" />
       </Border>
-      <TextBlock Grid.Row="1" Classes="wgt-caption" IsVisible="{Binding HasPublicationMetadata}" Text="{Binding PublicationMetadataText}" />
+
+      <Border Grid.Column="1" Classes="wgt-surface">
+        <Grid RowDefinitions="Auto,*,Auto" RowSpacing="12">
+          <StackPanel Spacing="3">
+            <TextBlock Classes="wgt-caption" Text="SELECTED LOCATION" />
+            <TextBlock Classes="wgt-section-title" FontSize="17" Text="Opportunity" />
+          </StackPanel>
+
+          <StackPanel Grid.Row="1" IsVisible="{Binding IsFeatureSelectionEmpty}" Spacing="6" VerticalAlignment="Center">
+            <TextBlock Classes="wgt-body" FontWeight="SemiBold" Text="Select a marker" HorizontalAlignment="Center" />
+            <TextBlock Classes="wgt-secondary" Text="Choose a location on the map to inspect the information published by Vocation." TextWrapping="Wrap" TextAlignment="Center" />
+          </StackPanel>
+
+          <StackPanel Grid.Row="1" IsVisible="{Binding IsFeatureSelected}" Spacing="9">
+            <TextBlock Classes="wgt-section-title" FontSize="18" Text="{Binding SelectedFeature.Title}" TextWrapping="Wrap" />
+            <TextBlock Classes="wgt-body" Text="{Binding SelectedFeature.CompanyName}" TextWrapping="Wrap" />
+            <Separator />
+            <StackPanel Spacing="3">
+              <TextBlock Classes="wgt-caption" Text="WORK LOCATION" />
+              <TextBlock Classes="wgt-secondary" Text="{Binding SelectedFeature.WorkLocationLabel}" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel Spacing="3">
+              <TextBlock Classes="wgt-caption" Text="PUBLISHED PRECISION" />
+              <TextBlock Classes="wgt-secondary" Text="{Binding SelectedFeature.WorkLocationPrecision}" TextWrapping="Wrap" />
+            </StackPanel>
+          </StackPanel>
+
+          <TextBlock Grid.Row="2" Classes="wgt-caption" Text="Map rendering and interaction by Orientation." TextWrapping="Wrap" />
+        </Grid>
+      </Border>
     </Grid>
   </Grid>
 </UserControl>
