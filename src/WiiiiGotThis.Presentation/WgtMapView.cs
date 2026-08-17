@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using Avalonia.Controls;
 
@@ -209,7 +210,7 @@ public sealed class WgtMapView : Grid, IDisposable
 
     private async Task SendBridgeMessageAsync(string message)
     {
-        var javascriptString = JsonSerializer.Serialize(message);
+        var javascriptString = $"\"{JavaScriptEncoder.Default.Encode(message)}\"";
         try
         {
             await webView.InvokeScript($"window.orientationHostBridge?.receive({javascriptString});");
