@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using WiiiiGotThis.Application;
@@ -19,9 +20,18 @@ public sealed partial class DesktopAtlasView : UserControl
     private const double MinimumZoom = 0.55;
     private const double MaximumZoom = 1.8;
 
+    private static readonly string[] ThemeClasses =
+    [
+        "theme-technical",
+        "theme-elegant",
+        "theme-machine",
+        "theme-world"
+    ];
+
     private readonly ScaleTransform sceneScale = new() { ScaleX = 1, ScaleY = 1 };
     private readonly TranslateTransform sceneTranslate = new();
     private ShellViewModel? shell;
+    private AtlasVisualTheme visualTheme = AtlasVisualTheme.Technical;
     private bool isDragging;
     private bool cameraInitialized;
     private Point dragStart;
@@ -34,6 +44,7 @@ public sealed partial class DesktopAtlasView : UserControl
         transform.Children.Add(sceneScale);
         transform.Children.Add(sceneTranslate);
         SceneCanvas.RenderTransform = transform;
+        ApplyVisualTheme(AtlasVisualTheme.Technical);
 
         DataContextChanged += OnDataContextChanged;
         AttachedToVisualTree += (_, _) => AttachShell(DataContext as ShellViewModel);
@@ -76,6 +87,10 @@ public sealed partial class DesktopAtlasView : UserControl
             RefreshNodeSelection();
             PositionInspector();
         }
+        else if (e.PropertyName == nameof(ShellViewModel.AtlasSettingsExpanded) && shell?.AtlasSettingsExpanded != true)
+        {
+            ThemeChoices.IsVisible = false;
+        }
     }
 
     private void RebuildScene()
@@ -96,11 +111,16 @@ public sealed partial class DesktopAtlasView : UserControl
             line.Classes.Add("wgt-atlas-connection");
             if (connection.Kind == AtlasConnectionKind.CapabilityOwnership)
                 line.Classes.Add("capability");
+            ApplyThemeClass(line);
             SceneCanvas.Children.Add(line);
         }
 
         foreach (var node in currentShell.AtlasNodes)
-            SceneCanvas.Children.Add(CreateNodeButton(node, currentShell));
+        {
+            var button = CreateNodeButton(node, currentShell);
+            ApplyThemeClass(button);
+            SceneCanvas.Children.Add(button);
+        }
 
         RefreshNodeSelection();
         PositionInspector();
@@ -339,6 +359,68 @@ public sealed partial class DesktopAtlasView : UserControl
         e.Handled = true;
     }
 
+    private void OnToggleThemeMenu(object? sender, RoutedEventArgs e)
+    {
+        ThemeChoices.IsVisible = !ThemeChoices.IsVisible;
+        e.Handled = true;
+    }
+
+    private void OnTechnicalTheme(object? sender, RoutedEventArgs e) => SelectVisualTheme(AtlasVisualTheme.Technical, e);
+    private void OnElegantTheme(object? sender, RoutedEventArgs e) => SelectVisualTheme(AtlasVisualTheme.Elegant, e);
+    private void OnMachineTheme(object? sender, RoutedEventArgs e) => SelectVisualTheme(AtlasVisualTheme.Machine, e);
+    private void OnWorldTheme(object? sender, RoutedEventArgs e) => SelectVisualTheme(AtlasVisualTheme.World, e);
+
+    private void SelectVisualTheme(AtlasVisualTheme theme, RoutedEventArgs e)
+    {
+        ApplyVisualTheme(theme);
+        ThemeChoices.IsVisible = false;
+        e.Handled = true;
+    }
+
+    private void ApplyVisualTheme(AtlasVisualTheme theme)
+    {
+        visualTheme = theme;
+        ApplyThemeClass(AtlasViewport);
+        ApplyThemeClass(InspectorCard);
+        ApplyThemeClass(ControlHint);
+        ApplyThemeClass(ThemeMenuButton);
+
+        foreach (var element in SceneCanvas.Children.OfType<StyledElement>())
+            ApplyThemeClass(element);
+
+        SetSelectedClass(TechnicalThemeButton, theme == AtlasVisualTheme.Technical);
+        SetSelectedClass(ElegantThemeButton, theme == AtlasVisualTheme.Elegant);
+        SetSelectedClass(MachineThemeButton, theme == AtlasVisualTheme.Machine);
+        SetSelectedClass(WorldThemeButton, theme == AtlasVisualTheme.World);
+    }
+
+    private void ApplyThemeClass(StyledElement element)
+    {
+        foreach (var themeClass in ThemeClasses)
+            element.Classes.Remove(themeClass);
+        element.Classes.Add(visualTheme switch
+        {
+            AtlasVisualTheme.Technical => "theme-technical",
+            AtlasVisualTheme.Elegant => "theme-elegant",
+            AtlasVisualTheme.Machine => "theme-machine",
+            AtlasVisualTheme.World => "theme-world",
+            _ => "theme-technical"
+        });
+    }
+
+    private static void SetSelectedClass(StyledElement element, bool selected)
+    {
+        if (selected)
+        {
+            if (!element.Classes.Contains("selected"))
+                element.Classes.Add("selected");
+        }
+        else
+        {
+            element.Classes.Remove("selected");
+        }
+    }
+
     private static bool IsInteractiveSource(object? source)
     {
         if (source is not Visual visual)
@@ -352,4 +434,12 @@ public sealed partial class DesktopAtlasView : UserControl
 
     private static Point WorldPoint(AtlasNodePresentationViewModel node) =>
         new(WorldCenterX + node.X, WorldCenterY + node.Y);
+
+    private enum AtlasVisualTheme
+    {
+        Technical,
+        Elegant,
+        Machine,
+        World
+    }
 }
