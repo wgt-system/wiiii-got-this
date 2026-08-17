@@ -17,9 +17,9 @@ public interface IOrientationMapPlatformHost
 {
     event EventHandler<OrientationCurrentPositionChangedEventArgs>? CurrentPositionChanged;
 
-    bool TryResolveEmbedPath(string? configuredPath, out string? embedPath, out string? error);
+    bool TryResolveEmbedPath(string? configuredPath, out string? embedPath, out string? failureMessage);
 
-    bool TryConfigure(IPlatformHandle? platformHandle, string embedPath, out string? error);
+    bool TryConfigure(IPlatformHandle? platformHandle, string embedPath, out string? failureMessage);
 
     void RequestCurrentPosition();
 }
