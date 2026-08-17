@@ -13,7 +13,7 @@ public sealed class AtlasProjectionTests
         var integration = new ServiceIntegrationListItem(vocation, "Vocation", true, null, true, true, true, IntegrationRefreshStatus.Refreshed, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
         var capability = new CapabilityCatalogEntry(vocation, "Vocation", opportunityOverview, "Opportunity Overview", new Version(1, 0), new CapabilityResolutionResult(opportunityOverview, Enablement.Enabled, Availability.Available));
 
-        var projection = new BuildAtlasProjectionUseCase([]).Build([integration], [capability]);
+        var projection = new BuildAtlasProjectionUseCase([], []).Build([integration], [capability]);
 
         Assert.Equal(3, projection.Nodes.Count);
         Assert.Contains(projection.Nodes, node => node.NodeId == "wgt.core");
@@ -51,6 +51,28 @@ public sealed class AtlasProjectionTests
     }
 
     [Fact]
+    public void Build_projects_real_Vocation_map_dependency_to_Orientation_without_fake_Orientation_capability()
+    {
+        var vocation = new ServiceIdentity("vocation");
+        var mapProjection = new CapabilityIdentity("vocation.map_projection");
+        var capability = new CapabilityCatalogEntry(
+            vocation,
+            "Vocation",
+            mapProjection,
+            "Map Projection",
+            new Version(1, 0),
+            new CapabilityResolutionResult(mapProjection, Enablement.Enabled, Availability.Available));
+
+        var projection = new BuildAtlasProjectionUseCase().Build([Integration("vocation", "Vocation")], [capability]);
+        var dependency = Assert.Single(projection.Connections, edge => edge.Kind == AtlasConnectionKind.CapabilityDependency);
+
+        Assert.Equal("capability:vocation:vocation.map_projection", dependency.SourceNodeId);
+        Assert.Equal("service:orientation", dependency.TargetNodeId);
+        Assert.Contains("Orientation", dependency.Description, StringComparison.Ordinal);
+        Assert.DoesNotContain(projection.Nodes, node => node.Kind == AtlasNodeKind.Capability && node.ServiceIdentity?.Value == "orientation");
+    }
+
+    [Fact]
     public void Build_orders_services_stably_by_product_title()
     {
         var projection = new BuildAtlasProjectionUseCase().Build([
@@ -64,7 +86,7 @@ public sealed class AtlasProjectionTests
     [Fact]
     public void Build_hides_developer_reference_integration_from_normal_Atlas()
     {
-        var projection = new BuildAtlasProjectionUseCase([]).Build([Integration("reference-service", "Reference Integration")], []);
+        var projection = new BuildAtlasProjectionUseCase([], []).Build([Integration("reference-service", "Reference Integration")], []);
 
         Assert.Single(projection.Nodes);
         Assert.Equal(AtlasNodeKind.Core, projection.Nodes[0].Kind);
@@ -74,7 +96,7 @@ public sealed class AtlasProjectionTests
     [Fact]
     public void Build_can_include_reference_integration_for_developer_diagnostics()
     {
-        var projection = new BuildAtlasProjectionUseCase([]).Build([Integration("reference-service", "Reference Integration")], [], includeDeveloperIntegrations: true);
+        var projection = new BuildAtlasProjectionUseCase([], []).Build([Integration("reference-service", "Reference Integration")], [], includeDeveloperIntegrations: true);
 
         Assert.Contains(projection.Nodes, node => node.NodeId == "service:reference-service");
     }
@@ -87,7 +109,7 @@ public sealed class AtlasProjectionTests
         var integration = Integration("sample", "Sample");
         var capability = new CapabilityCatalogEntry(service, "Sample", capabilityId, "Sample Capability", new Version(1, 0), new CapabilityResolutionResult(capabilityId, Enablement.Enabled, Availability.Unavailable(AvailabilityReason.MissingPrerequisite)));
 
-        var projection = new BuildAtlasProjectionUseCase([]).Build([integration], [capability]);
+        var projection = new BuildAtlasProjectionUseCase([], []).Build([integration], [capability]);
         var node = Assert.Single(projection.Nodes, item => item.Kind == AtlasNodeKind.Capability);
 
         Assert.False(node.IsAvailable);
