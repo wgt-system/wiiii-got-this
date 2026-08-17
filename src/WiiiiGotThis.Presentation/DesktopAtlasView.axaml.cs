@@ -106,7 +106,7 @@ public sealed partial class DesktopAtlasView : UserControl
         PositionInspector();
     }
 
-    private Button CreateNodeButton(AtlasNodePresentationViewModel node, ShellViewModel currentShell)
+    private static Button CreateNodeButton(AtlasNodePresentationViewModel node, ShellViewModel currentShell)
     {
         var (width, height) = node.Kind switch
         {
