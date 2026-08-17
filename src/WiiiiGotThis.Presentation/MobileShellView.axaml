@@ -12,6 +12,7 @@
         <WrapPanel>
           <RadioButton Classes="wgt-mobile-nav" GroupName="MobileShellNavigation" Content="Home" Command="{Binding ShowHomeCommand}" IsChecked="{Binding IsHomeActive, Mode=OneWay}" />
           <RadioButton Classes="wgt-mobile-nav" GroupName="MobileShellNavigation" IsVisible="{Binding IsJobsAvailable}" Content="Jobs" Command="{Binding ShowJobsCommand}" IsChecked="{Binding IsJobsActive, Mode=OneWay}" />
+          <RadioButton Classes="wgt-mobile-nav" GroupName="MobileShellNavigation" IsVisible="{Binding IsMapAvailable}" Content="Map" Command="{Binding ShowMapCommand}" IsChecked="{Binding IsMapActive, Mode=OneWay}" />
           <RadioButton Classes="wgt-mobile-nav" GroupName="MobileShellNavigation" Content="Settings" Command="{Binding ShowSettingsCommand}" IsChecked="{Binding IsSettingsActive, Mode=OneWay}" />
         </WrapPanel>
       </StackPanel>
@@ -39,6 +40,14 @@
               <Button Classes="wgt-action-button" Command="{Binding ShowJobsCommand}" Content="Open Jobs" HorizontalAlignment="Left" />
             </StackPanel>
           </Border>
+          <Border Classes="wgt-surface" IsVisible="{Binding IsMapAvailable}">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="wgt-caption" Text="PRODUCT AREA" />
+              <TextBlock Classes="wgt-section-title">Map</TextBlock>
+              <TextBlock Classes="wgt-secondary" Text="Vocation opportunity locations rendered by Orientation" TextWrapping="Wrap" />
+              <Button Classes="wgt-action-button" Command="{Binding ShowMapCommand}" Content="Open Map" HorizontalAlignment="Left" />
+            </StackPanel>
+          </Border>
         </StackPanel>
       </ScrollViewer>
 
@@ -53,6 +62,22 @@
           </Border>
         </StackPanel>
       </ScrollViewer>
+
+      <Grid IsVisible="{Binding IsMapVisible}" RowDefinitions="Auto,*" RowSpacing="12">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="wgt-page-title">Map</TextBlock>
+          <TextBlock Classes="wgt-secondary" Text="Vocation opportunity locations" />
+        </StackPanel>
+        <Border Grid.Row="1" Classes="wgt-surface">
+          <ContentControl Content="{Binding OpenedVocationMapProjection}">
+            <ContentControl.ContentTemplate>
+              <DataTemplate x:DataType="p:VocationMapProjectionViewModel">
+                <p:VocationMapProjectionView DataContext="{Binding}" />
+              </DataTemplate>
+            </ContentControl.ContentTemplate>
+          </ContentControl>
+        </Border>
+      </Grid>
 
       <ScrollViewer IsVisible="{Binding IsSettingsVisible}" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="12">
