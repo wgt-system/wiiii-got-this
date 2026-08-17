@@ -31,7 +31,7 @@ public sealed partial class DesktopAtlasView : UserControl
     private readonly ScaleTransform sceneScale = new() { ScaleX = 1, ScaleY = 1 };
     private readonly TranslateTransform sceneTranslate = new();
     private ShellViewModel? shell;
-    private AtlasVisualTheme visualTheme = AtlasVisualTheme.Technical;
+    private AtlasThemePreference visualTheme = AtlasThemePreference.Technical;
     private bool isDragging;
     private bool cameraInitialized;
     private Point dragStart;
@@ -44,7 +44,7 @@ public sealed partial class DesktopAtlasView : UserControl
         transform.Children.Add(sceneScale);
         transform.Children.Add(sceneTranslate);
         SceneCanvas.RenderTransform = transform;
-        ApplyVisualTheme(AtlasVisualTheme.Technical);
+        ApplyVisualTheme(AtlasThemePreference.Technical);
 
         DataContextChanged += OnDataContextChanged;
         AttachedToVisualTree += (_, _) => AttachShell(DataContext as ShellViewModel);
@@ -73,6 +73,7 @@ public sealed partial class DesktopAtlasView : UserControl
             shell.PropertyChanged += OnShellPropertyChanged;
             shell.AtlasNodes.CollectionChanged += OnAtlasCollectionChanged;
             shell.AtlasConnections.CollectionChanged += OnAtlasCollectionChanged;
+            ApplyVisualTheme(shell.AtlasTheme);
         }
 
         RebuildScene();
@@ -90,6 +91,10 @@ public sealed partial class DesktopAtlasView : UserControl
         else if (e.PropertyName == nameof(ShellViewModel.AtlasSettingsExpanded) && shell?.AtlasSettingsExpanded != true)
         {
             ThemeChoices.IsVisible = false;
+        }
+        else if (e.PropertyName == nameof(ShellViewModel.AtlasTheme) && shell is not null)
+        {
+            ApplyVisualTheme(shell.AtlasTheme);
         }
     }
 
@@ -367,19 +372,23 @@ public sealed partial class DesktopAtlasView : UserControl
         e.Handled = true;
     }
 
-    private void OnTechnicalTheme(object? sender, RoutedEventArgs e) => SelectVisualTheme(AtlasVisualTheme.Technical, e);
-    private void OnElegantTheme(object? sender, RoutedEventArgs e) => SelectVisualTheme(AtlasVisualTheme.Elegant, e);
-    private void OnMachineTheme(object? sender, RoutedEventArgs e) => SelectVisualTheme(AtlasVisualTheme.Machine, e);
-    private void OnWorldTheme(object? sender, RoutedEventArgs e) => SelectVisualTheme(AtlasVisualTheme.World, e);
+    private async void OnTechnicalTheme(object? sender, RoutedEventArgs e) => await SelectVisualThemeAsync(AtlasThemePreference.Technical, e);
+    private async void OnElegantTheme(object? sender, RoutedEventArgs e) => await SelectVisualThemeAsync(AtlasThemePreference.Elegant, e);
+    private async void OnMachineTheme(object? sender, RoutedEventArgs e) => await SelectVisualThemeAsync(AtlasThemePreference.Machine, e);
+    private async void OnWorldTheme(object? sender, RoutedEventArgs e) => await SelectVisualThemeAsync(AtlasThemePreference.World, e);
 
-    private void SelectVisualTheme(AtlasVisualTheme theme, RoutedEventArgs e)
+    private async Task SelectVisualThemeAsync(AtlasThemePreference theme, RoutedEventArgs e)
     {
-        ApplyVisualTheme(theme);
+        if (shell is not null)
+            await shell.SetAtlasThemeAsync(theme);
+        else
+            ApplyVisualTheme(theme);
+
         ThemeChoices.IsVisible = false;
         e.Handled = true;
     }
 
-    private void ApplyVisualTheme(AtlasVisualTheme theme)
+    private void ApplyVisualTheme(AtlasThemePreference theme)
     {
         visualTheme = theme;
         ApplyThemeClass(AtlasViewport);
@@ -390,10 +399,10 @@ public sealed partial class DesktopAtlasView : UserControl
         foreach (var element in SceneCanvas.Children.OfType<StyledElement>())
             ApplyThemeClass(element);
 
-        SetSelectedClass(TechnicalThemeButton, theme == AtlasVisualTheme.Technical);
-        SetSelectedClass(ElegantThemeButton, theme == AtlasVisualTheme.Elegant);
-        SetSelectedClass(MachineThemeButton, theme == AtlasVisualTheme.Machine);
-        SetSelectedClass(WorldThemeButton, theme == AtlasVisualTheme.World);
+        SetSelectedClass(TechnicalThemeButton, theme == AtlasThemePreference.Technical);
+        SetSelectedClass(ElegantThemeButton, theme == AtlasThemePreference.Elegant);
+        SetSelectedClass(MachineThemeButton, theme == AtlasThemePreference.Machine);
+        SetSelectedClass(WorldThemeButton, theme == AtlasThemePreference.World);
     }
 
     private void ApplyThemeClass(StyledElement element)
@@ -402,10 +411,10 @@ public sealed partial class DesktopAtlasView : UserControl
             element.Classes.Remove(themeClass);
         element.Classes.Add(visualTheme switch
         {
-            AtlasVisualTheme.Technical => "theme-technical",
-            AtlasVisualTheme.Elegant => "theme-elegant",
-            AtlasVisualTheme.Machine => "theme-machine",
-            AtlasVisualTheme.World => "theme-world",
+            AtlasThemePreference.Technical => "theme-technical",
+            AtlasThemePreference.Elegant => "theme-elegant",
+            AtlasThemePreference.Machine => "theme-machine",
+            AtlasThemePreference.World => "theme-world",
             _ => "theme-technical"
         });
     }
@@ -436,12 +445,4 @@ public sealed partial class DesktopAtlasView : UserControl
 
     private static Point WorldPoint(AtlasNodePresentationViewModel node) =>
         new(WorldCenterX + node.X, WorldCenterY + node.Y);
-
-    private enum AtlasVisualTheme
-    {
-        Technical,
-        Elegant,
-        Machine,
-        World
-    }
 }
