@@ -27,7 +27,7 @@
                Height="42"
                HorizontalAlignment="Center"
                VerticalAlignment="Top"
-               Watermark="Search WGT…"
+               PlaceholderText="Search WGT…"
                Text="{Binding AtlasSearchText, Mode=TwoWay}"
                KeyDown="OnSearchKeyDown"
                AutomationProperties.Name="Search Wiiii Got This"
