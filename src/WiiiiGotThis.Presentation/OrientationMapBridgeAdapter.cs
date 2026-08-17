@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 
 namespace WiiiiGotThis.Presentation;
@@ -33,6 +34,39 @@ public static class OrientationMapBridgeAdapter
             },
         }, JsonOptions);
     }
+
+    public static string CreateCurrentPositionSetMessage(OrientationCurrentPosition position)
+    {
+        ArgumentNullException.ThrowIfNull(position);
+        ValidatePosition(position);
+
+        return JsonSerializer.Serialize(new
+        {
+            contract = Contract,
+            version = Version,
+            type = "current-position.set",
+            payload = new
+            {
+                coordinate = new
+                {
+                    longitude = position.Longitude,
+                    latitude = position.Latitude,
+                },
+                accuracyMeters = position.AccuracyMeters,
+                observedAt = position.ObservedAt.UtcDateTime.ToString(
+                    "yyyy-MM-dd'T'HH:mm:ss.fff'Z'",
+                    CultureInfo.InvariantCulture),
+            },
+        }, JsonOptions);
+    }
+
+    public static string CreateCurrentPositionClearMessage() => JsonSerializer.Serialize(new
+    {
+        contract = Contract,
+        version = Version,
+        type = "current-position.clear",
+        payload = new { },
+    }, JsonOptions);
 
     public static bool TryParseOutboundMessage(string? body, out OrientationHostBridgeMessage? message)
     {
@@ -107,5 +141,15 @@ public static class OrientationMapBridgeAdapter
                 },
             },
         };
+    }
+
+    private static void ValidatePosition(OrientationCurrentPosition position)
+    {
+        if (!double.IsFinite(position.Longitude) || position.Longitude is < -180 or > 180)
+            throw new ArgumentOutOfRangeException(nameof(position), "Longitude must be finite and between -180 and 180 degrees.");
+        if (!double.IsFinite(position.Latitude) || position.Latitude is < -90 or > 90)
+            throw new ArgumentOutOfRangeException(nameof(position), "Latitude must be finite and between -90 and 90 degrees.");
+        if (!double.IsFinite(position.AccuracyMeters) || position.AccuracyMeters < 0)
+            throw new ArgumentOutOfRangeException(nameof(position), "Accuracy must be finite and non-negative.");
     }
 }
