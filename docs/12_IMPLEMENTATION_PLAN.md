@@ -2,9 +2,11 @@
 
 ## Status
 
-Historical planning baseline through domain/application architecture. The implementation-ready technology and architecture decisions were accepted before repository bootstrap.
+Historical planning baseline plus current execution/release direction.
 
-The v0.1.0 baseline, the v0.2.0 registration/publication lifecycle baseline, and the Windows-first Vocation Published Opportunity Overview 1.0 integration are released as v0.3.0. Production synchronization and the real iOS runtime smoke remain outstanding gates.
+Released baselines through **v0.5.0** established WGT Core, registration/publication lifecycle, the first Vocation integration, and the application-grade Desktop shell. Branch `dev` now contains the **v0.6.0 Windows/Desktop release candidate**, including the second Vocation capability (`Published Map Projection 1.0`), Orientation-backed map presentation, and the Desktop UX/product-quality pass.
+
+Real Apple runtime/provider acceptance remains deferred and is not part of the Windows v0.6.0 release claim.
 
 The milestone shape below preserves the original planning sequence for context; it is not a statement that repository implementation has not started.
 
@@ -22,7 +24,9 @@ The exact pre-1.0 milestone count is not predetermined.
 
 ### GitHub Milestones and Issues
 
-Milestones heißen ausschließlich `v0.1.0`, `v0.2.0`, `v0.3.0`, … ohne beschreibenden Zusatz. GitHub Issues sind die dauerhaften konkreten Arbeitspakete innerhalb eines Milestones; unnötige Issue-Zerlegung für Kleinständerungen ist zu vermeiden. Luna-Chatnamen sind nur Ausführungskontexte und ersetzen Milestones/Issues nicht. Milestone-Scope, Issue-Scope, Reihenfolge und Parallelisierung werden vom Control-Plane-Chat festgelegt. Implementation Agents erzeugen oder erweitern Milestones/Issues nicht eigenmächtig.
+Milestones are named only `v0.1.0`, `v0.2.0`, `v0.3.0`, … without descriptive suffixes. GitHub Issues are the durable concrete work packages within a milestone; avoid issue fragmentation merely to imitate process.
+
+Milestone scope, Issue scope, order, dependencies and release decisions belong to the Control Plane. Implementation workers/agents do not autonomously create, split, extend, close or reorder milestone scope.
 
 ## 2. Pre-Implementation Gates
 
@@ -53,7 +57,7 @@ Explicitly decide:
 
 ### Contract gate
 
-For the first implemented foreign integration:
+For each first concrete foreign integration:
 
 - concrete consumer/provider scenario,
 - published contract semantics,
@@ -61,9 +65,9 @@ For the first implemented foreign integration:
 - errors,
 - contract tests.
 
-## 3. Proposed Milestone Shape
+## 3. Historical Milestone Shape
 
-The version numbers remain provisional until architecture selection.
+The following labels record the original pre-bootstrap planning sequence.
 
 ### Milestone A – Wiiii Got This Core
 
@@ -78,7 +82,7 @@ Goal:
 - Capability descriptors,
 - deterministic Capability Resolution,
 - Availability/Unavailable Reason,
-- tests independent of real Vocation/Illumination.
+- tests independent of real providers.
 
 Use a fake/reference provider for generic integration behavior.
 
@@ -108,105 +112,88 @@ Goal:
 
 ### Milestone D – First Real Provider Integration
 
-Select the first provider by **actual Published Contract readiness**, not by a fixed project preference.
-
-Vocation is likely lower-risk when its Mobile/WGT Read Contract is ready.
-
-Illumination may be selected first if its WGT interaction contract becomes provider-ready earlier.
+Select real providers by **actual Published/Application Contract readiness**, not a fixed project preference.
 
 Goal:
 
-- one narrow versioned provider Capability,
+- narrow versioned provider Capability,
 - adapter and contract tests,
-- integrated WGT-native presentation,
+- WGT-owned product presentation/composition,
 - provider failure/version behavior,
 - no foreign database/domain-class access.
 
 ### Milestone E – Interactive Illumination Integration
 
-Goal:
+Goal when Illumination publishes the required consumer-ready boundary:
 
-- one narrowly selected Illumination study Capability,
+- narrowly selected Illumination study Capability,
 - versioned read/command interaction contract,
 - WGT-integrated presentation,
 - Illumination-owned workflow transitions,
 - failure and compatibility handling.
 
-Initial version may require a live provider if offline semantics are not yet designed.
+Do not invent the contract in WGT merely to start integration work.
 
 ### Milestone F – Multi-Device / Offline Architecture
 
-Only when concrete service requirements are ready.
+Only when concrete provider requirements are ready.
 
 Goal may include:
 
-- synchronization/replication context decision,
+- synchronization/replication contract decision,
 - trust/security model,
-- service-owned replication contracts,
-- encrypted transport/relay,
-- selected offline capability.
+- service-owned replication semantics,
+- selected offline capability,
+- use of accepted Conveyance delivery modes where appropriate.
 
-Do not implement generic sync before one real service defines state and merge semantics.
+Do not implement a competing generic relay/sync owner.
 
 ### Milestone G – Additional Presentation Surfaces
 
-Add desktop/web/other clients only when concrete use cases justify them.
-
-The architecture should allow this, but V1 does not need every possible presentation surface.
+Add additional platform/runtime surfaces only when concrete use cases and validation environments justify them.
 
 ## 4. Reference Provider Strategy
 
-Before coupling WGT Core to real services, implement a minimal fake/reference provider used only for development and contract tests.
+The Reference Integration remains a minimal development/diagnostic provider for generic integration behavior.
 
-It should exercise generic features such as:
+It exercises:
 
 - Service Identity,
 - publication version,
 - several Capabilities,
 - available/unavailable states,
 - version incompatibility,
-- presentation contribution selection.
+- presentation invocation.
 
-It must not become a hidden sample business domain inside WGT.
+It must not become a hidden sample business domain or a normal end-user product area.
 
-## 5. First Real Integration Selection
+## 5. Real Provider Integration Selection
 
-The first real provider integration is selected by **actual Published Contract readiness**, not by a permanently fixed provider order.
+Vocation Published Opportunity Overview 1.0 became the first real Windows integration because it was the first accepted, versioned, consumer-ready Published Contract.
 
-Vocation Published Opportunity Overview 1.0 is the implemented first Windows integration because its accepted WGT use is read-oriented. Its iPhone provider acceptance remains behind the real Apple runtime smoke gate.
+Vocation Published Map Projection 1.0 is now the second consumed Vocation capability on Desktop. WGT consumes its provider-owned semantics and adapts the accepted spatial data into the separate Orientation renderer boundary.
 
-Illumination has already accepted WGT as its primary Windows/iPhone presentation, but its concrete WGT interaction contract is also intentionally deferred until the relevant application capabilities are stable.
+Illumination remains deferred until it owns and publishes the concrete WGT interaction contract needed by an actual product slice.
 
-Whichever later provider first supplies an accepted, versioned, consumer-ready contract can become the next real integration.
-
-That first integration should validate:
+Each integration must preserve:
 
 - Service publication,
 - registration/discovery,
 - versioning,
 - Availability,
-- boundary DTO/command adaptation,
-- integrated WGT-native presentation,
-- provider failure isolation.
-
-WGT Core and the Reference Integration do not wait for either provider.
+- strict boundary adaptation,
+- provider failure isolation,
+- provider domain ownership.
 
 ## 6. Illumination Integration Order
 
-Illumination should follow once the generic integration model has been tested.
+Illumination is a stronger architecture test because it may require interactive commands, repeated state transitions, eventual offline operation and domain-specific synchronization/reconciliation.
 
-It is a stronger architecture test because it may require:
-
-- interactive commands,
-- repeated state transitions,
-- eventual offline/mobile operation,
-- synchronization/replication.
-
-Do not solve all future Illumination offline requirements in the first WGT Core milestone.
+Do not solve speculative Illumination offline requirements inside WGT Core. Wait for Illumination-owned application/published semantics.
 
 ## 7. Synchronization Work
 
-Synchronization is not an early generic infrastructure task.
+Synchronization is not a generic WGT infrastructure task.
 
 Before implementation:
 
@@ -217,73 +204,74 @@ Before implementation:
 5. define conflicts,
 6. define merge/reconciliation,
 7. define sensitivity/encryption,
-8. determine whether an accepted Conveyance delivery mode satisfies the generic transport
-   requirement; if not, return the requirement to the System Architecture Control Plane.
+8. determine whether an accepted Conveyance delivery mode satisfies the transport requirement; if not, return the generic requirement to the System Architecture Control Plane.
 
-Generic durable delivery ownership is already assigned to Conveyance. Do not create a
-competing relay or re-decide whether that capability belongs in a separate context.
+Generic durable delivery ownership is assigned to Conveyance.
 
-## 8. Orientation Map Integration Work
+## 8. Orientation Integration
 
-Do not build a generic map renderer or Shared Map capability as part of WGT Core. Integrate the
-accepted Orientation map surface when the concrete Desktop and physical-iPhone host gates are
-ready. Provider services retain spatial meaning; WGT owns composition, navigation, and device
-presentation.
+Orientation is the accepted system owner of generic geospatial capability. WGT must not build or retain a competing generic map renderer.
 
-## 9. Codex / Luna Use
+Current Desktop path:
 
-Codex/Luna receives implementation work only after:
+```text
+Vocation Published Map Projection 1.0
+    ↓
+WGT Vocation consumer/application seam
+    ↓
+WGT presentation adapter
+    ↓
+Orientation Host Bridge 1.0 / Spatial Scene
+    ↓
+packaged Orientation map surface in NativeWebView/WebView2
+```
 
-- relevant specification is accepted,
-- technology baseline is accepted,
-- file/module scope is known,
-- contracts are stable enough,
-- acceptance tests are named.
+Ownership remains:
 
-### Suitable Luna work
+- Vocation: Work Location, Precision, opportunity/job meaning and publication semantics;
+- Orientation: generic map/geospatial rendering and interaction;
+- WGT: product navigation, composition, host integration and WGT presentation around the surface.
 
-Potentially:
+The exact packaged Orientation consumer artifact is pinned and must be refreshed intentionally through a tested artifact update rather than silently following Orientation `dev` or the latest release.
 
-- focused contract fixtures,
-- isolated adapter implementations with fixed interfaces,
-- deterministic domain tests,
-- UI components against stable read models,
-- documentation consistency checks.
+Apple/phone host work is a separate deferred platform track and does not block Windows/Desktop releases.
 
-### Avoid Luna parallelization for unstable areas
+## 9. Execution Model
 
-Do not parallelize while semantics are moving:
+The Control Plane owns architecture, issue/milestone scope, repository review and release decisions.
 
-- Device identity model,
-- Capability contract envelope,
-- availability semantics,
-- sync/conflict model,
-- first presentation-contribution mechanism.
+Prefer direct repository/GitHub execution when the available tooling can safely perform and validate the work. Delegate to an implementation worker/agent only when a required task cannot reasonably be completed through the Control Plane tooling itself.
+
+When delegation is necessary, the worker receives a bounded implementation task with known repository/branch/HEAD, outcome, ownership constraints and validation requirements. The worker does not reinterpret system architecture or autonomously plan milestones.
+
+Local machine installations or workstation configuration remain explicit user-controlled actions.
 
 ## 10. Branch / Release Direction
 
-After repository creation, use the same general control-plane discipline as Vocation/Illumination:
+Use:
 
 - `main` for stable milestone releases,
 - `dev` for ongoing integrated development,
-- narrow feature branches only where useful for parallel/risky changes,
-- milestone release fast-forward/tag after integration gate.
+- narrow feature branches/PRs where useful for risky or reviewable changes.
 
-The release workflow is:
+Release workflow:
 
 1. validate the release candidate on `dev`;
-2. advance `main` by a clean fast-forward to the approved release commit;
-3. create the immutable version tag on that commit;
-4. publish the corresponding GitHub Release from the tag;
-5. close the release Issue and milestone only after validation and publication succeed.
+2. obtain explicit Control Plane release approval;
+3. advance `main` by a clean fast-forward to the approved release commit;
+4. create the immutable version tag on that exact commit;
+5. publish the corresponding GitHub Release;
+6. close the release Issue and milestone only after validation and publication succeed.
 
-`main` prevents force pushes and deletion while continuing to allow intentional direct fast-forward pushes. `dev` remains the active integrated-development branch and does not require pull requests or reviews. Apple runtime claims remain subject to the explicit real Mac/Xcode/iPhone gate.
+`main` prevents force pushes/deletion while permitting intentional direct fast-forward release advancement. `dev` remains the active development branch.
+
+Apple runtime support is a separate claim: absence of Mac/Xcode/physical-iPhone evidence blocks Apple-runtime acceptance, **not** a Windows/Desktop-only milestone release.
 
 ## 11. Done Criteria Per Slice
 
 Each implementation slice should satisfy:
 
-- relevant specification named,
+- relevant specification/issue named,
 - ownership boundary preserved,
 - tests green,
 - no silent public-contract changes,
@@ -292,18 +280,19 @@ Each implementation slice should satisfy:
 - ADR updated when architecture changes,
 - unrelated Service failure remains isolated where relevant.
 
-## 12. Historical Immediate Next Step
+Desktop product slices should additionally preserve coherent keyboard/focus/recovery behavior and avoid exposing protocol/diagnostic concepts as primary user interaction unless required.
 
-The following recorded the progression after the v0.2.0 registration/publication lifecycle
-baseline. It is historical planning context, not a current work order:
+## 12. Current Direction After v0.6.0
 
-1. architecture alignment is accepted;
-2. harden the implemented Vocation Published Opportunity Overview 1.0 Windows integration;
-3. use Conveyance later to transport the same semantic contract for offline/cross-device iPhone read;
-4. keep iPhone acceptance behind the real Apple runtime smoke gate;
-5. generalize service discovery/presentation only after concrete integration pressure proves the required primitives.
+Do not predeclare the next milestone solely from historical planning.
 
+After v0.6.0 release, the Control Plane should scan current WGT/system/provider readiness and choose the next slice from actual available capabilities and product value. In particular:
 
-## 14. Repository Bootstrap
+- do not resume iOS merely because a placeholder host exists;
+- do not invent an Illumination contract;
+- do not duplicate Orientation capability;
+- do not create new generic infrastructure where Architecture already assigns ownership.
+
+## 13. Repository Bootstrap
 
 See `docs/21_REPOSITORY_BOOTSTRAP.md` for the implementation-ready repository bootstrap specification.
