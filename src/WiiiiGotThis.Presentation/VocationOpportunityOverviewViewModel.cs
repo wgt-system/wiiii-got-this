@@ -17,24 +17,52 @@ public enum VocationOpportunityOverviewPresentationState
     IncompatibleContract
 }
 
-public sealed class VocationOpportunityItemViewModel(VocationOpportunity opportunity)
+public sealed class VocationOpportunityItemViewModel
 {
-    public string Title => opportunity.Title;
-    public string CompanyName => opportunity.Company.Name;
-    public IReadOnlyList<string> WorkLocations => opportunity.WorkLocations.Select(location => location.Label).ToArray();
-    public string WorkLocationsText => WorkLocations.Count == 0 ? "No location published" : string.Join(" · ", WorkLocations);
-    public BigInteger PostingCount => opportunity.PostingCount;
-    public string PostingCountText => $"{opportunity.PostingCount.ToString(CultureInfo.InvariantCulture)} {(opportunity.PostingCount == BigInteger.One ? "posting" : "postings")}";
+    public VocationOpportunityItemViewModel(VocationOpportunity opportunity)
+    {
+        Title = opportunity.Title;
+        CompanyName = opportunity.Company.Name;
+        WorkLocations = opportunity.WorkLocations.Select(location => location.Label).ToArray();
+        WorkLocationsText = WorkLocations.Count == 0 ? "No location published" : string.Join(" · ", WorkLocations);
+        PostingCount = opportunity.PostingCount;
+        PostingCountText = $"{PostingCount.ToString(CultureInfo.InvariantCulture)} {(PostingCount == BigInteger.One ? "posting" : "postings")}";
+    }
+
+    public string Title { get; }
+    public string CompanyName { get; }
+    public IReadOnlyList<string> WorkLocations { get; }
+    public string WorkLocationsText { get; }
+    public BigInteger PostingCount { get; }
+    public string PostingCountText { get; }
+
+    public bool Matches(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return true;
+
+        var term = query.Trim();
+        return Title.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || CompanyName.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || WorkLocations.Any(location => location.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
 }
 
 public sealed partial class VocationOpportunityOverviewViewModel : ObservableObject
 {
+    public const string ProviderOrderSort = "Provider order";
+    public const string TitleSort = "Title";
+    public const string CompanySort = "Company";
+    public const string PostingCountSort = "Most postings";
+
     private readonly GetVocationOpportunityOverviewUseCase readOverview;
 
     [ObservableProperty] private VocationOpportunityOverviewPresentationState state = VocationOpportunityOverviewPresentationState.Loading;
     [ObservableProperty] private string? publicationRef;
     [ObservableProperty] private string? generatedAtRawValue;
     [ObservableProperty] private DateTimeOffset? generatedAtNormalizedUtc;
+    [ObservableProperty] private string searchText = string.Empty;
+    [ObservableProperty] private string selectedSortOption = ProviderOrderSort;
 
     public VocationOpportunityOverviewViewModel(GetVocationOpportunityOverviewUseCase readOverview)
     {
@@ -43,6 +71,8 @@ public sealed partial class VocationOpportunityOverviewViewModel : ObservableObj
     }
 
     public ObservableCollection<VocationOpportunityItemViewModel> Opportunities { get; } = [];
+    public ObservableCollection<VocationOpportunityItemViewModel> VisibleOpportunities { get; } = [];
+    public IReadOnlyList<string> SortOptions { get; } = [ProviderOrderSort, TitleSort, CompanySort, PostingCountSort];
     public IAsyncRelayCommand RefreshCommand { get; }
     public bool IsLoading => State == VocationOpportunityOverviewPresentationState.Loading;
     public bool IsLoaded => State == VocationOpportunityOverviewPresentationState.Loaded;
@@ -51,7 +81,15 @@ public sealed partial class VocationOpportunityOverviewViewModel : ObservableObj
     public bool IsInvalidContract => State == VocationOpportunityOverviewPresentationState.InvalidContract;
     public bool IsIncompatibleContract => State == VocationOpportunityOverviewPresentationState.IncompatibleContract;
     public bool IsFailureState => IsUnavailable || IsInvalidContract || IsIncompatibleContract;
+    public bool IsStateBannerVisible => !IsLoaded;
+    public bool HasVisibleOpportunities => IsLoaded && VisibleOpportunities.Count > 0;
+    public bool HasNoMatches => IsLoaded && Opportunities.Count > 0 && VisibleOpportunities.Count == 0;
     public bool HasPublicationMetadata => !string.IsNullOrWhiteSpace(PublicationMetadataText);
+    public string ResultCountText => IsLoaded
+        ? SearchText.Length == 0 && VisibleOpportunities.Count == Opportunities.Count
+            ? $"{Opportunities.Count.ToString(CultureInfo.InvariantCulture)} opportunities"
+            : $"{VisibleOpportunities.Count.ToString(CultureInfo.InvariantCulture)} of {Opportunities.Count.ToString(CultureInfo.InvariantCulture)} opportunities"
+        : string.Empty;
     public string StateTitle => State switch
     {
         VocationOpportunityOverviewPresentationState.Loading => "Loading opportunities",
@@ -98,6 +136,10 @@ public sealed partial class VocationOpportunityOverviewViewModel : ObservableObj
         OnPropertyChanged(nameof(IsInvalidContract));
         OnPropertyChanged(nameof(IsIncompatibleContract));
         OnPropertyChanged(nameof(IsFailureState));
+        OnPropertyChanged(nameof(IsStateBannerVisible));
+        OnPropertyChanged(nameof(HasVisibleOpportunities));
+        OnPropertyChanged(nameof(HasNoMatches));
+        OnPropertyChanged(nameof(ResultCountText));
         OnPropertyChanged(nameof(StateTitle));
         OnPropertyChanged(nameof(StateDescription));
         OnPropertyChanged(nameof(StateText));
@@ -108,6 +150,7 @@ public sealed partial class VocationOpportunityOverviewViewModel : ObservableObj
         OnPropertyChanged(nameof(PublicationMetadataText));
         OnPropertyChanged(nameof(HasPublicationMetadata));
     }
+
     partial void OnGeneratedAtRawValueChanged(string? value)
     {
         OnPropertyChanged(nameof(GeneratedAtText));
@@ -115,10 +158,15 @@ public sealed partial class VocationOpportunityOverviewViewModel : ObservableObj
         OnPropertyChanged(nameof(HasPublicationMetadata));
     }
 
+    partial void OnSearchTextChanged(string value) => RebuildVisibleOpportunities();
+
+    partial void OnSelectedSortOptionChanged(string value) => RebuildVisibleOpportunities();
+
     public async Task RefreshAsync()
     {
         State = VocationOpportunityOverviewPresentationState.Loading;
         Opportunities.Clear();
+        VisibleOpportunities.Clear();
         PublicationRef = null;
         GeneratedAtRawValue = null;
         GeneratedAtNormalizedUtc = null;
@@ -134,6 +182,7 @@ public sealed partial class VocationOpportunityOverviewViewModel : ObservableObj
             State = Opportunities.Count == 0
                 ? VocationOpportunityOverviewPresentationState.Empty
                 : VocationOpportunityOverviewPresentationState.Loaded;
+            RebuildVisibleOpportunities();
         }
         else
         {
@@ -147,5 +196,25 @@ public sealed partial class VocationOpportunityOverviewViewModel : ObservableObj
         }
 
         OnPropertyChanged(nameof(PublicationMetadataText));
+    }
+
+    private void RebuildVisibleOpportunities()
+    {
+        IEnumerable<VocationOpportunityItemViewModel> visible = Opportunities.Where(item => item.Matches(SearchText));
+        visible = SelectedSortOption switch
+        {
+            TitleSort => visible.OrderBy(item => item.Title, StringComparer.OrdinalIgnoreCase),
+            CompanySort => visible.OrderBy(item => item.CompanyName, StringComparer.OrdinalIgnoreCase).ThenBy(item => item.Title, StringComparer.OrdinalIgnoreCase),
+            PostingCountSort => visible.OrderByDescending(item => item.PostingCount),
+            _ => visible
+        };
+
+        VisibleOpportunities.Clear();
+        foreach (var opportunity in visible)
+            VisibleOpportunities.Add(opportunity);
+
+        OnPropertyChanged(nameof(HasVisibleOpportunities));
+        OnPropertyChanged(nameof(HasNoMatches));
+        OnPropertyChanged(nameof(ResultCountText));
     }
 }
