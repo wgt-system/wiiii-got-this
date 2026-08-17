@@ -39,6 +39,7 @@ public sealed record AtlasProjection(
 public sealed class BuildAtlasProjectionUseCase
 {
     public const string CoreNodeId = "wgt.core";
+    private const string ReferenceDeveloperServiceId = "reference-service";
 
     private readonly StringComparer titleComparer = StringComparer.OrdinalIgnoreCase;
 
@@ -125,7 +126,7 @@ public sealed class BuildAtlasProjectionUseCase
     }
 
     private static bool IsDeveloperIntegration(ServiceIdentity serviceIdentity) =>
-        string.Equals(serviceIdentity.Value, "reference", StringComparison.Ordinal);
+        string.Equals(serviceIdentity.Value, ReferenceDeveloperServiceId, StringComparison.Ordinal);
 
     private static string DescribeService(ServiceIntegrationListItem integration)
     {
