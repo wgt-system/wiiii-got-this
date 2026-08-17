@@ -18,7 +18,7 @@ public sealed class ServiceIntegrationPresentationTests
     {
         var inherited = Map(false, false, null, null);
         Assert.Equal("Disabled globally", inherited.GlobalEnablementText);
-        Assert.Equal("Inherit global setting", inherited.DeviceOverrideText);
+        Assert.Equal("Follows global setting", inherited.DeviceOverrideText);
         Assert.Equal("This device follows the global setting.", inherited.DeviceBehaviorText);
         Assert.Equal("Disabled on this device", inherited.EffectiveEnablementText);
 
