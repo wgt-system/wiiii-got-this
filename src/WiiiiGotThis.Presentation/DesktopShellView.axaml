@@ -1,90 +1,97 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:WiiiiGotThis.Presentation" xmlns:p="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.DesktopShellView" x:DataType="vm:ShellViewModel">
-  <Grid ColumnDefinitions="236,*">
-    <Border Classes="wgt-surface" Grid.Column="0" CornerRadius="0" BorderThickness="0,0,1,0" Padding="20">
-      <Grid RowDefinitions="Auto,Auto,*,Auto">
-        <StackPanel Spacing="4">
-          <TextBlock Classes="wgt-page-title">Wiiii Got This</TextBlock>
-          <TextBlock Classes="wgt-secondary" Text="Your workspace" />
+  <Grid ColumnDefinitions="224,*">
+    <Border Classes="wgt-shell-sidebar" Grid.Column="0" CornerRadius="0" BorderThickness="0,0,1,0" Padding="20">
+      <Grid RowDefinitions="Auto,*,Auto">
+        <StackPanel Spacing="3">
+          <TextBlock Classes="wgt-page-title" FontSize="22">Wiiii Got This</TextBlock>
+          <TextBlock Classes="wgt-secondary" Text="Workspace" />
         </StackPanel>
-        <StackPanel Grid.Row="1" Margin="0,28,0,0" Spacing="4">
-          <TextBlock Classes="wgt-caption" Text="CURRENT DEVICE" />
-          <TextBlock Classes="wgt-body" Text="{Binding CurrentDeviceName}" TextWrapping="Wrap" />
-        </StackPanel>
-        <StackPanel Grid.Row="2" Margin="0,28,0,0">
+
+        <StackPanel Grid.Row="1" Margin="0,28,0,0" Spacing="2">
           <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Home" Command="{Binding ShowHomeCommand}" IsChecked="{Binding IsHomeActive, Mode=OneWay}" />
           <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Jobs" Command="{Binding ShowJobsCommand}" IsChecked="{Binding IsJobsActive, Mode=OneWay}" />
           <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Map" IsVisible="{Binding IsMapAvailable}" Command="{Binding ShowMapCommand}" IsChecked="{Binding IsMapActive, Mode=OneWay}" />
-          <Separator Margin="0,16" />
+          <Separator Margin="0,14" />
           <RadioButton Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="Settings" Command="{Binding ShowSettingsCommand}" IsChecked="{Binding IsSettingsActive, Mode=OneWay}" />
         </StackPanel>
-        <TextBlock Grid.Row="3" Classes="wgt-caption" Text="WGT workspace" />
+
+        <StackPanel Grid.Row="2" Spacing="3">
+          <TextBlock Classes="wgt-caption" Text="THIS DEVICE" />
+          <TextBlock Classes="wgt-body" Text="{Binding CurrentDeviceName}" TextWrapping="Wrap" />
+          <TextBlock Classes="wgt-caption" Text="{Binding StatusText}" TextWrapping="Wrap" />
+        </StackPanel>
       </Grid>
     </Border>
 
-    <Grid Grid.Column="1" RowDefinitions="Auto,*" Margin="28,24,28,24">
-      <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,24">
-        <StackPanel Spacing="2">
-          <TextBlock Classes="wgt-section-title" Text="{Binding CurrentSurface}" />
-          <TextBlock Classes="wgt-secondary" Text="{Binding StatusText}" />
+    <Grid Grid.Column="1" Margin="32,28">
+      <Grid IsVisible="{Binding IsHomeVisible}" RowDefinitions="Auto,*">
+        <StackPanel Spacing="4" Margin="0,0,0,22">
+          <TextBlock Classes="wgt-page-title">Home</TextBlock>
+          <TextBlock Classes="wgt-secondary" Text="Your current WGT product areas." />
         </StackPanel>
-        <TextBlock Grid.Column="1" Classes="wgt-caption" VerticalAlignment="Center" Margin="16,0" Text="{Binding CurrentDeviceName}" />
-        <Button Classes="wgt-action-button" Grid.Column="2" Command="{Binding RefreshCommand}" Content="Refresh" />
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="20">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+              <Border Classes="wgt-product-card" IsVisible="{Binding IsJobsAvailable}">
+                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+                  <TextBlock Classes="wgt-caption" Text="VOCATION" />
+                  <TextBlock Grid.Row="1" Classes="wgt-section-title">Jobs</TextBlock>
+                  <TextBlock Grid.Row="2" Classes="wgt-secondary" Text="Browse the opportunities currently published by Vocation." TextWrapping="Wrap" />
+                  <Button Grid.Row="3" Classes="wgt-action-button" Command="{Binding ShowJobsCommand}" Content="Open Jobs" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                </Grid>
+              </Border>
+
+              <Border Grid.Column="1" Classes="wgt-product-card" IsVisible="{Binding IsMapAvailable}">
+                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+                  <TextBlock Classes="wgt-caption" Text="VOCATION · ORIENTATION" />
+                  <TextBlock Grid.Row="1" Classes="wgt-section-title">Map</TextBlock>
+                  <TextBlock Grid.Row="2" Classes="wgt-secondary" Text="Explore published opportunity locations on the shared Orientation map." TextWrapping="Wrap" />
+                  <Button Grid.Row="3" Classes="wgt-action-button" Command="{Binding ShowMapCommand}" Content="Open Map" HorizontalAlignment="Left" Margin="0,8,0,0" />
+                </Grid>
+              </Border>
+            </Grid>
+
+            <Border Classes="wgt-product-card">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
+                <StackPanel Spacing="6">
+                  <TextBlock Classes="wgt-caption" Text="WGT" />
+                  <TextBlock Classes="wgt-section-title">Connections</TextBlock>
+                  <TextBlock Classes="wgt-secondary" Text="Choose which integrations are active on this device and inspect connection health when needed." TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" Classes="wgt-action-button" Command="{Binding ShowSettingsCommand}" Content="Open Settings" VerticalAlignment="Center" />
+              </Grid>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
       </Grid>
 
-      <Grid Grid.Row="1" IsVisible="{Binding IsHomeVisible}">
-        <StackPanel Spacing="16">
+      <Grid IsVisible="{Binding IsJobsVisible}" RowDefinitions="Auto,*">
+        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,18">
           <StackPanel Spacing="4">
-            <TextBlock Classes="wgt-page-title">Overview</TextBlock>
-            <TextBlock Classes="wgt-secondary" Text="Your WGT workspace at a glance." />
-          </StackPanel>
-          <Grid ColumnDefinitions="*,*" ColumnSpacing="16" RowDefinitions="Auto">
-            <Border Classes="wgt-surface">
-              <StackPanel Spacing="8">
-                <TextBlock Classes="wgt-caption" Text="DEVICE" />
-                <TextBlock Classes="wgt-section-title" Text="{Binding CurrentDeviceName}" TextWrapping="Wrap" />
-                <TextBlock Classes="wgt-secondary" Text="{Binding StatusText}" />
-              </StackPanel>
-            </Border>
-            <Border Classes="wgt-surface" Grid.Column="1">
-              <StackPanel Spacing="8">
-                <TextBlock Classes="wgt-caption" Text="PRODUCT AREA" />
-                <TextBlock Classes="wgt-section-title">Jobs</TextBlock>
-                <TextBlock Classes="wgt-secondary" Text="Vocation opportunity overview" TextWrapping="Wrap" />
-                <Button Classes="wgt-action-button" Command="{Binding ShowJobsCommand}" Content="Open Jobs" HorizontalAlignment="Left" />
-              </StackPanel>
-            </Border>
-          </Grid>
-        </StackPanel>
-      </Grid>
-
-      <Grid Grid.Row="1" IsVisible="{Binding IsJobsVisible}">
-        <Grid RowDefinitions="Auto,*">
-          <StackPanel Spacing="4" Margin="0,0,0,16">
             <TextBlock Classes="wgt-page-title">Jobs</TextBlock>
-            <TextBlock Classes="wgt-secondary" Text="Vocation opportunity overview" />
+            <TextBlock Classes="wgt-secondary" Text="Published opportunities from Vocation." />
           </StackPanel>
-          <Border Classes="wgt-surface" Grid.Row="1">
-            <p:VocationOpportunityOverviewView DataContext="{Binding OpenedVocationOpportunityOverview}" />
-          </Border>
         </Grid>
+        <Border Classes="wgt-surface" Grid.Row="1">
+          <p:VocationOpportunityOverviewView DataContext="{Binding OpenedVocationOpportunityOverview}" />
+        </Border>
       </Grid>
 
-      <Grid Grid.Row="1" IsVisible="{Binding IsMapVisible}">
-        <Grid RowDefinitions="Auto,*">
-          <StackPanel Spacing="4" Margin="0,0,0,16">
-            <TextBlock Classes="wgt-page-title">Map</TextBlock>
-            <TextBlock Classes="wgt-secondary" Text="Vocation opportunity locations" />
-          </StackPanel>
-          <Border Classes="wgt-surface" Grid.Row="1">
-            <p:VocationMapProjectionView DataContext="{Binding OpenedVocationMapProjection}" />
-          </Border>
-        </Grid>
+      <Grid IsVisible="{Binding IsMapVisible}" RowDefinitions="Auto,*">
+        <StackPanel Spacing="4" Margin="0,0,0,18">
+          <TextBlock Classes="wgt-page-title">Map</TextBlock>
+          <TextBlock Classes="wgt-secondary" Text="Opportunity locations from Vocation, rendered by Orientation." />
+        </StackPanel>
+        <Border Classes="wgt-surface" Grid.Row="1">
+          <p:VocationMapProjectionView DataContext="{Binding OpenedVocationMapProjection}" />
+        </Border>
       </Grid>
 
-      <Grid Grid.Row="1" IsVisible="{Binding IsSettingsVisible}" RowDefinitions="Auto,*">
-        <StackPanel Spacing="4" Margin="0,0,0,16">
+      <Grid IsVisible="{Binding IsSettingsVisible}" RowDefinitions="Auto,*">
+        <StackPanel Spacing="4" Margin="0,0,0,18">
           <TextBlock Classes="wgt-page-title">Settings</TextBlock>
-          <TextBlock Classes="wgt-secondary" Text="Manage WGT connections and their published capabilities." />
+          <TextBlock Classes="wgt-secondary" Text="Manage connections and device behavior." />
         </StackPanel>
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
           <Grid MinWidth="760" ColumnDefinitions="280,*" ColumnSpacing="16">
@@ -139,7 +146,10 @@
               </Border>
               <Border Classes="wgt-surface">
                 <StackPanel Spacing="6">
-                  <TextBlock FontWeight="Bold">Refresh diagnostics</TextBlock>
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock FontWeight="Bold" VerticalAlignment="Center">Refresh diagnostics</TextBlock>
+                    <Button Grid.Column="1" Classes="wgt-action-button" Command="{Binding RefreshCommand}" Content="Refresh" />
+                  </Grid>
                   <TextBlock Text="{Binding SelectedIntegration.PublicationRefreshStatusText}" TextWrapping="Wrap" />
                   <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.LastRefreshAttemptText}" />
                   <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.LastSuccessfulRefreshText}" />
