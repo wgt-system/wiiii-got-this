@@ -109,6 +109,7 @@ public sealed partial class ShellViewModel : ObservableObject
     public bool IsMapProjectionOpen => OpenedVocationMapProjection is not null;
     public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen && !IsVocationOpportunityOverviewOpen;
     public bool IsDesktopCapabilityDetailsVisible => !IsReferenceCapabilityOpen;
+    public bool HasStatusMessage => !string.Equals(StatusText, "Ready", StringComparison.Ordinal);
 
     public Task EnsureInitializedAsync()
     {
@@ -146,6 +147,8 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsMapProjectionOpen));
     }
+
+    partial void OnStatusTextChanged(string value) => OnPropertyChanged(nameof(HasStatusMessage));
 
     partial void OnCurrentSurfaceChanged(ShellSurface value)
     {
