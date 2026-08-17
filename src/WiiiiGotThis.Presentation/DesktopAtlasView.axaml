@@ -7,6 +7,7 @@
              KeyDown="OnKeyDown"
              SizeChanged="OnSizeChanged">
   <Grid x:Name="AtlasViewport"
+        Classes="wgt-atlas-root"
         ClipToBounds="True"
         Background="{DynamicResource WgtAtlasBackgroundBrush}"
         PointerPressed="OnPointerPressed"
@@ -45,21 +46,51 @@
                 Content="⚙"
                 AutomationProperties.Name="WGT settings"
                 AutomationProperties.AutomationId="AtlasSettings" />
-        <Border Classes="wgt-atlas-popover"
+        <Border x:Name="SettingsPopover"
+                Classes="wgt-atlas-popover"
                 IsVisible="{Binding AtlasSettingsExpanded}"
-                Padding="12">
-          <StackPanel Spacing="4">
-            <TextBlock Classes="wgt-caption" Text="WGT" />
-            <TextBlock FontWeight="SemiBold" Text="Presentation settings" />
-            <TextBlock Classes="wgt-secondary"
-                       MaxWidth="210"
-                       Text="Theme, sound and motion controls live here as the Atlas theme system lands. Service settings stay with their nodes."
-                       TextWrapping="Wrap" />
+                Padding="10">
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <StackPanel Spacing="1" VerticalAlignment="Center">
+                <TextBlock Classes="wgt-caption" Text="WGT" />
+                <TextBlock FontWeight="SemiBold" Text="Presentation" />
+              </StackPanel>
+              <Button x:Name="ThemeMenuButton"
+                      Grid.Column="1"
+                      Width="40"
+                      Height="40"
+                      CornerRadius="20"
+                      Padding="0"
+                      Content="◐"
+                      Click="OnToggleThemeMenu"
+                      ToolTip.Tip="Theme"
+                      AutomationProperties.Name="Choose Atlas theme" />
+            </Grid>
+
+            <Grid x:Name="ThemeChoices"
+                  IsVisible="False"
+                  ColumnDefinitions="Auto,Auto,Auto,Auto"
+                  ColumnSpacing="6">
+              <Button Width="38" Height="38" CornerRadius="19" Padding="0" Content="T"
+                      Click="OnTechnicalTheme" ToolTip.Tip="Technical" AutomationProperties.Name="Technical theme" />
+              <Button Grid.Column="1" Width="38" Height="38" CornerRadius="19" Padding="0" Content="E"
+                      Click="OnElegantTheme" ToolTip.Tip="Elegant" AutomationProperties.Name="Elegant theme" />
+              <Button Grid.Column="2" Width="38" Height="38" CornerRadius="19" Padding="0" Content="M"
+                      Click="OnMachineTheme" ToolTip.Tip="Machine" AutomationProperties.Name="Machine theme" />
+              <Button Grid.Column="3" Width="38" Height="38" CornerRadius="19" Padding="0" Content="W"
+                      Click="OnWorldTheme" ToolTip.Tip="World" AutomationProperties.Name="World theme" />
+            </Grid>
+
+            <TextBlock x:Name="CurrentThemeLabel"
+                       Classes="wgt-caption"
+                       Text="Technical theme" />
           </StackPanel>
         </Border>
       </StackPanel>
 
-      <Border Classes="wgt-atlas-controls"
+      <Border x:Name="ControlHint"
+              Classes="wgt-atlas-controls"
               IsHitTestVisible="False"
               HorizontalAlignment="Right"
               VerticalAlignment="Bottom"
