@@ -53,7 +53,7 @@ public sealed partial class ShellViewModel : ObservableObject
         string suggestedDeviceName,
         GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview = null,
         GetVocationMapProjectionUseCase? readVocationMapProjection = null,
-        bool isOrientationMapSurfaceComposed = true)
+        bool isOrientationMapSurfaceComposed = false)
     {
         this.ensureCurrentDevice = ensureCurrentDevice;
         this.registerKnownIntegrations = registerKnownIntegrations;
