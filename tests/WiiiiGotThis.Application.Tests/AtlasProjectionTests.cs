@@ -72,24 +72,23 @@ public sealed class AtlasProjectionTests
     [Fact]
     public void Build_hides_developer_reference_integration_from_normal_Atlas()
     {
-        var reference = new ServiceIdentity("reference");
-        var integration = new ServiceIntegrationListItem(
-            reference,
-            "Reference",
-            true,
-            null,
-            true,
-            true,
-            true,
-            IntegrationRefreshStatus.Refreshed,
-            DateTimeOffset.UtcNow,
-            DateTimeOffset.UtcNow);
+        var integration = Integration("reference-service", "Reference Integration");
 
         var projection = new BuildAtlasProjectionUseCase().Build([integration], []);
 
         Assert.Single(projection.Nodes);
         Assert.Equal(AtlasNodeKind.Core, projection.Nodes[0].Kind);
         Assert.Empty(projection.Connections);
+    }
+
+    [Fact]
+    public void Build_can_include_reference_integration_for_developer_diagnostics()
+    {
+        var integration = Integration("reference-service", "Reference Integration");
+
+        var projection = new BuildAtlasProjectionUseCase().Build([integration], [], includeDeveloperIntegrations: true);
+
+        Assert.Contains(projection.Nodes, node => node.NodeId == "service:reference-service");
     }
 
     [Fact]
