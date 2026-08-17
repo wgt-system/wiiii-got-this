@@ -1,4 +1,6 @@
+using System.Buffers;
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 
 namespace WiiiiGotThis.Presentation;
@@ -11,28 +13,25 @@ public static class OrientationMapBridgeAdapter
     public const string Version = "1.0";
     public const string VocationMapSourceRef = "vocation.map_projection";
 
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
-
     public static string CreateSceneReplaceMessage(IEnumerable<VocationMapFeaturePresentationViewModel> features)
     {
         ArgumentNullException.ThrowIfNull(features);
 
-        return JsonSerializer.Serialize(new
+        return CreateMessage("scene.replace", writer =>
         {
-            contract = Contract,
-            version = Version,
-            type = "scene.replace",
-            payload = new
-            {
-                features = features.Select(ToOrientationFeature).ToArray(),
-                viewport = new
-                {
-                    kind = "automatic",
-                    padding = 48,
-                    maxZoom = 15,
-                },
-            },
-        }, JsonOptions);
+            writer.WritePropertyName("features");
+            writer.WriteStartArray();
+            foreach (var feature in features)
+                WriteOrientationFeature(writer, feature);
+            writer.WriteEndArray();
+
+            writer.WritePropertyName("viewport");
+            writer.WriteStartObject();
+            writer.WriteString("kind", "automatic");
+            writer.WriteNumber("padding", 48);
+            writer.WriteNumber("maxZoom", 15);
+            writer.WriteEndObject();
+        });
     }
 
     public static string CreateCurrentPositionSetMessage(OrientationCurrentPosition position)
@@ -40,33 +39,24 @@ public static class OrientationMapBridgeAdapter
         ArgumentNullException.ThrowIfNull(position);
         ValidatePosition(position);
 
-        return JsonSerializer.Serialize(new
+        return CreateMessage("current-position.set", writer =>
         {
-            contract = Contract,
-            version = Version,
-            type = "current-position.set",
-            payload = new
-            {
-                coordinate = new
-                {
-                    longitude = position.Longitude,
-                    latitude = position.Latitude,
-                },
-                accuracyMeters = position.AccuracyMeters,
-                observedAt = position.ObservedAt.UtcDateTime.ToString(
+            writer.WritePropertyName("coordinate");
+            writer.WriteStartObject();
+            writer.WriteNumber("longitude", position.Longitude);
+            writer.WriteNumber("latitude", position.Latitude);
+            writer.WriteEndObject();
+            writer.WriteNumber("accuracyMeters", position.AccuracyMeters);
+            writer.WriteString(
+                "observedAt",
+                position.ObservedAt.UtcDateTime.ToString(
                     "yyyy-MM-dd'T'HH:mm:ss.fff'Z'",
-                    CultureInfo.InvariantCulture),
-            },
-        }, JsonOptions);
+                    CultureInfo.InvariantCulture));
+        });
     }
 
-    public static string CreateCurrentPositionClearMessage() => JsonSerializer.Serialize(new
-    {
-        contract = Contract,
-        version = Version,
-        type = "current-position.clear",
-        payload = new { },
-    }, JsonOptions);
+    public static string CreateCurrentPositionClearMessage() =>
+        CreateMessage("current-position.clear", static _ => { });
 
     public static bool TryParseOutboundMessage(string? body, out OrientationHostBridgeMessage? message)
     {
@@ -114,33 +104,62 @@ public static class OrientationMapBridgeAdapter
         return !string.IsNullOrWhiteSpace(featureRef);
     }
 
-    private static object ToOrientationFeature(VocationMapFeaturePresentationViewModel feature)
+    private static string CreateMessage(string type, Action<Utf8JsonWriter> writePayload)
     {
-        return new
-        {
-            @ref = feature.FeatureRef,
-            sourceRef = VocationMapSourceRef,
-            coordinate = new
-            {
-                longitude = feature.Longitude,
-                latitude = feature.Latitude,
-            },
-            title = feature.Title,
-            subtitle = $"{feature.CompanyName} · {feature.WorkLocationLabel}",
-            information = new[]
-            {
-                new
-                {
-                    title = "Vocation",
-                    rows = new[]
-                    {
-                        new { label = "Company", value = feature.CompanyName },
-                        new { label = "Location", value = feature.WorkLocationLabel },
-                        new { label = "Precision", value = feature.WorkLocationPrecision },
-                    },
-                },
-            },
-        };
+        var buffer = new ArrayBufferWriter<byte>();
+        using var writer = new Utf8JsonWriter(buffer);
+        writer.WriteStartObject();
+        writer.WriteString("contract", Contract);
+        writer.WriteString("version", Version);
+        writer.WriteString("type", type);
+        writer.WritePropertyName("payload");
+        writer.WriteStartObject();
+        writePayload(writer);
+        writer.WriteEndObject();
+        writer.WriteEndObject();
+        writer.Flush();
+        return Encoding.UTF8.GetString(buffer.WrittenSpan);
+    }
+
+    private static void WriteOrientationFeature(
+        Utf8JsonWriter writer,
+        VocationMapFeaturePresentationViewModel feature)
+    {
+        writer.WriteStartObject();
+        writer.WriteString("ref", feature.FeatureRef);
+        writer.WriteString("sourceRef", VocationMapSourceRef);
+
+        writer.WritePropertyName("coordinate");
+        writer.WriteStartObject();
+        writer.WriteNumber("longitude", feature.Longitude);
+        writer.WriteNumber("latitude", feature.Latitude);
+        writer.WriteEndObject();
+
+        writer.WriteString("title", feature.Title);
+        writer.WriteString("subtitle", $"{feature.CompanyName} · {feature.WorkLocationLabel}");
+
+        writer.WritePropertyName("information");
+        writer.WriteStartArray();
+        writer.WriteStartObject();
+        writer.WriteString("title", "Vocation");
+        writer.WritePropertyName("rows");
+        writer.WriteStartArray();
+        WriteInformationRow(writer, "Company", feature.CompanyName);
+        WriteInformationRow(writer, "Location", feature.WorkLocationLabel);
+        WriteInformationRow(writer, "Precision", feature.WorkLocationPrecision);
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+        writer.WriteEndArray();
+
+        writer.WriteEndObject();
+    }
+
+    private static void WriteInformationRow(Utf8JsonWriter writer, string label, string value)
+    {
+        writer.WriteStartObject();
+        writer.WriteString("label", label);
+        writer.WriteString("value", value);
+        writer.WriteEndObject();
     }
 
     private static void ValidatePosition(OrientationCurrentPosition position)
