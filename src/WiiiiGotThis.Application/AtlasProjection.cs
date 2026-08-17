@@ -12,12 +12,19 @@ public enum AtlasNodeKind
 public enum AtlasConnectionKind
 {
     Composition,
-    CapabilityOwnership
+    CapabilityOwnership,
+    CapabilityDependency
 }
 
 public sealed record AtlasProductService(
     ServiceIdentity ServiceIdentity,
     string DisplayName,
+    string Description);
+
+public sealed record AtlasProductDependency(
+    ServiceIdentity SourceServiceIdentity,
+    CapabilityIdentity SourceCapabilityIdentity,
+    ServiceIdentity TargetServiceIdentity,
     string Description);
 
 public sealed record AtlasNode(
@@ -37,7 +44,8 @@ public sealed record AtlasConnection(
     string ConnectionId,
     AtlasConnectionKind Kind,
     string SourceNodeId,
-    string TargetNodeId);
+    string TargetNodeId,
+    string? Description = null);
 
 public sealed record AtlasProjection(
     IReadOnlyList<AtlasNode> Nodes,
@@ -55,14 +63,26 @@ public sealed class BuildAtlasProjectionUseCase
         new(new ServiceIdentity("orientation"), "Orientation", "Spatial discovery, exploration, navigation and mobility.")
     ]);
 
+    private static readonly IReadOnlyList<AtlasProductDependency> DefaultProductDependencies = Array.AsReadOnly<AtlasProductDependency>(
+    [
+        new(
+            new ServiceIdentity("vocation"),
+            new CapabilityIdentity("vocation.map_projection"),
+            new ServiceIdentity("orientation"),
+            "Vocation owns opportunity and work-location meaning; Orientation supplies the generic geospatial rendering and interaction capability.")
+    ]);
+
     private readonly StringComparer titleComparer = StringComparer.OrdinalIgnoreCase;
     private readonly IReadOnlyList<AtlasProductService> productServices;
+    private readonly IReadOnlyList<AtlasProductDependency> productDependencies;
 
-    public BuildAtlasProjectionUseCase(IEnumerable<AtlasProductService>? productServices = null)
+    public BuildAtlasProjectionUseCase(
+        IEnumerable<AtlasProductService>? productServices = null,
+        IEnumerable<AtlasProductDependency>? productDependencies = null)
     {
-        var configured = (productServices ?? DefaultProductServices).ToArray();
+        var configuredServices = (productServices ?? DefaultProductServices).ToArray();
         var identities = new HashSet<ServiceIdentity>();
-        foreach (var service in configured)
+        foreach (var service in configuredServices)
         {
             ArgumentNullException.ThrowIfNull(service);
             ArgumentException.ThrowIfNullOrWhiteSpace(service.DisplayName);
@@ -70,7 +90,15 @@ public sealed class BuildAtlasProjectionUseCase
             if (!identities.Add(service.ServiceIdentity))
                 throw new ArgumentException($"Duplicate Atlas product Service '{service.ServiceIdentity.Value}'.", nameof(productServices));
         }
-        this.productServices = Array.AsReadOnly(configured);
+        this.productServices = Array.AsReadOnly(configuredServices);
+
+        var configuredDependencies = (productDependencies ?? DefaultProductDependencies).ToArray();
+        foreach (var dependency in configuredDependencies)
+        {
+            ArgumentNullException.ThrowIfNull(dependency);
+            ArgumentException.ThrowIfNullOrWhiteSpace(dependency.Description);
+        }
+        this.productDependencies = Array.AsReadOnly(configuredDependencies);
     }
 
     public AtlasProjection Build(
@@ -163,6 +191,22 @@ public sealed class BuildAtlasProjectionUseCase
                     serviceNodeId,
                     capabilityNodeId));
             }
+        }
+
+        var existingNodeIds = nodes.Select(node => node.NodeId).ToHashSet(StringComparer.Ordinal);
+        foreach (var dependency in productDependencies)
+        {
+            var sourceNodeId = CapabilityNodeId(dependency.SourceServiceIdentity, dependency.SourceCapabilityIdentity);
+            var targetNodeId = ServiceNodeId(dependency.TargetServiceIdentity);
+            if (!existingNodeIds.Contains(sourceNodeId) || !existingNodeIds.Contains(targetNodeId))
+                continue;
+
+            connections.Add(new(
+                $"dependency:{dependency.SourceServiceIdentity.Value}:{dependency.SourceCapabilityIdentity.Value}:{dependency.TargetServiceIdentity.Value}",
+                AtlasConnectionKind.CapabilityDependency,
+                sourceNodeId,
+                targetNodeId,
+                dependency.Description));
         }
 
         return new AtlasProjection(nodes.AsReadOnly(), connections.AsReadOnly());
