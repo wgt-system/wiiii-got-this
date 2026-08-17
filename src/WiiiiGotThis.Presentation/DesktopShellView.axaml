@@ -93,107 +93,149 @@
           <TextBlock Classes="wgt-page-title">Settings</TextBlock>
           <TextBlock Classes="wgt-secondary" Text="Manage connections and device behavior." />
         </StackPanel>
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-          <Grid MinWidth="760" ColumnDefinitions="280,*" ColumnSpacing="16">
-            <Border Classes="wgt-surface" Grid.Column="0">
-              <DockPanel>
-                <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,12">
-                  <TextBlock FontWeight="Bold">Integrations</TextBlock>
-                  <TextBlock Classes="wgt-caption" Text="Select a connection to manage it." TextWrapping="Wrap" />
+
+        <Grid Grid.Row="1" MinWidth="760" ColumnDefinitions="260,*" ColumnSpacing="16">
+          <Border Classes="wgt-surface">
+            <DockPanel>
+              <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,12">
+                <TextBlock Classes="wgt-section-title" FontSize="18">Connections</TextBlock>
+                <TextBlock Classes="wgt-caption" Text="Choose a connection to manage." TextWrapping="Wrap" />
+              </StackPanel>
+              <ListBox ItemsSource="{Binding Integrations}" SelectedItem="{Binding SelectedIntegration, Mode=TwoWay}">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="p:ServiceIntegrationPresentationViewModel">
+                    <Border Classes="wgt-list-divider" Padding="4,9,4,11">
+                      <StackPanel Spacing="4">
+                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Classes="wgt-caption" IsVisible="{Binding IsReferenceIntegration}" Text="DEVELOPER REFERENCE" />
+                        <TextBlock Classes="wgt-secondary" Text="{Binding EffectiveEnablementText}" />
+                        <TextBlock Classes="wgt-caption" Text="{Binding ConnectionHealthTitle}" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </DockPanel>
+          </Border>
+
+          <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="16">
+              <Border Classes="wgt-surface">
+                <StackPanel Spacing="14">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                    <StackPanel Spacing="3">
+                      <TextBlock Classes="wgt-caption" Text="SELECTED CONNECTION" />
+                      <TextBlock Classes="wgt-section-title" Text="{Binding SelectedIntegration.DisplayName}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" Classes="wgt-body" FontWeight="SemiBold" Text="{Binding SelectedIntegration.EffectiveEnablementText}" VerticalAlignment="Center" />
+                  </Grid>
+
+                  <Separator />
+
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                    <StackPanel Spacing="4">
+                      <TextBlock FontWeight="SemiBold">Global availability</TextBlock>
+                      <TextBlock Classes="wgt-secondary" Text="{Binding SelectedIntegration.GlobalEnablementText}" />
+                      <TextBlock Classes="wgt-caption" Text="Sets the default for devices unless they have an explicit override." TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                      <Button Classes="wgt-action-button" IsVisible="{Binding SelectedIntegration.ShowEnableGloballyAction}" Command="{Binding EnableGloballyCommand}" Content="Enable globally" />
+                      <Button Classes="wgt-action-button" IsVisible="{Binding SelectedIntegration.ShowDisableGloballyAction}" Command="{Binding DisableGloballyCommand}" Content="Disable globally" />
+                    </StackPanel>
+                  </Grid>
+
+                  <Separator />
+
+                  <StackPanel Spacing="8">
+                    <StackPanel Spacing="4">
+                      <TextBlock FontWeight="SemiBold">This device</TextBlock>
+                      <TextBlock Classes="wgt-secondary" Text="{Binding SelectedIntegration.DeviceOverrideText}" />
+                      <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.DeviceBehaviorText}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <WrapPanel>
+                      <Button IsVisible="{Binding SelectedIntegration.ShowEnableOnDeviceAction}" Command="{Binding EnableOnThisDeviceCommand}" Content="Enable on this device" Margin="0,0,8,6" />
+                      <Button IsVisible="{Binding SelectedIntegration.ShowDisableOnDeviceAction}" Command="{Binding DisableOnThisDeviceCommand}" Content="Disable on this device" Margin="0,0,8,6" />
+                      <Button IsVisible="{Binding SelectedIntegration.HasDeviceOverride}" Command="{Binding InheritGlobalSettingCommand}" Content="Use global setting" Margin="0,0,8,6" />
+                    </WrapPanel>
+                  </StackPanel>
                 </StackPanel>
-                <ListBox ItemsSource="{Binding Integrations}" SelectedItem="{Binding SelectedIntegration, Mode=TwoWay}">
-                  <ListBox.ItemTemplate>
-                    <DataTemplate x:DataType="p:ServiceIntegrationPresentationViewModel">
-                      <Border Classes="wgt-list-divider" Padding="0,8,0,10">
-                        <StackPanel Spacing="3">
-                          <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                          <TextBlock Classes="wgt-caption" Text="{Binding EffectiveEnablementText}" />
-                          <TextBlock Classes="wgt-caption" Text="{Binding PublicationRefreshStatusText}" TextWrapping="Wrap" />
-                        </StackPanel>
-                      </Border>
-                    </DataTemplate>
-                  </ListBox.ItemTemplate>
-                </ListBox>
-              </DockPanel>
-            </Border>
-            <StackPanel Grid.Column="1" Spacing="16">
+              </Border>
+
               <Border Classes="wgt-surface">
                 <StackPanel Spacing="10">
-                  <StackPanel Spacing="3">
-                    <TextBlock Classes="wgt-caption" Text="SELECTED INTEGRATION" />
-                    <TextBlock Classes="wgt-section-title" Text="{Binding SelectedIntegration.DisplayName}" />
-                  </StackPanel>
-                  <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
-                    <StackPanel Spacing="3">
-                      <TextBlock Classes="wgt-caption" Text="GLOBAL SETTING" />
-                      <TextBlock Text="{Binding SelectedIntegration.GlobalEnablementText}" FontWeight="SemiBold" />
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                    <StackPanel Spacing="4">
+                      <TextBlock FontWeight="SemiBold">Connection health</TextBlock>
+                      <TextBlock Classes="wgt-section-title" FontSize="17" Text="{Binding SelectedIntegration.ConnectionHealthTitle}" />
+                      <TextBlock Classes="wgt-secondary" Text="{Binding SelectedIntegration.ConnectionHealthDescription}" TextWrapping="Wrap" />
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Spacing="3">
-                      <TextBlock Classes="wgt-caption" Text="THIS DEVICE" />
-                      <TextBlock Text="{Binding SelectedIntegration.DeviceOverrideText}" FontWeight="SemiBold" />
-                    </StackPanel>
+                    <Button Grid.Column="1" Classes="wgt-action-button" Command="{Binding RefreshCommand}" Content="Refresh" VerticalAlignment="Top" />
                   </Grid>
-                  <TextBlock Classes="wgt-secondary" Text="{Binding SelectedIntegration.DeviceBehaviorText}" TextWrapping="Wrap" />
-                  <TextBlock Text="{Binding SelectedIntegration.EffectiveEnablementText}" FontWeight="SemiBold" />
-                  <WrapPanel>
-                    <Button Command="{Binding EnableGloballyCommand}" Content="Enable globally" Margin="0,0,6,6" />
-                    <Button Command="{Binding DisableGloballyCommand}" Content="Disable globally" Margin="0,0,6,6" />
-                    <Button Command="{Binding EnableOnThisDeviceCommand}" Content="Enable on this device" Margin="0,0,6,6" />
-                    <Button Command="{Binding DisableOnThisDeviceCommand}" Content="Disable on this device" Margin="0,0,6,6" />
-                    <Button Command="{Binding InheritGlobalSettingCommand}" Content="Inherit global setting" Margin="0,0,6,6" />
-                  </WrapPanel>
+
+                  <Expander Header="Diagnostics">
+                    <StackPanel Spacing="5" Margin="0,8,0,0">
+                      <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.PublicationRefreshStatusText}" TextWrapping="Wrap" />
+                      <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.LastRefreshAttemptText}" TextWrapping="Wrap" />
+                      <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.LastSuccessfulRefreshText}" TextWrapping="Wrap" />
+                    </StackPanel>
+                  </Expander>
                 </StackPanel>
               </Border>
-              <Border Classes="wgt-surface">
-                <StackPanel Spacing="6">
-                  <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock FontWeight="Bold" VerticalAlignment="Center">Refresh diagnostics</TextBlock>
-                    <Button Grid.Column="1" Classes="wgt-action-button" Command="{Binding RefreshCommand}" Content="Refresh" />
-                  </Grid>
-                  <TextBlock Text="{Binding SelectedIntegration.PublicationRefreshStatusText}" TextWrapping="Wrap" />
-                  <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.LastRefreshAttemptText}" />
-                  <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.LastSuccessfulRefreshText}" />
-                </StackPanel>
-              </Border>
+
               <Border Classes="wgt-surface">
                 <Grid RowDefinitions="Auto,*">
                   <StackPanel Spacing="3" Margin="0,0,0,10">
-                    <TextBlock FontWeight="Bold">Published capabilities</TextBlock>
-                    <TextBlock Classes="wgt-caption" Text="Availability and published technical details." />
+                    <TextBlock FontWeight="SemiBold">Capabilities</TextBlock>
+                    <TextBlock Classes="wgt-caption" Text="What this connection can currently provide to WGT." />
                   </StackPanel>
-                  <Grid Grid.Row="1" ColumnDefinitions="1.1*,1.4*" ColumnSpacing="16">
-                    <ListBox ItemsSource="{Binding Capabilities}" SelectedItem="{Binding SelectedCapability, Mode=TwoWay}">
-                      <ListBox.ItemTemplate><DataTemplate x:DataType="vm:CapabilityPresentationViewModel"><Border Classes="wgt-list-divider" Padding="0,6,0,8"><StackPanel Spacing="3"><TextBlock Text="{Binding CapabilityTitle}" FontWeight="SemiBold" /><TextBlock Classes="wgt-caption" Text="{Binding StatusText}" TextWrapping="Wrap" /></StackPanel></Border></DataTemplate></ListBox.ItemTemplate>
+
+                  <Grid Grid.Row="1" ColumnDefinitions="1.05*,1.35*" ColumnSpacing="16" MinHeight="220">
+                    <ListBox ItemsSource="{Binding SelectedIntegrationCapabilities}" SelectedItem="{Binding SelectedCapability, Mode=TwoWay}">
+                      <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:CapabilityPresentationViewModel">
+                          <Border Classes="wgt-list-divider" Padding="4,7,4,9">
+                            <StackPanel Spacing="3">
+                              <TextBlock Text="{Binding CapabilityTitle}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                              <TextBlock Classes="wgt-caption" Text="{Binding StatusText}" TextWrapping="Wrap" />
+                            </StackPanel>
+                          </Border>
+                        </DataTemplate>
+                      </ListBox.ItemTemplate>
                     </ListBox>
-                    <StackPanel Grid.Column="1" IsVisible="{Binding IsCapabilityDetailsVisible}" Spacing="7">
+
+                    <StackPanel Grid.Column="1" IsVisible="{Binding IsDesktopCapabilityDetailsVisible}" Spacing="8">
                       <TextBlock Classes="wgt-caption" Text="SELECTED CAPABILITY" />
-                      <TextBlock Classes="wgt-section-title" Text="{Binding SelectedCapability.CapabilityTitle}" />
-                      <TextBlock Text="{Binding SelectedCapability.ServiceDisplayName}" />
-                      <TextBlock Classes="wgt-caption" Text="{Binding SelectedCapability.CapabilityIdentity.Value}" />
-                      <TextBlock Classes="wgt-caption" Text="Contract {Binding SelectedCapability.ContractVersion}" />
+                      <TextBlock Classes="wgt-section-title" FontSize="18" Text="{Binding SelectedCapability.CapabilityTitle}" TextWrapping="Wrap" />
                       <TextBlock Classes="wgt-secondary" Text="{Binding SelectedCapability.StatusText}" TextWrapping="Wrap" />
                       <Button Command="{Binding OpenCapabilityCommand}" Content="Open" HorizontalAlignment="Left" />
+                      <Expander Header="Technical details">
+                        <StackPanel Spacing="4" Margin="0,8,0,0">
+                          <TextBlock Classes="wgt-caption" Text="{Binding SelectedCapability.ServiceDisplayName}" TextWrapping="Wrap" />
+                          <TextBlock Classes="wgt-caption" Text="{Binding SelectedCapability.CapabilityIdentity.Value}" TextWrapping="Wrap" />
+                          <TextBlock Classes="wgt-caption" Text="Contract {Binding SelectedCapability.ContractVersion}" />
+                        </StackPanel>
+                      </Expander>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" IsVisible="{Binding IsReferenceCapabilityOpen}" Spacing="7">
-                      <TextBlock Classes="wgt-caption" Text="REFERENCE CAPABILITY" />
-                      <TextBlock Classes="wgt-section-title" Text="{Binding OpenedReferenceCapability.CapabilityTitle}" />
-                      <TextBlock Text="{Binding OpenedReferenceCapability.ServiceDisplayName}" />
-                      <TextBlock Classes="wgt-caption" Text="{Binding OpenedReferenceCapability.CapabilityIdentity.Value}" />
-                      <TextBlock Classes="wgt-caption" Text="Contract {Binding OpenedReferenceCapability.ContractVersion}" />
+
+                    <StackPanel Grid.Column="1" IsVisible="{Binding IsReferenceCapabilityOpen}" Spacing="8">
+                      <TextBlock Classes="wgt-caption" Text="DEVELOPER REFERENCE" />
+                      <TextBlock Classes="wgt-section-title" FontSize="18" Text="{Binding OpenedReferenceCapability.CapabilityTitle}" />
                       <TextBlock Text="Available" FontWeight="SemiBold" />
                       <TextBlock Classes="wgt-secondary" Text="This reference capability is available through Wiiii Got This." TextWrapping="Wrap" />
-                      <Button Command="{Binding BackToCatalogCommand}" Content="Back to catalog" HorizontalAlignment="Left" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" IsVisible="{Binding IsVocationOpportunityOverviewOpen}" Spacing="7">
-                      <p:VocationOpportunityOverviewView DataContext="{Binding OpenedVocationOpportunityOverview}" />
-                      <Button Command="{Binding BackToCatalogCommand}" Content="Back to catalog" HorizontalAlignment="Left" />
+                      <Expander Header="Technical details">
+                        <StackPanel Spacing="4" Margin="0,8,0,0">
+                          <TextBlock Classes="wgt-caption" Text="{Binding OpenedReferenceCapability.CapabilityIdentity.Value}" />
+                          <TextBlock Classes="wgt-caption" Text="Contract {Binding OpenedReferenceCapability.ContractVersion}" />
+                        </StackPanel>
+                      </Expander>
+                      <Button Command="{Binding BackToCatalogCommand}" Content="Back" HorizontalAlignment="Left" />
                     </StackPanel>
                   </Grid>
                 </Grid>
               </Border>
             </StackPanel>
-          </Grid>
-        </ScrollViewer>
+          </ScrollViewer>
+        </Grid>
       </Grid>
     </Grid>
   </Grid>

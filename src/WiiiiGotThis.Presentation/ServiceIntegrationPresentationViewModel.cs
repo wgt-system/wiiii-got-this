@@ -16,12 +16,19 @@ public sealed class ServiceIntegrationPresentationViewModel(ServiceIntegrationLi
     public DateTimeOffset? LastRefreshAttemptedAtUtc => item.LastRefreshAttemptedAtUtc;
     public DateTimeOffset? LastSuccessfulRefreshAtUtc => item.LastSuccessfulRefreshAtUtc;
 
+    public bool IsReferenceIntegration => string.Equals(ServiceIdentity.Value, "reference", StringComparison.Ordinal);
+    public bool ShowEnableGloballyAction => !IsGloballyEnabled;
+    public bool ShowDisableGloballyAction => IsGloballyEnabled;
+    public bool HasDeviceOverride => CurrentDeviceOverride.HasValue;
+    public bool ShowEnableOnDeviceAction => CurrentDeviceOverride != true;
+    public bool ShowDisableOnDeviceAction => CurrentDeviceOverride != false;
+
     public string GlobalEnablementText => IsGloballyEnabled ? "Enabled globally" : "Disabled globally";
     public string DeviceOverrideText => CurrentDeviceOverride switch
     {
         true => "Enabled on this device",
         false => "Disabled on this device",
-        null => "Inherit global setting"
+        null => "Follows global setting"
     };
     public string DeviceBehaviorText => CurrentDeviceOverride switch
     {
@@ -31,6 +38,28 @@ public sealed class ServiceIntegrationPresentationViewModel(ServiceIntegrationLi
     };
     public string EffectiveEnablementText => IsEffectivelyEnabled ? "Enabled on this device" : "Disabled on this device";
     public string EnablementStatusText => EffectiveEnablementText;
+
+    public string ConnectionHealthTitle => !HasRefreshBeenAttempted
+        ? "Connection not checked yet"
+        : LatestRefreshResult switch
+        {
+            IntegrationRefreshStatus.Refreshed => "Connection healthy",
+            IntegrationRefreshStatus.AdapterFailed when HasLastKnownPublication => "Using last known data",
+            IntegrationRefreshStatus.InvalidPublication when HasLastKnownPublication => "Using last known data",
+            _ => "Connection needs attention"
+        };
+
+    public string ConnectionHealthDescription => !HasRefreshBeenAttempted
+        ? "Refresh to check the provider and load its current capabilities."
+        : LatestRefreshResult switch
+        {
+            IntegrationRefreshStatus.Refreshed => "WGT successfully refreshed this integration.",
+            IntegrationRefreshStatus.AdapterFailed when HasLastKnownPublication => "The provider could not be reached, but WGT kept the last valid capability information.",
+            IntegrationRefreshStatus.InvalidPublication when HasLastKnownPublication => "The latest provider response was invalid, so WGT kept the last valid capability information.",
+            IntegrationRefreshStatus.AdapterFailed => "The provider could not be reached and no valid capability information is available yet.",
+            IntegrationRefreshStatus.InvalidPublication => "The provider returned invalid capability information and no valid snapshot is available yet.",
+            _ => "WGT could not determine the current connection state."
+        };
 
     public string PublicationRefreshStatusText => !HasRefreshBeenAttempted
         ? "Known integration — publication not refreshed yet."
