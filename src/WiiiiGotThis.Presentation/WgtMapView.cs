@@ -13,6 +13,7 @@ public sealed class WgtMapView : Grid, IDisposable
         TextWrapping = Avalonia.Media.TextWrapping.Wrap,
         IsVisible = false,
     };
+    private readonly IOrientationMapPlatformHost? platformHost = OrientationMapPlatformServices.Host;
 
     private VocationMapProjectionViewModel? viewModel;
     private string? orientationEmbedPath;
@@ -29,6 +30,8 @@ public sealed class WgtMapView : Grid, IDisposable
         webView.NavigationStarted += OnNavigationStarted;
         webView.NavigationCompleted += OnNavigationCompleted;
         DataContextChanged += OnDataContextChanged;
+        if (platformHost is not null)
+            platformHost.CurrentPositionChanged += OnCurrentPositionChanged;
 
         PrepareOrientationHost();
     }
@@ -36,6 +39,19 @@ public sealed class WgtMapView : Grid, IDisposable
     private void PrepareOrientationHost()
     {
         var configuredPath = Environment.GetEnvironmentVariable("WGT_ORIENTATION_EMBED_PATH");
+        if (platformHost is not null)
+        {
+            if (platformHost.TryResolveEmbedPath(configuredPath, out var platformEmbedPath, out var platformError)
+                && !string.IsNullOrWhiteSpace(platformEmbedPath))
+            {
+                orientationEmbedPath = platformEmbedPath;
+                return;
+            }
+
+            ShowHostError(platformError ?? "Orientation map host could not resolve its packaged surface.");
+            return;
+        }
+
         var embedPath = string.IsNullOrWhiteSpace(configuredPath)
             ? Path.Combine(AppContext.BaseDirectory, "orientation-map", "embed.html")
             : configuredPath.Trim();
@@ -61,19 +77,26 @@ public sealed class WgtMapView : Grid, IDisposable
         if (orientationEmbedPath is null)
             return;
 
-        if (!OperatingSystem.IsWindows())
+        if (OperatingSystem.IsWindows())
         {
-            ShowHostError("The Orientation desktop map host is not available on this platform yet.");
+            if (!WindowsOrientationWebViewHost.TryConfigure(e.TryGetPlatformHandle(), orientationEmbedPath, out var error))
+            {
+                ShowHostError(error ?? "Orientation map host could not be configured.");
+                return;
+            }
+
+            webView.Source = WindowsOrientationWebViewHost.EmbedUri;
             return;
         }
 
-        if (!WindowsOrientationWebViewHost.TryConfigure(e.TryGetPlatformHandle(), orientationEmbedPath, out var error))
+        if (platformHost is null)
         {
-            ShowHostError(error ?? "Orientation map host could not be configured.");
+            ShowHostError("The Orientation map host is not configured for this platform.");
             return;
         }
 
-        webView.Source = WindowsOrientationWebViewHost.EmbedUri;
+        if (!platformHost.TryConfigure(e.TryGetPlatformHandle(), orientationEmbedPath, out var platformError))
+            ShowHostError(platformError ?? "Orientation map host could not be configured.");
     }
 
     private void OnNavigationStarted(object? sender, WebViewNavigationStartingEventArgs e)
@@ -119,6 +142,7 @@ public sealed class WgtMapView : Grid, IDisposable
                 bridgeReady = true;
                 HideHostError();
                 _ = SendSceneIfReadyAsync();
+                platformHost?.RequestCurrentPosition();
                 break;
             case "map.status":
                 HandleMapStatus(message.Payload);
@@ -159,12 +183,32 @@ public sealed class WgtMapView : Grid, IDisposable
         viewModel.SelectFeature(selected);
     }
 
+    private void OnCurrentPositionChanged(object? sender, OrientationCurrentPositionChangedEventArgs e)
+    {
+        _ = SendCurrentPositionIfReadyAsync(e.Position);
+    }
+
     private async Task SendSceneIfReadyAsync()
     {
         if (disposed || !bridgeReady || viewModel?.IsLoaded != true)
             return;
 
-        var message = OrientationMapBridgeAdapter.CreateSceneReplaceMessage(viewModel.Features);
+        await SendBridgeMessageAsync(OrientationMapBridgeAdapter.CreateSceneReplaceMessage(viewModel.Features));
+    }
+
+    private async Task SendCurrentPositionIfReadyAsync(OrientationCurrentPosition? position)
+    {
+        if (disposed || !bridgeReady)
+            return;
+
+        var message = position is null
+            ? OrientationMapBridgeAdapter.CreateCurrentPositionClearMessage()
+            : OrientationMapBridgeAdapter.CreateCurrentPositionSetMessage(position);
+        await SendBridgeMessageAsync(message);
+    }
+
+    private async Task SendBridgeMessageAsync(string message)
+    {
         var javascriptString = JsonSerializer.Serialize(message);
         try
         {
@@ -195,6 +239,8 @@ public sealed class WgtMapView : Grid, IDisposable
         webView.NavigationStarted -= OnNavigationStarted;
         webView.NavigationCompleted -= OnNavigationCompleted;
         DataContextChanged -= OnDataContextChanged;
+        if (platformHost is not null)
+            platformHost.CurrentPositionChanged -= OnCurrentPositionChanged;
         if (viewModel is not null)
             viewModel.PropertyChanged -= OnViewModelPropertyChanged;
     }
