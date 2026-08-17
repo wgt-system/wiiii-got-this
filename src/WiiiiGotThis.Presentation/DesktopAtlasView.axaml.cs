@@ -200,8 +200,8 @@ public sealed partial class DesktopAtlasView : UserControl
     {
         sceneScale.ScaleX = 1;
         sceneScale.ScaleY = 1;
-        sceneTranslate.X = Math.Max(0, AtlasViewport.Bounds.Width / 2 - WorldCenterX);
-        sceneTranslate.Y = Math.Max(0, AtlasViewport.Bounds.Height / 2 - WorldCenterY);
+        sceneTranslate.X = AtlasViewport.Bounds.Width / 2 - WorldCenterX;
+        sceneTranslate.Y = AtlasViewport.Bounds.Height / 2 - WorldCenterY;
         PositionInspector();
     }
 
