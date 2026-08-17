@@ -57,7 +57,9 @@ public sealed class OrientationMapAvailabilityTests
             cancellationToken.ThrowIfCancellationRequested();
             return ValueTask.FromResult(new VocationMapProjection(
                 "publication-test",
-                new VocationContractTimestamp("2026-08-17T00:00:00Z", DateTimeOffset.Parse("2026-08-17T00:00:00Z")),
+                new VocationContractTimestamp(
+                    "2026-08-17T00:00:00Z",
+                    new DateTimeOffset(2026, 8, 17, 0, 0, 0, TimeSpan.Zero)),
                 []));
         }
     }
