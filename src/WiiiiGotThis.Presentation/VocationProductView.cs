@@ -7,7 +7,7 @@ namespace WiiiiGotThis.Presentation;
 /// Provider-specific host for Vocation's complete browser product on Windows.
 /// This is intentionally not a generic WGT plugin or Product Surface contract.
 /// </summary>
-public sealed class VocationProductView : Grid, IDisposable
+public sealed class VocationProductView : Grid
 {
     private static readonly Uri DefaultProductUri = new("http://127.0.0.1:8765/");
 
@@ -23,7 +23,6 @@ public sealed class VocationProductView : Grid, IDisposable
         IsVisible = false
     };
     private readonly Uri? productUri;
-    private bool disposed;
 
     public VocationProductView()
     {
@@ -42,9 +41,8 @@ public sealed class VocationProductView : Grid, IDisposable
 
     public void Reload()
     {
-        if (disposed || productUri is null)
-            return;
-        webView.Source = productUri;
+        if (productUri is not null)
+            webView.Source = productUri;
     }
 
     private static Uri? ResolveProductUri()
@@ -100,15 +98,5 @@ public sealed class VocationProductView : Grid, IDisposable
         AutomationProperties.SetName(hostStatus, message);
         webView.IsVisible = false;
         hostStatus.IsVisible = true;
-    }
-
-    public void Dispose()
-    {
-        if (disposed)
-            return;
-        disposed = true;
-        webView.AdapterCreated -= OnAdapterCreated;
-        webView.NavigationStarted -= OnNavigationStarted;
-        webView.NavigationCompleted -= OnNavigationCompleted;
     }
 }
