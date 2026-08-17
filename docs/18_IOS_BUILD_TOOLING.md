@@ -6,9 +6,9 @@ Working implementation/tooling baseline.
 
 The product stack is already accepted as C# / .NET 10 + Avalonia 12 with Windows and iPhone as required clients.
 
-This document does not choose a specific Mac hardware purchase, hosting vendor, Apple Developer membership, or CI provider.
+The primary development workstation remains Windows. The repository now also runs a real `net10.0-ios` simulator-target restore/link/AOT compile on GitHub-hosted macOS/Xcode infrastructure. This closes the former compile-only Apple-toolchain gap, but it does **not** constitute simulator UI validation, signing/provisioning validation, or physical-iPhone runtime acceptance.
 
-The official .NET iOS workload is installed on the Windows development machine, and the `net10.0-ios` target compiles successfully there. Actual simulator/device runtime validation has not yet been performed. Signing, provisioning, and runtime execution still require Mac/Xcode infrastructure.
+A permanent Apple bundle identifier, signing identity, provisioning profile and distribution path remain deliberately undecided. CI uses a simulator-only application identifier and contains no signing secrets.
 
 ## 1. Development Workstation
 
@@ -28,44 +28,52 @@ A Mac is not intended to become the primary development workstation.
 
 ## 2. iOS Build Constraint
 
-Native iOS compilation/signing requires Apple/Xcode infrastructure.
+Native iOS compilation/linking and real iPhone signing/provisioning require Apple/Xcode infrastructure.
 
-Avalonia supports publishing iOS applications from Windows by using a network-accessible Mac build host.
+The repository's GitHub Actions workflow now provides an Apple-toolchain compile gate on macOS for an `iossimulator-arm64` target. Real device deployment still requires the appropriate signing/provisioning path and physical-device access.
 
-Therefore the accepted WGT architecture must include access to macOS/Xcode before the first real iPhone deployment milestone.
+Therefore successful Windows or macOS compilation is necessary regression evidence but not sufficient runtime evidence.
 
-## 3. Target Workflow
+## 3. Current CI Workflow
+
+The checked-in CI baseline contains two complementary gates:
 
 ```text
-Windows development machine
-        │
-        │ source / dotnet publish / remote build
-        ▼
-Mac build host
-├── Xcode
-├── required .NET/iOS workloads
-├── signing identities
-└── provisioning profiles
-        │
-        ▼
-signed iPhone build
-        │
-        ▼
-physical iPhone / distribution
+Windows CI
+├── restore
+├── solution build
+├── full tests
+└── vulnerable-package audit
+
+macOS CI
+├── .NET 10 / Xcode toolchain verification
+├── .NET iOS workload
+├── net10.0-ios simulator restore
+├── iOS linker/AOT compile
+└── explicit linker-warning policy
 ```
 
-## 4. Mac Build Host
+The iOS compile currently uses a CI-only simulator application identifier. It must not be treated as the future production bundle identity.
 
-The build host may eventually be:
+Repository-wide compiler warnings remain errors. Because Avalonia 12.0.4 currently emits an external `Avalonia.DesignerSupport` trim-summary warning, the iOS linker warnings are inspected separately: CI may tolerate only that known external warning and must fail on new/unexpected linker warnings.
 
-- a dedicated Mac mini,
-- another network-accessible Mac,
-- suitable hosted macOS build infrastructure,
-- CI infrastructure with the required Apple tooling.
+## 4. Real Device Workflow
 
-The repository must not depend on one vendor-specific path.
+The later real-device path remains conceptually:
 
-Local development scripts/configuration should keep build-host settings external to source-controlled secrets.
+```text
+WGT source
+   ↓
+Mac / Xcode / .NET iOS workload
+   ↓
+signing + provisioning
+   ↓
+signed iPhone build
+   ↓
+physical iPhone runtime validation
+```
+
+The Mac may be local, remote or hosted. The repository must not depend on committed machine credentials or signing secrets.
 
 ## 5. Signing and Provisioning
 
@@ -73,24 +81,13 @@ iPhone deployment requires the Apple signing/provisioning path appropriate to th
 
 Sensitive signing material must not be committed to the repository.
 
-The exact distribution path—development/ad-hoc/TestFlight/App Store or another permitted path—belongs to a later release/distribution decision.
+The exact distribution path—development/ad-hoc/TestFlight/App Store or another permitted path—remains a later release/distribution decision.
 
-## 6. CI Direction
+## 6. iPhone Runtime Gate
 
-Early WGT Core CI does not need to block all development on iOS packaging.
+Physical-device validation remains mandatory before claiming the iPhone host as accepted.
 
-Suggested progression:
-
-1. shared .NET/domain/application tests on ordinary CI,
-2. Windows build/test,
-3. iOS project compile validation once a Mac runner/build host exists,
-4. signed device/distribution builds only when needed.
-
-The project must nevertheless create and exercise the iOS target early enough that cross-platform assumptions are not left until the end.
-
-## 7. Early iPhone Smoke Slice
-
-Before accepting the first real Vocation or Illumination provider integration on iPhone, perform the real iOS smoke validation covering at least:
+The baseline WGT smoke covers at least:
 
 1. WGT launches through the real iOS host;
 2. shared Avalonia `MobileShellView` renders;
@@ -101,20 +98,39 @@ Before accepting the first real Vocation or Illumination provider integration on
 7. the available Reference Capability can be opened;
 8. integration enablement and Device override persist across application restart.
 
-This is a mandatory gate and remains outstanding until it is executed on appropriate Apple tooling. It must not be treated as completed based on shared-code tests or successful compilation alone.
+For Orientation-host readiness, the physical gate additionally covers:
 
-Successful Windows `net10.0-ios` compilation is not runtime validation. Windows/Desktop may implement, validate and release a real provider integration before this smoke, but such a Windows-first milestone must not wire or claim the real provider as accepted for iPhone. Until the smoke succeeds, iPhone composition must remain limited to already validated/reference behavior rather than claiming production provider readiness. This gate does not waive signing, provisioning or device-runtime requirements. Illumination's separate local-runtime/persistence proof remains required before local Illumination execution is accepted on iPhone.
+1. the packaged Orientation `embed.html` surface and relative assets load through WKWebView;
+2. `orientation.host-bridge` 1.0 reaches ready/status lifecycle correctly;
+3. touch pan/zoom and feature selection work on the actual device;
+4. foreground/background/reload lifecycle remains coherent;
+5. WGT-owned When-In-Use location permission is requested only when needed;
+6. CoreLocation fixes are converted to generic `current-position.set` messages;
+7. denied/restricted/unusable position states produce `current-position.clear`;
+8. no platform-specific second map renderer is introduced.
 
-Before substantial WGT UI/integration work accumulates, create a small iPhone smoke slice that verifies:
+Orientation renderer readiness and Vocation mobile-data readiness are separate gates. The current iOS composition remains Reference-only unless an actual Vocation provider/read seam is explicitly accepted and composed. A working Orientation WKWebView must not create a dead Jobs/Map product destination by itself.
 
-- Avalonia application launches,
-- shared WGT application/domain assembly loads,
-- local SQLite adapter works,
-- one fake/reference Capability can be resolved,
-- one WGT-native view can be displayed,
-- local integration configuration survives restart.
+## 7. What CI Proves — and Does Not Prove
 
-This prevents the project from becoming a Windows application that is only theoretically portable.
+The macOS iOS compile gate can prove substantially more than the former Windows structural build:
+
+- Apple-target API compatibility;
+- iOS workload/Xcode compatibility;
+- bundle-resource build integration;
+- linker/AOT compatibility;
+- trim-analysis regressions within the enforced warning policy.
+
+It does not prove:
+
+- signed-device installation;
+- real WKWebView rendering behavior;
+- touch behavior on physical hardware;
+- CoreLocation permission UX or GPS behavior;
+- application lifecycle behavior on a physical iPhone;
+- Vocation provider/data availability on iPhone.
+
+Do not collapse those distinctions in release notes or readiness claims.
 
 ## 8. Secrets
 
@@ -128,14 +144,15 @@ Do not commit:
 
 Use local secret storage / CI secret facilities appropriate to the selected tooling.
 
-## 9. Decision Deferred
+## 9. Deferred Operational Decisions
 
-The following are deliberately deferred until the iPhone smoke milestone approaches:
+The following remain deliberately deferred until signed-device/distribution work is needed:
 
-- buy versus rent Mac hardware,
-- specific Mac model/provider,
-- Apple Developer distribution setup,
-- TestFlight/App Store publication,
-- CI provider for signed iOS builds.
+- permanent Apple bundle identifier;
+- buy versus rent Mac hardware;
+- specific persistent Mac model/provider;
+- Apple Developer distribution setup;
+- TestFlight/App Store publication;
+- signed-build credential topology.
 
 These are operational choices rather than WGT domain decisions.
