@@ -3,8 +3,15 @@ using WiiiiGotThis.Domain;
 
 namespace WiiiiGotThis.Presentation;
 
+public sealed record AtlasRelationshipPresentationViewModel(
+    string Direction,
+    string RelatedNodeTitle,
+    string Description);
+
 public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, double y)
 {
+    private readonly List<AtlasRelationshipPresentationViewModel> relationships = [];
+
     public AtlasNode Model { get; } = node;
     public string NodeId => Model.NodeId;
     public AtlasNodeKind Kind => Model.Kind;
@@ -29,6 +36,8 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     public bool IsCore => Kind == AtlasNodeKind.Core;
     public bool IsService => Kind == AtlasNodeKind.Service;
     public bool IsCapability => Kind == AtlasNodeKind.Capability;
+    public IReadOnlyList<AtlasRelationshipPresentationViewModel> Relationships => relationships;
+    public bool HasRelationships => relationships.Count > 0;
     public string KindLabel => Kind switch
     {
         AtlasNodeKind.Core => "WGT CORE",
@@ -45,6 +54,8 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
         WiiiiGotThis.Domain.AvailabilityReason.MissingPrerequisite => "Missing prerequisite",
         _ => Subtitle
     };
+
+    internal void AddRelationship(AtlasRelationshipPresentationViewModel relationship) => relationships.Add(relationship);
 }
 
 public sealed class AtlasConnectionPresentationViewModel(
@@ -117,6 +128,13 @@ public static class AtlasPresentationLayoutBuilder
             .Where(connection => byId.ContainsKey(connection.SourceNodeId) && byId.ContainsKey(connection.TargetNodeId))
             .Select(connection => new AtlasConnectionPresentationViewModel(connection, byId[connection.SourceNodeId], byId[connection.TargetNodeId]))
             .ToArray();
+
+        foreach (var connection in connections.Where(connection => connection.Kind == AtlasConnectionKind.CapabilityDependency))
+        {
+            var description = connection.Model.Description ?? "This capability depends on another WGT service.";
+            connection.Source.AddRelationship(new("Uses", connection.Target.Title, description));
+            connection.Target.AddRelationship(new("Used by", connection.Source.Title, description));
+        }
 
         return new AtlasPresentationLayout(nodes, connections);
     }
