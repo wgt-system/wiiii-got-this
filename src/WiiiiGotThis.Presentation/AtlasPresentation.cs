@@ -10,10 +10,14 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     public AtlasNodeKind Kind => Model.Kind;
     public string Title => Model.Title;
     public string Subtitle => Model.Subtitle;
+    public string? Description => Model.Description;
+    public bool HasDescription => !string.IsNullOrWhiteSpace(Model.Description);
     public ServiceIdentity? ServiceIdentity => Model.ServiceIdentity;
     public CapabilityIdentity? CapabilityIdentity => Model.CapabilityIdentity;
     public bool IsEnabled => Model.IsEnabled;
     public bool IsAvailable => Model.IsAvailable;
+    public bool IsIntegrated => Model.IsIntegrated;
+    public bool IsKnownOnlyService => IsService && !IsIntegrated;
     public AvailabilityReason? AvailabilityReason => Model.AvailabilityReason;
     public double X { get; } = x;
     public double Y { get; } = y;
