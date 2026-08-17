@@ -1,4 +1,5 @@
 using WiiiiGotThis.Application;
+using WiiiiGotThis.Contracts;
 using WiiiiGotThis.Domain;
 using WiiiiGotThis.Presentation;
 
