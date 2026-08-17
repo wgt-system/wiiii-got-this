@@ -34,6 +34,10 @@ public sealed class JsonAtlasAppearancePreferenceStore(string filePath) : IAtlas
         {
             return null;
         }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     public async ValueTask SaveThemeAsync(AtlasThemePreference theme, CancellationToken cancellationToken = default)
