@@ -21,6 +21,7 @@ internal static class Program
         var deviceStore = new SqliteLocalDeviceStore(connectionFactory);
         var integrationStore = new SqliteServiceIntegrationStore(connectionFactory);
         var publicationStore = new SqliteIntegrationPublicationStore(connectionFactory);
+        var appearanceStore = new JsonAtlasAppearancePreferenceStore(Path.Combine(dataDirectory, "appearance.json"));
         var vocationHttpClient = new HttpClient();
         var vocationSource = new VocationHttpOpportunityOverviewSource(vocationHttpClient);
         var vocationMapSource = new VocationHttpMapProjectionSource(vocationHttpClient);
@@ -37,7 +38,20 @@ internal static class Program
         var catalog = new ResolveCapabilityCatalogUseCase(adapters, integrationStore, publicationStore);
         var readVocationOpportunityOverview = new GetVocationOpportunityOverviewUseCase(vocationSource);
         var readVocationMapProjection = new GetVocationMapProjectionUseCase(vocationMapSource);
-        var shell = new ShellViewModel(ensureDevice, register, refresh, list, global, deviceOverride, clearOverride, catalog, "Windows PC", readVocationOpportunityOverview, readVocationMapProjection);
+        var shell = new ShellViewModel(
+            ensureDevice,
+            register,
+            refresh,
+            list,
+            global,
+            deviceOverride,
+            clearOverride,
+            catalog,
+            "Windows PC",
+            readVocationOpportunityOverview,
+            readVocationMapProjection,
+            new GetAtlasAppearancePreferenceUseCase(appearanceStore),
+            new SetAtlasAppearancePreferenceUseCase(appearanceStore));
 
         BuildAvaloniaApp(shell).StartWithClassicDesktopLifetime(args);
     }
