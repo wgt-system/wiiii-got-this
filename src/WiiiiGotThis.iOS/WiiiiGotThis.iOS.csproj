@@ -9,6 +9,8 @@
     <DefineConstants Condition="'$(BuildiOS)' == 'true'">$(DefineConstants);WGT_IOS</DefineConstants>
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Avalonia 12.0.4 currently emits an external DesignerSupport trim summary. Keep compiler warnings-as-errors, but let CI inspect linker warnings explicitly. -->
+    <ILLinkTreatWarningsAsErrors Condition="'$(BuildiOS)' == 'true'">false</ILLinkTreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\WiiiiGotThis.Application\WiiiiGotThis.Application.csproj" />
