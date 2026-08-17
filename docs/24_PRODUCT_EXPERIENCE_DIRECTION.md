@@ -6,95 +6,140 @@ This document records the proposed post-v0.6 product-experience direction for Wi
 
 It is intentionally separated from the active v0.6.0 release candidate. It describes a product and interaction direction, not an already released implementation and not a second source of system-architecture authority.
 
-System-wide ownership remains authoritative in `wgt-system/architecture`. WGT remains authoritative for its own product composition, device/platform integration and presentation semantics.
+System-wide ownership remains authoritative in `wgt-system/architecture`. WGT remains authoritative for its product composition, service discovery/integration, device/platform presentation and the Atlas experience itself.
 
 Tracked by GitHub Issue #46.
 
-## 1. Why the current product should evolve
+## 1. Product premise
 
-The current Desktop product has reached a useful conventional baseline:
+WGT should not become a conventional desktop shell containing increasingly many pages, sidebar entries and reduced replicas of its services.
 
-- a persistent Home / Jobs / Map / Settings shell;
-- a product-card Home surface;
-- a searchable and sortable Vocation Jobs workspace;
-- an Orientation-backed Vocation Map workspace with a WGT-owned inspector;
-- user-facing Integration settings with progressively disclosed diagnostics;
-- Fluent Light/Dark behavior;
-- keyboard, focus, accessibility and compact-window hardening.
+The target product is a lightweight spatial host for the user's WGT system.
 
-This is a good productivity baseline, but it does not yet make the distinctive nature of Wiiii Got This visible.
+The root experience is the **WGT Atlas**: a pannable and zoomable node world that exposes the real product topology of independently owned services and capabilities.
 
-WGT is not merely a collection of pages. It is the product-composition context of a system of independently owned services and capabilities. The user should be able to understand, explore and operate that system as a coherent whole.
+The Atlas should make the system understandable without requiring architecture documentation while preserving the actual bounded-context boundaries underneath it.
 
-The proposed next experience is the **WGT Atlas**: a spatial, node-based product surface that turns the real service/capability relationships of WGT into an understandable and explorable interface.
+The current Home / Jobs / Map / Settings desktop shell is useful implementation history and release scaffolding, but it is not the intended long-term information architecture.
 
-## 2. Core idea: the WGT Atlas
+In particular:
 
-The Atlas is a zoomable and pannable 2D system world.
+- the current WGT Jobs list is a transitional Vocation integration slice, not the intended final Vocation experience;
+- the current WGT Map workspace is a useful Vocation/Orientation composition proof, not the complete role of either service;
+- the current large Settings surface should not define the future WGT shell;
+- Illumination's absence from the current WGT UI is integration debt, not desired product scope;
+- Orientation is a first-class product service as well as a provider of generic geospatial capabilities to other services.
 
-At its conceptual center is a **WGT Core node**. Around it are service nodes such as:
+## 2. Hard product principles
+
+### 2.1 Atlas-first, not homepage-first
+
+The Atlas is the WGT root state.
+
+There is no permanent `Home` destination layered above it and no general-purpose `Back` button while navigating the Atlas. Panning to another service does not constitute page navigation.
+
+Global WGT chrome should stay sparse. The service nodes and their contextual surfaces are the primary information architecture.
+
+### 2.2 Full-service parity, not WGT-lite
+
+WGT must not intentionally reduce an integrated service to a small read-only subset merely because the service is being used through WGT.
+
+The target is full product capability parity on supported WGT platforms.
+
+If Vocation supports research, opportunity analysis, personal profile/search strategy, triage, comparison, application workflows and documents, those capabilities should ultimately remain available when Vocation is entered through WGT.
+
+If Illumination supports Decks, Learning Items, Study Sessions, Review history, insights, generation and lifecycle management, those capabilities should ultimately remain available through WGT.
+
+If Orientation supports Discover, Explore, Navigate, Current Location and mobility planning, those capabilities should ultimately remain available through WGT.
+
+Platform adaptation may change composition, density, controls and rendering quality. It must not arbitrarily remove product power.
+
+### 2.3 Provider ownership survives presentation
+
+Full-service parity does not mean moving foreign business semantics into WGT.
+
+The provider remains authoritative for:
+
+- business/domain semantics;
+- application behavior;
+- provider-specific workflows;
+- persistence;
+- provider-owned contracts;
+- provider-specific presentation semantics where it contributes UI.
+
+WGT remains authoritative for:
+
+- Atlas navigation and composition;
+- service/capability discovery and presentation;
+- host chrome and transitions;
+- device/platform integration;
+- WGT-wide theme/effect behavior;
+- safe integration boundaries.
+
+### 2.4 Mobile is not a cut-down edition
+
+Desktop landscape is the first implementation target because it is the currently validated platform and best environment for developing the Atlas.
+
+Phone landscape and phone portrait may use different compositions, but supported service capability sets should remain equivalent.
+
+Desktop may render a substantially richer world. Mobile may reduce effects, scene density and simultaneous visible detail to meet hardware constraints.
+
+An iPhone 11-class device is the early performance/viewport design floor. Actual iOS support claims still require Mac/Xcode/physical-device validation.
+
+### 2.5 Themes are presentation, not product forks
+
+The Node/Connection model is the stable product model.
+
+Technical, elegant, machine and miniature-world themes are different visual interpretations of the same semantic scene.
+
+No theme may invent a dependency, capability or state that does not exist in the common model.
+
+## 3. The Atlas model
+
+At the conceptual center is **Wiiii Got This**.
+
+Initial first-class service nodes should include:
 
 - Vocation;
 - Illumination;
 - Orientation;
 - Conveyance;
-- future bounded contexts and integrations.
+- additional future bounded contexts only when they become real WGT product participants.
 
-Capabilities may appear as child nodes, satellite nodes, ports, modules, districts or other theme-specific visual forms. Connections show meaningful composition or dependency relationships.
+The Atlas should answer questions such as:
 
-The user should be able to answer questions visually:
+- Which services are part of my WGT system?
+- Which services are active or available on this device?
+- What can each service actually do?
+- Which capabilities depend on another service?
+- What becomes possible if I activate or connect something?
+- What data, network access, permissions or cross-device behavior does that introduce?
+- Why is a capability unavailable or degraded?
+- How do I enter the complete service experience?
 
-- What is installed or known to WGT?
-- What is active on this device?
-- Which capabilities does a service provide?
-- What becomes available if I enable something?
-- Which capability depends on another service?
-- Why is something unavailable?
-- Which data, permissions, network access or cross-device behavior does this introduce?
-- Where can I open the actual workspace for this capability?
+The Atlas is therefore a product-level projection over accepted WGT/service facts, not decorative navigation and not a second architecture authority.
 
-The Atlas is therefore not decorative navigation. It is a product-level read model over WGT integration/capability/availability state.
+## 4. Node kinds
 
-## 3. Semantic model first, themes second
+### 4.1 WGT Core
 
-The stable product model must be independent of its visual theme.
+The central product/composition node.
 
-The same semantic Atlas should be renderable as:
+It is primarily a spatial and conceptual anchor, not a dashboard full of controls.
 
-- a technical architecture graph;
-- an elegant minimal spatial canvas;
-- a machine/system engine;
-- a miniature living world;
-- future visual themes.
+Potential responsibilities:
 
-Themes may change geometry, materials, animation language, iconography, ambience and visual metaphor. They must not change the meaning of nodes, connections, availability, dependencies or actions.
+- central visual anchor;
+- initial camera focus;
+- small WGT-level status summary when selected;
+- entry to the deliberately small WGT-global settings set;
+- semantic relation to known services.
 
-This distinction is the main scalability and maintainability rule:
+The WGT Core does not need to contain service-specific settings or duplicate service dashboards.
 
-> Node/connection semantics are product behavior. The world metaphor is presentation.
+### 4.2 Service node
 
-A theme must never require a separate set of domain rules.
-
-## 4. Node model
-
-Initial node kinds should remain deliberately small.
-
-### WGT Core
-
-The central product node.
-
-Potential responsibilities in the Atlas:
-
-- center/reset target;
-- overview of this device and WGT health;
-- entry point to global settings;
-- current integration count and availability summary;
-- search and navigation anchor;
-- selected theme / presentation controls where appropriate.
-
-### Service node
-
-Represents a WGT-known service/integration/bounded context in user-facing product language.
+A first-class WGT service/bounded-context presence.
 
 Examples:
 
@@ -103,602 +148,684 @@ Examples:
 - Orientation;
 - Conveyance.
 
-A service node can show high-level state without exposing protocol details by default:
+A service node may expose high-level state such as:
 
 - available;
-- enabled globally;
-- enabled/disabled on this device;
+- active/inactive;
 - degraded/unreachable;
 - incompatible;
-- partially usable;
-- update/attention state where such semantics later exist.
+- partially available;
+- attention/update state if such semantics are later explicitly defined.
 
-### Capability node
+Selecting the node opens contextual information. Entering the node opens the service's complete WGT product surface.
 
-Represents a concrete capability that WGT can expose, compose or invoke.
+### 4.3 Capability node
 
-Examples in the current system include:
+A user-relevant capability may appear as a child/satellite/port/module of its owning service.
 
-- Vocation Opportunity Overview;
-- Vocation Map Projection-based product surface;
-- future Illumination study capability;
-- future Orientation discovery/routing/current-location surfaces;
-- Conveyance-backed capabilities only when a concrete WGT product scenario exists.
+Capabilities are useful when they help explain composition, activation or dependencies. The Atlas does not need to expose every internal application operation as a visible node.
 
-Capabilities must not imply a universal plug-in architecture. The visual node is a product read model, not proof that every capability uses the same runtime mechanism.
+Examples include:
 
-### Future group/zone node
+- a Vocation spatial/map capability using Orientation;
+- an Illumination study capability;
+- Orientation Journey planning;
+- future cross-device capability backed by an accepted Conveyance delivery scenario.
 
-The Atlas must be able to scale beyond a flat ring of services, but grouping should not be invented while the system is still small.
+A capability node is a product read model. It does not imply that all capabilities share one plugin mechanism.
 
-Future examples might include:
+### 4.4 Future group/zone node
+
+Do not group today's small service set merely for symmetry.
+
+However, the scene/layout/navigation model must later support semantic hierarchy when service count makes a flat world unwieldy.
+
+Possible future user-facing groups might include:
 
 - Productivity;
 - Learning;
 - Spatial & Mobility;
 - Infrastructure;
-- Personal Data;
-- other user-facing groupings.
+- other groupings discovered from the actual product catalog.
 
-No taxonomy is currently accepted. The requirement is only that layout/navigation semantics do not make later grouping impossible.
+No group taxonomy is currently accepted.
 
-Possible future behavior:
+Later semantic zoom may:
 
-- semantic zoom: zooming out collapses services into zones;
-- zooming in reveals capabilities;
-- search jumps through groups directly to a service/capability;
-- groups can be user-facing organizational constructs without becoming bounded contexts.
+- collapse many services into high-level zones when zoomed far out;
+- reveal services when entering a zone;
+- reveal capabilities at a closer zoom level;
+- allow search to jump directly through the hierarchy.
+
+Groups are organizational presentation constructs, not automatically bounded contexts.
 
 ## 5. Connection model
 
-Connections should expose relationships that matter to a user.
+Connections should communicate relationships that matter to the user.
 
-Potential categories:
+Potential semantic connection kinds:
 
 - WGT integration/presentation relationship;
-- service -> capability ownership;
+- service ownership of a capability;
 - capability composition dependency;
 - required runtime dependency;
 - optional enhancement dependency;
 - local provider/read boundary;
-- permission dependency;
+- permission/resource dependency;
 - cross-device/delivery relationship;
-- degraded/unavailable/incompatible relationship.
+- unavailable/degraded/incompatible relationship.
 
-Connection rendering can be themed, but the meaning is common.
+The common model defines the meaning. Themes define whether that relationship appears as a precise edge, cable, road, bridge, light trail or another visual metaphor.
 
-### Example: Vocation + Orientation
+### Vocation + Orientation example
 
-A Vocation Map experience can visually show:
+The Atlas should be able to show both of these truths simultaneously:
 
-- Vocation as the owner of opportunity/work-location/precision meaning;
-- a Vocation map capability associated with Vocation;
-- a capability connection to Orientation for generic geospatial rendering/interaction;
-- WGT as the product composition owner.
+1. Orientation is an independent first-class WGT service with its own Discover / Explore / Navigate product space.
+2. A Vocation capability may depend on Orientation for generic geospatial functionality.
 
-Orientation does not have to be promoted as an enabled standalone top-level destination merely because one Vocation capability uses its renderer.
+The relationship should make clear that:
 
-This is exactly the kind of relationship that is difficult to communicate through a traditional sidebar but natural in a node Atlas.
+- Vocation owns opportunity/work-location/precision/job-market meaning;
+- Orientation owns generic geospatial rendering/interaction and other generic spatial capabilities;
+- WGT owns the composed product experience.
 
-## 6. Primary Atlas interaction
+A service being used as a dependency does not reduce it to infrastructure and does not require its entire standalone product to be activated merely to satisfy one composed capability if the runtime semantics do not require that.
 
-### Spatial navigation
+## 6. Root Atlas interaction
 
-Desktop should support:
+### 6.1 Spatial navigation
 
-- mouse drag pan;
-- trackpad pan;
-- mouse wheel / gesture zoom;
-- keyboard equivalent navigation;
-- zoom in/out buttons for discoverability/accessibility;
-- reset or `Center on WGT` control;
+Desktop baseline:
+
+- mouse/trackpad drag to pan;
+- wheel/gesture zoom;
+- keyboard directional navigation;
+- accessible non-pointer navigation through semantic nodes;
 - stable zoom limits;
-- optional minimap only if later usability testing justifies it.
+- search/jump to avoid precision panning.
 
-The world may be effectively infinite or use a generous bounded scene. The user should never feel trapped inside a fixed dashboard grid.
+A small movement/control hint may live in the lower-right region.
 
-### Search and jump
+On Desktop this can visually teach arrow/WASD, drag and zoom gestures. On phone it may become a compact circular movement affordance if that proves useful, while direct touch pan/pinch/tap remains first-class.
 
-A persistent search/jump control is important as the system grows.
+Do not require a permanent minimap, center button, zoom toolbar or other chrome unless testing establishes a real need.
 
-It should search product-visible objects such as:
+### 6.2 Search/jump
+
+A search/jump field near the top center is the primary persistent navigation instrument.
+
+It may search:
 
 - services;
-- capabilities;
+- user-visible capabilities;
 - later groups/zones;
-- potentially user-facing actions where useful.
+- high-value provider destinations if the provider can publish/index them appropriately without leaking private content unexpectedly.
 
-Selecting a result should animate/focus the Atlas to the target without requiring manual panning.
+Selecting a result moves/focuses the Atlas to its target.
 
-Search is also the main scalability escape hatch: even a visually rich Atlas remains efficient for expert use.
+Search is essential to keeping a rich spatial interface efficient as the system grows.
 
-### Quick actions
+### 6.3 Minimal WGT-global settings
 
-Conventional controls remain desirable.
+WGT-global settings should be deliberately small and concern WGT itself.
 
-Potential floating or corner controls:
+Preferred interaction direction:
 
-- search;
-- center/reset;
-- settings;
-- prompt generator;
-- recent/favorite capabilities;
-- refresh where meaningful;
-- theme switcher;
-- dependency/privacy layer controls.
+- one small circular Settings control in a corner;
+- selecting it fans out a few nearby circular controls;
+- selecting Theme can fan out theme choices laterally/around it;
+- Sound and Effects/Reduced Effects may be separate controls if they are genuinely useful.
 
-They may visually resemble game HUD quick slots, radial controls, floating glass buttons or restrained desktop controls depending on theme.
+Service-specific configuration does not belong in a giant global WGT Settings page. It belongs with the relevant service/capability node or inside that service.
 
-The Atlas must not force every operation through direct manipulation of nodes.
+Do not add global Home, Back, Recent, Favorites, Refresh, Prompt, dependency-layer toolbar or similar controls merely because desktop software commonly has them.
 
-## 7. Node selection and anchored inspector
+A new global quick action must justify permanent Atlas chrome through a concrete frequent WGT-level workflow.
 
-Selecting a node should normally reveal more information **in context**, not immediately navigate away.
+## 7. Node selection and contextual inspector
 
-Preferred pattern:
+Selecting a node should reveal information in context without immediately leaving the Atlas.
 
-- selected node receives a strong but restrained focus treatment;
-- connected relevant nodes/edges can be emphasized;
-- unrelated content can dim slightly;
-- an inspector appears anchored near the selected node or in a stable side/bottom region when space is constrained.
+Preferred behavior:
 
-The inspector may use tabs or progressive sections.
+- selected node gains clear focus;
+- relevant connected nodes/edges may highlight;
+- unrelated scene content may de-emphasize slightly;
+- an anchored panel/popover opens near the node where space permits;
+- constrained layouts may use a stable overlay or bottom sheet.
 
-Potential sections:
+A service inspector may expose tabs/sections such as:
 
 ### Overview
 
-- name;
-- short human description;
-- current state;
-- what this service/capability does;
-- primary `Open` or `Use` action.
+- service identity and human description;
+- current availability/activation state;
+- concise purpose;
+- primary `Open`/`Enter` action.
 
 ### Capabilities
 
-- capability list;
+- important user-facing capabilities;
 - availability;
-- what each capability adds;
-- direct open/use actions.
+- what they add;
+- relevant composition relationships.
 
 ### Dependencies
 
 - required relationships;
 - optional enhancements;
-- why another service appears in the graph;
-- dependency unavailable/incompatible explanation.
+- why another service is involved;
+- missing/incompatible dependency explanation.
 
 ### Privacy & Data
 
-Only facts that WGT legitimately knows should be shown.
+Only explicit, defensible facts should be shown.
 
 Potential facts:
 
-- local-only authority where published/accepted;
+- local authority;
 - network use;
-- data leaves device or does not;
-- cross-device delivery;
-- permission needs;
+- whether data leaves the device;
 - read/write direction;
-- sensitivity/retention information where explicitly defined;
-- whether a transport sees plaintext where known by accepted contracts/architecture.
+- permission requirements;
+- cross-device behavior;
+- transport visibility/protection where formally known;
+- retention/sensitivity facts where explicitly defined.
 
 ### Devices / Availability
 
 - current device support;
+- provider/runtime unavailable;
 - unsupported platform;
-- provider unavailable;
-- capability not composed on this device;
-- later device-specific overrides.
+- device-specific activation where such semantics are actually supported.
 
-### Diagnostics
+### Technical details
 
-Technical details remain available but secondary:
+Diagnostics remain progressively disclosed rather than dominating normal usage:
 
 - service identity;
 - capability identity;
 - contract version;
-- provider refresh state;
+- provider/refresh state;
 - technical failure details.
 
-## 8. Activation and "what am I bringing into the system?"
+## 8. Activation and impact explanation
 
-One of the Atlas's strongest product opportunities is to explain activation or updates before they happen.
+A major Atlas advantage is explaining what a new service/capability/connection changes before activation or update.
 
-When a user enables/connects/updates something, the UI should be able to present a concise impact view:
+Where the underlying contracts/metadata support it, the UI should explain:
 
-- features/capabilities added;
-- features removed or changed where later version semantics support this;
+- capabilities gained;
 - required dependencies;
 - optional dependencies;
 - local data introduced;
 - network use;
 - permissions;
-- cross-device behavior;
+- read/write behavior;
+- cross-device implications;
 - privacy/sensitivity implications;
-- unavailable platforms;
-- estimated complexity only if an explicit product metric is later defined.
+- platform constraints.
 
-The UI must not invent security/privacy guarantees from visual inference. Facts must be derived from accepted WGT/system/provider metadata or remain unspecified.
+This should answer the user-facing question:
 
-## 9. Theme concepts
+> What am I bringing into my system by enabling this?
 
-### 9.1 Architecture / Technical
+The Atlas must never fabricate privacy/security guarantees from theme art or inferred implementation details.
 
-The most direct expression of the product concept.
+## 9. Entering a service: full product surfaces
 
-Visual language:
+Selecting a node and entering a service are distinct operations.
 
-- dark or light precision canvas;
-- subtle dot/grid background;
-- crisp nodes;
-- visible ports/connection anchors;
-- animated directional data/availability pulses;
-- compact labels;
-- status encoded through shape + text + color, never color alone;
-- dependency edges can visually resemble architecture diagrams without becoming raw developer diagrams.
+Node selection explains the service in the Atlas. `Open`/`Enter` transitions into the actual service product experience.
 
-Possible aesthetic references:
+The intended visual transition can feel spatial rather than page-based: the camera focuses/zooms toward a service node and its product surface takes over the viewport.
 
-- high-end node editor;
-- network operations visualization;
-- circuit/graph design tool;
-- modern CAD/system architecture rather than hacker-terminal cliché.
+The service surface should preserve the complete supported service product, not expose only a WGT-specific summary page.
 
-This should likely be the first implementation because it maps most directly onto the semantic model.
+### Return to WGT
 
-### 9.2 Elegant / Minimal
+When inside a focused service surface, a small WGT identity/core affordance may return to the Atlas.
 
-A calmer version for users who dislike visual density.
+This is semantically `Return to WGT`, not a generic browser-like Back stack.
 
-Visual language:
+Returning should preserve Atlas camera/selection context when practical so the system feels spatially continuous.
 
-- large negative space;
-- translucent or softly elevated nodes;
-- subdued animated connections;
-- fewer labels until selection/zoom;
-- typography carries hierarchy;
-- refined spatial easing;
-- very restrained glow/depth.
+## 10. Embedded/full-service presentation boundary
 
-This could become the default if the technical theme feels too developer-oriented.
+Full-service parity introduces an important integration requirement that the existing WGT published-read slices do not solve by themselves.
 
-### 9.3 Machine / Systems Engine
+WGT should avoid permanently rebuilding every provider's complete UI and workflow in the WGT repository.
 
-WGT appears as a functioning engineered system.
+Preferred direction to evaluate:
 
-Visual metaphors:
-
-- WGT Core as central processor/reactor/control hub;
-- services as attached modules or machines;
-- capabilities as ports/submodules;
-- dependencies as conduits/cables/belts/energy lines;
-- active capabilities visibly "power" relevant routes;
-- degraded relationships flicker or idle rather than turning into noisy error animations.
-
-This theme can feel game-like without becoming a literal game.
-
-Important constraint: mechanics are visual metaphors only. No semantic dependency may exist only because a theme renders a gear or conduit.
-
-### 9.4 Miniature World / Living Atlas
-
-The most playful theme.
-
-Instead of abstract graph nodes, each service occupies a small recognizable zone or structure.
-
-Possible metaphors:
-
-- **WGT Core** — central plaza/control tower/hub;
-- **Vocation** — compact city/business district, skyline, notice board or opportunity terminal;
-- **Illumination** — library, observatory, academy, archive or luminous knowledge garden;
-- **Orientation** — cartography tower, terrain station, compass observatory or mobility hub;
-- **Conveyance** — relay station, bridge network, courier terminal or signal tower.
-
-Connections become:
-
-- roads;
-- bridges;
-- light trails;
-- rails;
-- signal links;
-- flowing packets;
-- paths between districts.
-
-A capability can appear as a building/module within its service district.
-
-The world should remain stylized rather than photorealistic. The strongest direction is likely a premium isometric/2.5D miniature diorama with controlled depth and clear labels.
-
-Risks:
-
-- visual metaphor can overpower usability;
-- too many decorative elements reduce scanning speed;
-- 3D can complicate hit testing/accessibility/mobile performance;
-- literal scenery can make new services difficult to place consistently.
-
-Mitigation:
-
-- keep the semantic node positions/hit boxes independent of decorative art;
-- allow labels and inspector to remain conventional;
-- use 2.5D/isometric art rather than unrestricted 3D initially;
-- support reduced-effects mode;
-- retain search/jump and keyboard navigation.
-
-### 9.5 Theme composition rather than total replacement
-
-Themes may share interaction primitives while varying ambience:
-
-- node shell;
-- connection renderer;
-- background/world layer;
-- iconography;
-- sound set;
-- motion tokens;
-- surface materials;
-- typography accents.
-
-This avoids rewriting the Atlas for each visual concept.
-
-## 10. Sound, motion and stimulation
-
-High-quality feedback can make the Atlas feel alive.
-
-Potential sound cues:
-
-- subtle node focus/select;
-- capability activation;
-- successful connection;
-- dependency unavailable;
-- opening an embedded workspace;
-- zoom threshold/zone transition where useful.
-
-Motion concepts:
-
-- connection pulses;
-- node wake/sleep transitions;
-- smooth camera travel after search;
-- small hover/focus response;
-- inspector unfolding from the selected node;
-- capability activation visually propagating across the dependency edge.
-
-Rules:
-
-- sounds are optional and independently disableable;
-- system accessibility preferences and reduced motion are respected;
-- no critical information is sound-only/motion-only;
-- no constant attention-grabbing animation;
-- no variable-reward/casino-style loops;
-- animations must not delay expert workflows.
-
-Future mobile hosts may map selected events to restrained haptics.
-
-## 11. Embedded capability experience
-
-The Atlas is most valuable if it can open capabilities without making every service feel like an unrelated external application.
-
-WGT should therefore define an **embedded capability presentation convention**.
-
-This is not one universal UI framework and not shared business-domain code.
+```text
+WGT Atlas
+    -> WGT service host
+        -> explicit versioned provider presentation/application boundary
+            -> provider-owned complete product surface
+                -> provider-owned application/domain/runtime
+```
 
 WGT may own:
 
-- host surface/chrome;
-- title/navigation region;
-- sizing/responsive rules;
-- theme tokens where the embedding mechanism supports them;
-- lifecycle/focus/back behavior;
+- host lifecycle;
+- sizing and viewport composition;
+- transition Atlas <-> service;
+- platform host integration;
+- outer focus/input lifecycle;
 - loading/error boundary;
-- platform-specific host integration;
-- transition from Atlas node into focused workspace and back.
+- WGT theme/effect tokens where the mechanism supports them;
+- WGT identity/return affordance.
 
 The provider may own:
 
+- provider-specific product navigation;
 - provider-specific interaction semantics;
-- provider-specific UI contribution where appropriate;
-- provider-owned presentation artifact/code behind an explicit versioned boundary;
-- provider-side accessibility semantics within its contribution.
+- provider UI composition;
+- domain/application semantics;
+- provider-side accessibility semantics;
+- provider presentation artifacts behind an explicit boundary.
 
-Alternatively, the provider may publish only data/commands and WGT may render a native presentation, as Vocation already demonstrates.
+WGT-native rendering remains valid for capabilities where data/command contracts are the cleaner integration mechanism. Provider-owned UI is not mandatory for every capability.
 
-Standalone provider applications remain valid for rich/admin/specialist workflows.
+The architectural goal is **full product composition without duplicated domain/UI ownership**.
 
-The goal is coherent composition, not forced UI centralization.
+### Architecture-control-plane requirement
 
-## 12. Atlas vs real-world maps
+The existing cross-context integration policy permits WGT to integrate/present foreign capabilities while preserving domain ownership, but it does not yet define a common cross-context provider-UI contribution contract.
 
-The WGT Atlas is **not a geospatial map**.
+Before implementing a reusable provider-owned full-service presentation mechanism, the System Architecture Control Plane must determine whether such a common mechanism is warranted and define its system-level constraints.
 
-Pan/zoom/scene interaction does not make it Orientation-owned.
+Do not silently invent a shared UI/business library, import provider internals, or make one provider's current hosting technology the universal system contract.
 
-Ownership remains:
+Concrete service integrations may still use service-specific boundaries where justified.
 
-- WGT — system/product composition, service/capability navigation, device/platform presentation;
-- Orientation — real-world generic geospatial capability;
-- Vocation — job-market semantics;
-- Illumination — learning semantics;
-- Conveyance — generic durable opaque delivery.
+## 11. First-class service expectations
 
-The Atlas should be implemented as a WGT presentation/application read model, not by repurposing Orientation's geospatial renderer.
+### 11.1 Vocation
 
-## 13. Desktop-first implementation strategy
+The current WGT Opportunity Overview/Map Projection integration is transitional.
 
-The first real Atlas should be a complete, high-quality Desktop landscape experience.
+Target WGT access should ultimately cover the Vocation product surface supported by Vocation itself, including current/future workflows such as:
 
-This is compatible with the current development reality: Windows is the validated runtime and no real Mac/Xcode/iPhone environment is currently available.
+- research planning/import/update;
+- opportunity browsing/detail;
+- personal assessment and explainable fit;
+- Candidate Profile and Search Profiles;
+- tracking/triage/availability/freshness;
+- Groups and Application Waves;
+- comparison;
+- Vocation-owned map use and Orientation-backed spatial interaction;
+- Application Cases;
+- Application Materials and Documents;
+- future application workflows when Vocation implements them.
 
-Implementation order:
+WGT must not take ownership of those semantics.
 
-1. Desktop landscape Atlas;
-2. Desktop usability/performance/accessibility hardening;
-3. later compact landscape adaptation on real mobile hardware;
-4. dedicated phone portrait composition during the real mobile phase.
+### 11.2 Illumination
 
-The Desktop implementation must already avoid creating mobile blockers.
+Illumination is a first-class WGT service, not hypothetical future decoration.
 
-### Mobile-safe constraints from day one
+Its accepted direction already makes WGT the primary end-user presentation on Windows/iPhone while retaining an optional standalone/admin/dev host.
 
-- no hover-only operation;
-- practical touch-size hit targets;
-- inspector can collapse or become bottom sheet/fullscreen sheet;
-- node labels remain legible at bounded zoom levels;
-- search/jump works without precision panning;
-- no fixed side panel that assumes desktop width;
-- no tiny connection endpoints required for essential actions;
-- effects can be reduced substantially;
-- scene complexity can be level-of-detail controlled;
-- avoid assumptions that require a mouse/right click;
-- layout engine can reflow/collapse hierarchy rather than relying on fixed pixel coordinates.
+The WGT integration should eventually expose the complete supported Illumination product surface, including:
 
-An iPhone 11-class performance target is a useful lower-end design constraint even before real device validation. Actual support claims still require a real Apple runtime test.
+- Decks;
+- Learning Items;
+- Study Sessions;
+- Reviews/scheduling;
+- learning insights/history;
+- generation/import workflows;
+- lifecycle/content-management capabilities.
 
-## 14. Accessibility model
+The exact WGT-facing presentation/application boundary still requires deliberate design.
+
+### 11.3 Orientation
+
+Orientation is an independent first-class WGT service and also a generic capability provider for other services.
+
+The Orientation node should be able to lead to its own product space, including supported:
+
+- Discover;
+- Explore;
+- Navigate;
+- Current Location;
+- place/geocoding workflows;
+- route/journey/mobility capabilities as they mature.
+
+Its dependency relationships with Vocation or future contexts remain visible independently of its standalone product presence.
+
+### 11.4 Conveyance
+
+Conveyance should become user-visible only to the extent concrete product scenarios require it.
+
+Its node may initially be more infrastructural than Vocation/Illumination/Orientation, but any visible state must preserve its role as generic durable opaque delivery rather than inventing ownership of transported domain semantics.
+
+## 12. Theme system
+
+The same semantic scene should support multiple visual treatments.
+
+### 12.1 Architecture / Technical
+
+Likely first implementation.
+
+Visual language:
+
+- precise spatial graph;
+- subtle dot/grid canvas;
+- crisp nodes and ports;
+- restrained dependency edges;
+- status through shape/text/color rather than color alone;
+- directional pulses where meaningful;
+- modern system/CAD quality rather than hacker-terminal cliché.
+
+This theme exposes the microservice/capability structure directly and can optionally reveal more technical detail than other themes.
+
+### 12.2 Elegant / Minimal
+
+A calmer interpretation:
+
+- large negative space;
+- refined typography;
+- soft depth/translucency;
+- fewer persistent labels;
+- restrained connection animation;
+- low visual noise.
+
+### 12.3 Machine / Systems Engine
+
+WGT appears as an engineered machine:
+
+- WGT Core as central processor/control module;
+- services as attached systems/modules;
+- capabilities as ports/submodules;
+- dependencies as conduits/cables/energy routes;
+- activation propagates through relevant connections.
+
+The mechanics remain visual metaphors over common semantics.
+
+### 12.4 Miniature World / Living Atlas
+
+A premium isometric/2.5D diorama interpretation.
+
+Possible motifs:
+
+- WGT — central hub/plaza/control structure;
+- Vocation — city/business/opportunity district;
+- Illumination — library/academy/observatory/knowledge garden;
+- Orientation — cartography/navigation/mobility district;
+- Conveyance — relay/bridge/signal/transport station.
+
+Connections may render as:
+
+- roads;
+- bridges;
+- rails;
+- light trails;
+- signal paths;
+- moving packets.
+
+The theme should feel alive but remain readable. Decorative world geometry must remain separate from semantic hit targets/node identity.
+
+Prefer 2.5D/isometric presentation before unrestricted 3D.
+
+### 12.5 Theme composition model
+
+Themes should be assembled from common presentation primitives such as:
+
+- world/background layer;
+- node renderer;
+- connection renderer;
+- iconography;
+- materials;
+- typography accents;
+- motion tokens;
+- sound set;
+- effect quality/LOD policy.
+
+Changing theme must not alter service capability state or navigation semantics.
+
+## 13. Sound, motion and feedback
+
+Subtle feedback can make the Atlas feel responsive and alive.
+
+Potential cues:
+
+- node selection;
+- capability activation;
+- connection established/removed;
+- unavailable/degraded state;
+- entering/leaving a service;
+- search jump/zoom transition.
+
+Potential motion:
+
+- node wake/sleep;
+- connection pulses;
+- selected-node emphasis;
+- inspector unfolding from a node;
+- camera travel after search;
+- activation visibly propagating through a dependency.
+
+Rules:
+
+- sound can be disabled independently;
+- reduced-motion/system accessibility preferences are respected;
+- no critical state is sound-only or motion-only;
+- no constant attention-grabbing animation;
+- no casino/reward-loop behavior;
+- animations never deliberately delay expert work.
+
+Future phone implementations may add restrained haptics.
+
+## 14. Desktop-first, mobile-equivalent strategy
+
+### Desktop landscape first
+
+Build the first complete high-quality Atlas on Windows/Desktop landscape.
+
+Desktop may use:
+
+- richer world detail;
+- larger spatial composition;
+- more ambient motion;
+- higher effect quality;
+- more simultaneous visible labels/details;
+- larger anchored inspectors.
+
+### Mobile-safe from the first implementation
+
+Desktop design must avoid assumptions that later make mobile a rewrite:
+
+- no hover-only essential action;
+- touch-sized semantic hit areas;
+- no right-click requirement;
+- inspector can recompose to overlay/bottom sheet/fullscreen sheet;
+- node labels remain readable at useful zoom levels;
+- search/jump avoids precision navigation;
+- scene geometry is independent of fixed desktop pixels;
+- decorative effects support quality levels/LOD;
+- service product surfaces can recompose for compact viewports;
+- input abstraction supports pointer, keyboard and touch semantics.
+
+### Phone landscape
+
+When real Apple tooling/hardware is available, adapt the same Atlas semantics to the smaller landscape viewport.
+
+Effects may reduce. Product capability parity remains.
+
+### Phone portrait
+
+Portrait should be intentionally composed rather than produced by shrinking desktop geometry.
+
+Likely adaptations include:
+
+- more aggressive scene LOD;
+- contextual bottom-sheet inspector;
+- compact search;
+- radial/global controls repositioned around safe areas;
+- reduced simultaneous node detail;
+- service product surfaces using provider-specific responsive composition.
+
+The same service/capability graph and product meaning remain underneath.
+
+## 15. Accessibility
 
 The Atlas cannot be pointer-only.
 
-Potential accessibility structure:
+Required direction:
 
-- semantic node collection exposed to UI Automation;
-- logical traversal order independent of visual coordinates;
-- keyboard next/previous node traversal;
-- search/jump as direct navigation;
-- selected node inspector fully keyboard accessible;
-- equivalent textual dependency descriptions;
-- high-contrast/reduced-motion themes;
-- color-independent state indicators;
-- conventional fallback navigation/workspaces remain available during migration.
+- semantic node collection exposed to platform accessibility/UI automation;
+- logical traversal independent of visual coordinates;
+- keyboard focus/navigation between nodes;
+- search/jump direct navigation;
+- inspector fully keyboard accessible;
+- textual equivalent of important dependency/privacy relationships;
+- color-independent states;
+- reduced-motion/effects support;
+- service product surfaces retain their own accessibility obligations.
 
-The graphical world should enhance understanding, not become a barrier.
+A visual world is an enhancement, not a barrier to operating WGT.
 
-## 15. Migration from the current shell
+## 16. Migration strategy
 
-Do not delete the current useful workspaces first.
+The current v0.6 shell should not be mistaken for the final IA, but it should remain intact until the Atlas replacement is actually usable.
 
-### Phase A — Atlas read model
+### Phase A — Atlas semantic read model
 
-Define presentation/application read models for:
+Define WGT-owned presentation/application models such as:
 
 - AtlasNode;
 - AtlasConnection;
 - node state/availability;
-- optional metadata suitable for dependency/privacy/device explanations;
+- hierarchy/group readiness without enabling grouping yet;
+- dependency/privacy/platform metadata only where legitimately known;
 - search index;
-- selection state.
+- selection/camera state.
 
-Derive from existing WGT Service Integration / Capability / Availability semantics where possible.
+Do not create a second system architecture database.
 
-Do not create a duplicate authoritative service graph.
+### Phase B — Atlas root surface
 
-### Phase B — technical Atlas surface
-
-Implement:
+Implement the Technical/Elegant Desktop Atlas baseline:
 
 - WGT Core;
-- current service nodes;
-- current capability nodes where user-facing;
+- Vocation, Illumination, Orientation and Conveyance service nodes;
+- meaningful current capability/dependency relationships;
 - pan/zoom;
-- search/jump;
-- selection;
+- centered search/jump;
+- node selection;
 - anchored inspector;
-- dependency/availability edges;
-- open existing Home/Jobs/Map/Settings/workspace actions;
-- keyboard/accessibility equivalents.
+- sparse WGT-global Settings control;
+- keyboard/accessibility path;
+- movement hint.
 
-The current conventional shell can coexist during this phase.
+Do not add permanent Home/Back/sidebar navigation.
 
-### Phase C — configuration in context
+### Phase C — in-context configuration and explanation
 
-Move or duplicate appropriate current Settings actions into the selected service/capability inspector:
+Move relevant integration/configuration understanding out of the giant Settings page and into service/capability inspectors:
 
-- enable globally;
-- device override;
-- effective state;
-- refresh;
-- health;
-- diagnostics;
-- open capability.
+- active/effective state;
+- dependency explanation;
+- privacy/data facts;
+- device/platform availability;
+- diagnostics where needed;
+- activation/configuration actions where current WGT semantics support them.
 
-Settings may remain as a full administrative surface.
+### Phase D — full-service integration completeness
 
-### Phase D — impact/privacy/dependency explanations
+The Atlas must not ossify today's narrow Vocation contracts as the permanent product model.
 
-Add user-facing explanations only from accepted facts.
+Establish complete WGT entry paths for:
 
-The Atlas can then become the natural place to answer "what do I unlock / what does this depend on / what does this change?"
+- Vocation;
+- Illumination;
+- Orientation.
 
-### Phase E — theme renderer separation
+For each service, decide the correct mix of:
 
-Stabilize a renderer/theme contract.
+- provider-owned embedded/full-service presentation;
+- WGT-native presentation from provider contracts;
+- service-specific host/application boundary.
 
-Ship one strong technical/elegant baseline before building expensive art-heavy themes.
+Preserve domain ownership and full supported product capability parity.
 
-Then introduce Machine and/or Miniature World themes against the same semantic scene.
+### Phase E — reusable presentation-host decision
 
-### Phase F — embedded capability convention
+If multiple services genuinely require a common provider-owned presentation contribution model, return that requirement to the System Architecture Control Plane and define the smallest appropriate versioned host contract.
 
-Define and validate the common WGT host behavior for embedded/provider-native capability surfaces.
+Do not generalize prematurely from Vocation's current WebView or Illumination's Avalonia technology.
 
-Adopt selectively.
+### Phase F — theme renderer separation
 
-### Phase G — mobile
+Stabilize the common scene/theme contract.
 
-On real Apple tooling/hardware:
+Ship a high-quality Technical/Elegant baseline first, then implement Machine and Miniature World against the same semantics.
 
-- validate compact landscape;
-- design portrait hierarchy;
-- map anchored inspector to appropriate sheet/panel behavior;
-- validate touch, haptics, performance and accessibility;
-- preserve semantic equivalence without forcing identical geometry.
+### Phase G — real mobile work
 
-## 16. Visual design recommendation
+With Mac/Xcode/physical-device access:
 
-The strongest development path is **technical first, world-ready underneath**.
+- validate iPhone landscape;
+- implement/validate portrait composition;
+- validate full service capability parity;
+- validate touch/haptics/accessibility;
+- tune theme LOD/effects on iPhone 11-class hardware;
+- do not claim runtime support before evidence exists.
 
-Recommended first visual baseline:
+## 17. Visual recommendation for the first Atlas
 
-- dark neutral spatial canvas plus Fluent-compatible light equivalent;
-- WGT Core as visually dominant central node;
-- services arranged with ample spatial breathing room;
-- capability satellites/ports;
+The first Atlas should be visually distinctive without depending on expensive world art.
+
+Recommended Technical/Elegant baseline:
+
+- dark neutral spatial canvas plus equivalent light treatment;
+- WGT Core as a visually dominant central node;
+- large service nodes with substantial breathing room;
+- smaller capability satellites/ports only where informative;
 - thin animated dependency links;
-- floating search at top center;
-- small circular quick controls in corners;
-- selected-node glass/Fluent inspector anchored near the node when space allows;
-- camera transitions rather than page transitions for Atlas navigation;
-- open focused workspaces as layered/full product surfaces with a clear `Back to Atlas` path.
+- centered floating search;
+- one compact radial Settings control in a corner;
+- compact movement hint in the lower-right region;
+- node-anchored translucent inspector;
+- camera transitions rather than page transitions while staying in the Atlas;
+- spatial transition into complete service surfaces.
 
-This already feels unique and architecture-native without requiring bespoke world art.
+Once the interaction model is stable, the same world can become a premium miniature diorama with service-specific districts, paths and ambient detail.
 
-Once interaction is stable, the same layout can become a **premium miniature diorama** theme:
+## 18. What not to do
 
-- WGT central hub;
-- service districts around it;
-- capability buildings/modules;
-- routes/light trails carrying dependency meaning;
-- soft ambient motion;
-- clean labels suspended above districts;
-- selected district subtly lifts/brightens and opens the inspector;
-- distant zones simplify at lower zoom levels.
+- Do not build another conventional Home page above the Atlas.
+- Do not keep a permanent sidebar merely because desktop applications usually have one.
+- Do not make the current Jobs list the definition of Vocation in WGT.
+- Do not create a cut-down mobile edition.
+- Do not treat Illumination as optional future decoration.
+- Do not reduce Orientation to Vocation's map renderer.
+- Do not expose every implementation dependency as a user-facing node.
+- Do not make Orientation own the Atlas merely because it pans/zooms.
+- Do not create service groups before scale warrants them.
+- Do not force every provider into one UI technology.
+- Do not duplicate foreign business logic/UI ownership in WGT.
+- Do not make theme art authoritative for dependencies.
+- Do not invent privacy/security claims from visuals.
+- Do not add permanent global quick actions without a concrete high-frequency WGT-level need.
+- Do not claim iPhone quality/support from desktop simulation.
 
-This approach captures the playful vision without making the first implementation dependent on expensive illustration or 3D engineering.
+## 19. Success criteria
 
-## 17. What not to do
+The direction succeeds when WGT feels like a coherent personal system rather than a launcher or collection of reduced dashboards.
 
-- Do not turn the Atlas into a literal copy of the C4/system architecture diagram.
-- Do not expose every technical dependency to normal users by default.
-- Do not make Orientation own the Atlas.
-- Do not make service categories/buckets mandatory before scale demands them.
-- Do not require one common provider UI framework.
-- Do not reimplement foreign business semantics in WGT just to make a node interactive.
-- Do not make theme art the source of truth for capability relationships.
-- Do not remove search, keyboard paths or conventional actions for visual purity.
-- Do not claim mobile quality from desktop simulation alone.
+A user should be able to:
 
-## 18. Success criteria
+- see Vocation, Illumination, Orientation and other real services as parts of one system;
+- understand important capability/dependency relationships spatially;
+- inspect what activation adds and what it depends on;
+- discover privacy/data/platform implications without opening developer diagnostics;
+- enter the complete supported service product rather than a WGT-lite substitute;
+- navigate efficiently through nodes or search;
+- change the visual personality of the Atlas without changing its semantics;
+- use the same product capability set on supported Desktop and phone platforms through platform-appropriate composition.
 
-The direction is successful when WGT can become both:
-
-1. an efficient host for focused work; and
-2. an explorable representation of the user's personal WGT system.
-
-A user should be able to understand and operate the system without reading architecture documentation, while an advanced user can deliberately reveal technical relationships.
-
-The experience should feel architecture-native, coherent and distinctive. Playfulness should be selectable through themes rather than baked into the product semantics.
+The desired character is architecture-native, lightweight at the WGT shell level, rich inside services, and optionally playful through themes.
