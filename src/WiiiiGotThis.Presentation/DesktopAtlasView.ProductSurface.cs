@@ -36,9 +36,9 @@ public sealed partial class DesktopAtlasView
             Content = "◎",
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
-            Margin = new Avalonia.Thickness(18),
-            ToolTip = "Return to WGT Atlas"
+            Margin = new Avalonia.Thickness(18)
         };
+        ToolTip.SetTip(returnButton, "Return to WGT Atlas");
         AutomationProperties.SetName(returnButton, "Return to WGT Atlas");
         AutomationProperties.SetAutomationId(returnButton, "ReturnToAtlasFromVocation");
         returnButton.Click += OnReturnFromProductSurface;
