@@ -100,6 +100,11 @@
     <Setter Property="CornerRadius" Value="8" />
     <Setter Property="Padding" Value="{DynamicResource WgtSpaceLg}" />
   </Style>
+  <Style Selector="Border.wgt-opportunity-row">
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="Padding" Value="12,10" />
+  </Style>
   <Style Selector="Border.wgt-state-banner">
     <Setter Property="Background" Value="{DynamicResource WgtSurfaceBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
