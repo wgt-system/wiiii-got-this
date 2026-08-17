@@ -56,6 +56,20 @@ public sealed class AtlasProjectionTests
     }
 
     [Fact]
+    public void Build_orders_services_stably_by_product_title()
+    {
+        var orientation = Integration("orientation", "Orientation");
+        var vocation = Integration("vocation", "Vocation");
+        var illumination = Integration("illumination", "Illumination");
+
+        var projection = new BuildAtlasProjectionUseCase().Build([vocation, orientation, illumination], []);
+
+        Assert.Equal(
+            ["wgt.core", "service:illumination", "service:orientation", "service:vocation"],
+            projection.Nodes.Select(node => node.NodeId));
+    }
+
+    [Fact]
     public void Build_hides_developer_reference_integration_from_normal_Atlas()
     {
         var reference = new ServiceIdentity("reference");
@@ -108,4 +122,16 @@ public sealed class AtlasProjectionTests
         Assert.False(node.IsAvailable);
         Assert.Equal(AvailabilityReason.MissingPrerequisite, node.AvailabilityReason);
     }
+
+    private static ServiceIntegrationListItem Integration(string id, string title) => new(
+        new ServiceIdentity(id),
+        title,
+        true,
+        null,
+        true,
+        true,
+        true,
+        IntegrationRefreshStatus.Refreshed,
+        DateTimeOffset.UtcNow,
+        DateTimeOffset.UtcNow);
 }
