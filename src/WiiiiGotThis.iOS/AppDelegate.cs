@@ -14,11 +14,16 @@ namespace WiiiiGotThis.iOS;
 [Register("AppDelegate")]
 internal sealed class AppDelegate : UIApplicationDelegate, IAvaloniaAppDelegate
 {
+    private IosOrientationMapPlatformHost? orientationMapHost;
+
     public event EventHandler<ActivatedEventArgs>? Activated;
     public event EventHandler<ActivatedEventArgs>? Deactivated;
 
     public override bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions)
     {
+        orientationMapHost = new IosOrientationMapPlatformHost();
+        OrientationMapPlatformServices.Host = orientationMapHost;
+
         var shell = CreateShell();
         BuildAvaloniaApp(shell, this).SetupWithoutStarting();
         return true;
@@ -29,6 +34,15 @@ internal sealed class AppDelegate : UIApplicationDelegate, IAvaloniaAppDelegate
 
     public override void OnResignActivation(UIApplication application) =>
         Deactivated?.Invoke(this, new ActivatedEventArgs(ActivationKind.Background));
+
+    public override void WillTerminate(UIApplication application)
+    {
+        if (ReferenceEquals(OrientationMapPlatformServices.Host, orientationMapHost))
+            OrientationMapPlatformServices.Host = null;
+        orientationMapHost?.Dispose();
+        orientationMapHost = null;
+        base.WillTerminate(application);
+    }
 
     private static ShellViewModel CreateShell()
     {
