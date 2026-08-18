@@ -28,7 +28,12 @@ public sealed class AtlasProjectionTests
     {
         var projection = new BuildAtlasProjectionUseCase().Build([], []);
 
-        Assert.Equal(["wgt.core", "service:illumination", "service:orientation", "service:vocation"], projection.Nodes.Select(node => node.NodeId));
+        Assert.Equal([
+            "wgt.core",
+            "service:conveyance",
+            "service:illumination",
+            "service:orientation",
+            "service:vocation"], projection.Nodes.Select(node => node.NodeId));
         Assert.All(projection.Nodes.Where(node => node.Kind == AtlasNodeKind.Service), node =>
         {
             Assert.False(node.IsIntegrated);
@@ -36,6 +41,18 @@ public sealed class AtlasProjectionTests
             Assert.Equal("Not composed on this client yet", node.Subtitle);
         });
         Assert.DoesNotContain(projection.Nodes, node => node.Kind == AtlasNodeKind.Capability);
+    }
+
+    [Fact]
+    public void Build_keeps_Conveyance_truthful_until_a_client_integration_exists()
+    {
+        var projection = new BuildAtlasProjectionUseCase().Build([], []);
+        var conveyance = Assert.Single(projection.Nodes, node => node.NodeId == "service:conveyance");
+
+        Assert.Equal("Conveyance", conveyance.Title);
+        Assert.False(conveyance.IsIntegrated);
+        Assert.False(conveyance.IsAvailable);
+        Assert.DoesNotContain(projection.Nodes, node => node.Kind == AtlasNodeKind.Capability && node.ServiceIdentity?.Value == "conveyance");
     }
 
     [Fact]
@@ -80,7 +97,12 @@ public sealed class AtlasProjectionTests
             Integration("orientation", "Orientation"),
             Integration("illumination", "Illumination")], []);
 
-        Assert.Equal(["wgt.core", "service:illumination", "service:orientation", "service:vocation"], projection.Nodes.Select(node => node.NodeId));
+        Assert.Equal([
+            "wgt.core",
+            "service:conveyance",
+            "service:illumination",
+            "service:orientation",
+            "service:vocation"], projection.Nodes.Select(node => node.NodeId));
     }
 
     [Fact]
