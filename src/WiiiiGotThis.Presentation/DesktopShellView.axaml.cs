@@ -10,6 +10,7 @@ public sealed partial class DesktopShellView : UserControl
 {
     private ShellViewModel? shell;
     private bool isAttached;
+    private IIlluminationProductSurfaceSource? illuminationProductSurfaceSource;
 
     public DesktopShellView()
     {
@@ -17,6 +18,16 @@ public sealed partial class DesktopShellView : UserControl
         AttachedToVisualTree += OnAttached;
         DetachedFromVisualTree += OnDetached;
         DataContextChanged += OnDataContextChanged;
+    }
+
+    public IIlluminationProductSurfaceSource? IlluminationProductSurfaceSource
+    {
+        get => illuminationProductSurfaceSource;
+        set
+        {
+            illuminationProductSurfaceSource = value;
+            AtlasWorkspace.IlluminationProductSurfaceSource = value;
+        }
     }
 
     private async void OnAttached(object? sender, VisualTreeAttachmentEventArgs e)
