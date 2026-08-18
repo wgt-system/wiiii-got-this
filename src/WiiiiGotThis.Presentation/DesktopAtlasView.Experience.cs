@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using WiiiiGotThis.Application;
@@ -44,10 +45,53 @@ public sealed partial class DesktopAtlasView
             () =>
             {
                 spatialDepthRebuildQueued = false;
-                if (experienceShell is not null)
-                    RebuildSpatialDepthField();
+                if (experienceShell is null)
+                    return;
+
+                RebuildSpatialDepthField();
+                WireDirectProductEntry();
             },
             DispatcherPriority.Render);
+    }
+
+    private void WireDirectProductEntry()
+    {
+        foreach (var nodeShell in SceneCanvas.Children.OfType<Border>())
+        {
+            if (!nodeShell.Classes.Contains("wgt-atlas-node-shell") ||
+                nodeShell.Child is not Button button ||
+                button.DataContext is not AtlasNodePresentationViewModel node ||
+                !node.CanOpenProductSurface ||
+                button.Classes.Contains("direct-product-entry"))
+            {
+                continue;
+            }
+
+            button.Classes.Add("direct-product-entry");
+            button.DoubleTapped += OnProductNodeDoubleTapped;
+            button.KeyDown += OnProductNodeKeyDown;
+            ToolTip.SetTip(button, $"Select {node.Title} · double-click or press Enter to open");
+        }
+    }
+
+    private async void OnProductNodeDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (sender is not Button { DataContext: AtlasNodePresentationViewModel node } || shell is null)
+            return;
+
+        shell.SelectAtlasNodeCommand.Execute(node);
+        if (await OpenSelectedProductSurfaceAsync())
+            e.Handled = true;
+    }
+
+    private async void OnProductNodeKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || sender is not Button { DataContext: AtlasNodePresentationViewModel node } || shell is null)
+            return;
+
+        shell.SelectAtlasNodeCommand.Execute(node);
+        if (await OpenSelectedProductSurfaceAsync())
+            e.Handled = true;
     }
 
     private void EnsureThemeChooserExperience()
