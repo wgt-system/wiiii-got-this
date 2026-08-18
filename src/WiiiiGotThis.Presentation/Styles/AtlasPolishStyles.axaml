@@ -1,0 +1,77 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <SolidColorBrush x:Key="WgtAtlasOpaqueChromeBrush" Color="#FF171A20" />
+    <SolidColorBrush x:Key="WgtAtlasOpaqueRaisedBrush" Color="#FF1C2028" />
+    <SolidColorBrush x:Key="WgtAtlasCoreBrush" Color="#FF171D26" />
+  </Styles.Resources>
+
+  <!-- Global WGT chrome must remain visually separate from the spatial world. -->
+  <Style Selector="Border.wgt-atlas-search-dock">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueChromeBrush}" />
+    <Setter Property="Opacity" Value="1" />
+    <Setter Property="CornerRadius" Value="22" />
+    <Setter Property="BoxShadow" Value="0 14 40 0 #66000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-inspector">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueRaisedBrush}" />
+    <Setter Property="Opacity" Value="1" />
+    <Setter Property="BoxShadow" Value="0 22 54 0 #72000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-controls">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueChromeBrush}" />
+    <Setter Property="Opacity" Value="0.94" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-orb">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueChromeBrush}" />
+  </Style>
+  <Style Selector="Button.wgt-theme-choice">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueRaisedBrush}" />
+  </Style>
+
+  <!-- Services are primary spatial objects, not page cards. -->
+  <Style Selector="Border.wgt-atlas-node-shell.core">
+    <Setter Property="CornerRadius" Value="54" />
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasCoreBrush}" />
+    <Setter Property="BoxShadow" Value="0 18 54 0 #5C000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core">
+    <Setter Property="CornerRadius" Value="54" />
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasCoreBrush}" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.service">
+    <Setter Property="CornerRadius" Value="46" />
+    <Setter Property="BoxShadow" Value="0 12 34 0 #3D000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service">
+    <Setter Property="CornerRadius" Value="46" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.capability">
+    <Setter Property="CornerRadius" Value="18" />
+    <Setter Property="BoxShadow" Value="0 5 15 0 #22000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability">
+    <Setter Property="CornerRadius" Value="18" />
+  </Style>
+
+  <Style Selector="Border.wgt-atlas-node-shell.selected">
+    <Setter Property="BoxShadow" Value="0 16 48 0 #70000000" />
+  </Style>
+
+  <!-- Machine deliberately stays more engineered; other themes retain softer spatial nodes. -->
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-machine">
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-machine">
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.service.theme-machine">
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service.theme-machine">
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+
+  <Style Selector="Border.wgt-product-rail">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueChromeBrush}" />
+  </Style>
+</Styles>
