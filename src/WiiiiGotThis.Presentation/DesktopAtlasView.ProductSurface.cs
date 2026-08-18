@@ -142,7 +142,7 @@ public sealed partial class DesktopAtlasView
         return overlay;
     }
 
-    private Control BuildIlluminationErrorState(string message)
+    private StackPanel BuildIlluminationErrorState(string message)
     {
         var retry = new Button
         {
@@ -177,7 +177,7 @@ public sealed partial class DesktopAtlasView
         };
     }
 
-    private static Control BuildIlluminationLoadingState() => new StackPanel
+    private static StackPanel BuildIlluminationLoadingState() => new()
     {
         Width = 320,
         Spacing = 12,
