@@ -110,6 +110,9 @@ public static class AtlasPresentationFocus
             }
         }
 
+        if (string.Equals(selectedNodeId, BuildAtlasProjectionUseCase.CoreNodeId, StringComparison.Ordinal))
+            return focused;
+
         foreach (var connection in connections.Where(item => item.Kind == AtlasConnectionKind.CapabilityDependency))
         {
             if (focused.Contains(connection.Source.NodeId) || focused.Contains(connection.Target.NodeId))
@@ -117,6 +120,18 @@ public static class AtlasPresentationFocus
                 focused.Add(connection.Source.NodeId);
                 focused.Add(connection.Target.NodeId);
             }
+        }
+
+        foreach (var connection in connections.Where(item => item.Kind == AtlasConnectionKind.CapabilityOwnership))
+        {
+            if (focused.Contains(connection.Target.NodeId))
+                focused.Add(connection.Source.NodeId);
+        }
+
+        foreach (var connection in connections.Where(item => item.Kind == AtlasConnectionKind.Composition))
+        {
+            if (focused.Contains(connection.Target.NodeId))
+                focused.Add(connection.Source.NodeId);
         }
 
         return focused;
