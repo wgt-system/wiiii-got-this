@@ -20,34 +20,67 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Top" />
 
-    <Border Classes="wgt-atlas-search-dock"
-            Width="520"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Top"
-            Margin="0,24,0,0"
-            Padding="9">
-      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
-        <Border Width="36" Height="36" CornerRadius="18"
-                Background="{DynamicResource WgtAccentLowBrush}"
-                VerticalAlignment="Center">
-          <TextBlock Text="⌕"
-                     FontSize="18"
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Center" />
-        </Border>
-        <TextBox x:Name="AtlasSearch"
-                 Grid.Column="1"
-                 Height="42"
-                 BorderThickness="0"
-                 Background="Transparent"
-                 VerticalContentAlignment="Center"
-                 PlaceholderText="Search WGT…"
-                 Text="{Binding AtlasSearchText, Mode=TwoWay}"
-                 KeyDown="OnSearchKeyDown"
-                 AutomationProperties.Name="Search Wiiii Got This"
-                 AutomationProperties.AutomationId="AtlasSearch" />
-      </Grid>
-    </Border>
+    <StackPanel Width="520"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="0,24,0,0"
+                Spacing="8">
+      <Border Classes="wgt-atlas-search-dock" Padding="9">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
+          <Border Width="36" Height="36" CornerRadius="18"
+                  Background="{DynamicResource WgtAccentLowBrush}"
+                  VerticalAlignment="Center">
+            <TextBlock Text="⌕"
+                       FontSize="18"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center" />
+          </Border>
+          <TextBox x:Name="AtlasSearch"
+                   Grid.Column="1"
+                   Height="42"
+                   BorderThickness="0"
+                   Background="Transparent"
+                   VerticalContentAlignment="Center"
+                   PlaceholderText="Search WGT…"
+                   Text="{Binding AtlasSearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                   KeyDown="OnSearchKeyDownRanked"
+                   AutomationProperties.Name="Search Wiiii Got This"
+                   AutomationProperties.AutomationId="AtlasSearch" />
+        </Grid>
+      </Border>
+
+      <Border Classes="wgt-atlas-search-results"
+              IsVisible="{Binding HasAtlasSearchResults}"
+              Padding="7"
+              MaxHeight="328">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <ItemsControl ItemsSource="{Binding AtlasSearchResults}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:AtlasNodePresentationViewModel">
+                <Button Classes="wgt-atlas-search-result"
+                        Click="OnSearchResultClick"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        AutomationProperties.Name="{Binding Title}">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <StackPanel Spacing="2">
+                      <TextBlock FontWeight="SemiBold" Text="{Binding Title}" TextWrapping="Wrap" />
+                      <TextBlock Classes="wgt-caption" Text="{Binding NodeId}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <Border Grid.Column="1"
+                            Classes="wgt-atlas-kind-chip"
+                            Padding="7,3"
+                            VerticalAlignment="Center">
+                      <TextBlock Classes="wgt-caption" Text="{Binding KindLabel}" />
+                    </Border>
+                  </Grid>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+    </StackPanel>
 
     <Canvas Width="268"
             Height="112"
