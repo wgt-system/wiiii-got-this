@@ -149,7 +149,7 @@ public sealed partial class DesktopAtlasView : UserControl
         }
     }
 
-    private Path CreateConnectionPath(AtlasConnectionPresentationViewModel connection)
+    private Avalonia.Controls.Shapes.Path CreateConnectionPath(AtlasConnectionPresentationViewModel connection)
     {
         var start = WorldPoint(connection.Source);
         var end = WorldPoint(connection.Target);
@@ -177,7 +177,7 @@ public sealed partial class DesktopAtlasView : UserControl
             context.EndFigure(isClosed: false);
         }
 
-        var path = new Path
+        var path = new Avalonia.Controls.Shapes.Path
         {
             Data = geometry,
             IsHitTestVisible = false
