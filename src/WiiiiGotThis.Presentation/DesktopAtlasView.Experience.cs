@@ -2,6 +2,7 @@ using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Threading;
 using WiiiiGotThis.Application;
 
 namespace WiiiiGotThis.Presentation;
@@ -12,6 +13,7 @@ public sealed partial class DesktopAtlasView
     private ShellViewModel? experienceShell;
     private TextBlock? themeChooserHeaderText;
     private bool themeChooserPrepared;
+    private bool spatialDepthRebuildQueued;
 
     private void AttachExperienceShell(ShellViewModel? next)
     {
@@ -26,11 +28,27 @@ public sealed partial class DesktopAtlasView
             experienceShell.AtlasNodes.CollectionChanged += OnExperienceAtlasNodesChanged;
 
         EnsureThemeChooserExperience();
-        RebuildSpatialDepthField();
+        QueueSpatialDepthRebuild();
         UpdateExperienceState();
     }
 
-    private void OnExperienceAtlasNodesChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildSpatialDepthField();
+    private void OnExperienceAtlasNodesChanged(object? sender, NotifyCollectionChangedEventArgs e) => QueueSpatialDepthRebuild();
+
+    private void QueueSpatialDepthRebuild()
+    {
+        if (spatialDepthRebuildQueued || experienceShell is null)
+            return;
+
+        spatialDepthRebuildQueued = true;
+        Dispatcher.UIThread.Post(
+            () =>
+            {
+                spatialDepthRebuildQueued = false;
+                if (experienceShell is not null)
+                    RebuildSpatialDepthField();
+            },
+            DispatcherPriority.Render);
+    }
 
     private void EnsureThemeChooserExperience()
     {
