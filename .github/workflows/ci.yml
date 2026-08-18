@@ -16,10 +16,19 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      WGT_ILLUMINATION_ROOT: ${{ github.workspace }}\.providers\illumination
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Check out pinned Illumination provider
+        uses: actions/checkout@v4
+        with:
+          repository: wgt-system/illumination
+          ref: 22a37db31f2b53a0bd424c443053baaaeec4e00c
+          path: .providers/illumination
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
