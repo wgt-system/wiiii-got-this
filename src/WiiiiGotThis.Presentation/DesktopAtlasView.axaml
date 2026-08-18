@@ -20,9 +20,8 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Top" />
 
-    <Grid Margin="26" IsHitTestVisible="False">
+    <Grid Margin="26">
       <Border Classes="wgt-atlas-search-dock"
-              IsHitTestVisible="True"
               Width="460"
               HorizontalAlignment="Center"
               VerticalAlignment="Top"
@@ -52,7 +51,6 @@
 
       <Canvas Width="268"
               Height="112"
-              IsHitTestVisible="True"
               HorizontalAlignment="Right"
               VerticalAlignment="Top">
         <Button Canvas.Right="0"
