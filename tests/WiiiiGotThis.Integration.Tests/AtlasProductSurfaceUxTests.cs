@@ -27,4 +27,15 @@ public sealed class AtlasProductSurfaceUxTests
         Assert.True(presentation.CanOpenProductSurface);
         Assert.Equal($"Open {title}", presentation.OpenProductSurfaceLabel);
     }
+
+    [Fact]
+    public void Shared_presentation_does_not_reference_Illumination_provider_assemblies()
+    {
+        var references = typeof(DesktopAtlasView).Assembly
+            .GetReferencedAssemblies()
+            .Select(reference => reference.Name ?? string.Empty)
+            .ToArray();
+
+        Assert.DoesNotContain(references, name => name.StartsWith("Illumination.", StringComparison.Ordinal));
+    }
 }
