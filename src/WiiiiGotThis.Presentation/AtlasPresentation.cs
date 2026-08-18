@@ -26,8 +26,8 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     public bool IsIntegrated => Model.IsIntegrated;
     public bool IsKnownOnlyService => IsService && !IsIntegrated;
     public bool IsIntegratedService => IsService && IsIntegrated;
-    public bool CanOpenProductSurface => IsIntegratedService && IsAvailable && IsSupportedProductSurfaceService(ServiceIdentity?.Value);
-    public string OpenProductSurfaceLabel => $"Open {Title}";
+    public bool CanOpenProductSurface => IsIntegratedService && IsSupportedProductSurfaceService(ServiceIdentity?.Value);
+    public string OpenProductSurfaceLabel => IsEnabled ? $"Open {Title}" : $"Enable & open {Title}";
     public AvailabilityReason? AvailabilityReason => Model.AvailabilityReason;
     public double X { get; } = x;
     public double Y { get; } = y;
@@ -91,7 +91,7 @@ public static class AtlasPresentationLayoutBuilder
             .ThenBy(node => node.NodeId, StringComparer.Ordinal)
             .ToArray();
 
-        const double serviceRadius = 330;
+        const double serviceRadius = 370;
         for (var index = 0; index < services.Length; index++)
         {
             var angle = ServiceAngle(index, services.Length);
@@ -106,7 +106,7 @@ public static class AtlasPresentationLayoutBuilder
                 .ThenBy(node => node.NodeId, StringComparer.Ordinal)
                 .ToArray();
 
-            const double capabilityRadius = 150;
+            const double capabilityRadius = 170;
             const double spread = Math.PI * 0.52;
             for (var capabilityIndex = 0; capabilityIndex < capabilities.Length; capabilityIndex++)
             {
