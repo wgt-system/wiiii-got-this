@@ -1,47 +1,80 @@
-# ADR-0009: WGT-Owned Presentation and Contract-Driven Service Integration
+# ADR-0009: WGT-Owned Composition and Contract-Driven Service Integration
 
 - Status: Accepted
 - Date: 2026-08-10
+- Updated: 2026-08-18
 
 ## Context
 
-Wiiii Got This presents capabilities from independently owned Services while preserving the meaning and authority of those Services. The first WGT implementation uses statically shipped Integration Adapters and WGT-native Avalonia presentation. Vocation now provides a concrete versioned read contract, while Conveyance provides a separate generic delivery context. Future compatible remote/read Services should not require WGT to absorb their business models or rebuild the client unnecessarily.
+Wiiii Got This presents capabilities from independently owned Services while preserving the meaning and authority of those Services. The first WGT implementation used statically shipped Integration Adapters plus WGT-native Avalonia presentation for narrow provider contracts such as Vocation Opportunity Overview and Map Projection.
+
+That baseline remains useful, but the later WGT Atlas/full-service direction exposed a second concrete need: rich bounded contexts such as Vocation, Illumination and Orientation must be usable through WGT without forcing WGT to rebuild each provider's complete product UI and workflow.
+
+System Architecture Control Plane ADR-0005 now accepts **provider-owned Product Surfaces** as a valid WGT integration shape when justified by a concrete rich service. This service-local ADR is aligned to that binding system decision.
 
 ## Decision
 
-### WGT owns the product experience
+### WGT owns composition, not every provider screen
 
-WGT is not a launcher and not a container for foreign application UIs. For capabilities presented through WGT:
+For capabilities and products presented through WGT, WGT owns:
 
-- WGT owns navigation;
-- WGT owns platform-specific layout;
-- WGT owns visual composition;
-- WGT owns integration-level status and availability presentation;
-- WGT owns how a foreign capability fits into the coherent WGT product experience.
+- Atlas and WGT-level navigation;
+- platform-specific hosting and composition;
+- integration-level status and availability presentation;
+- service/capability/dependency presentation in the Atlas;
+- transitions into and out of focused provider experiences;
+- WGT-global appearance/accessibility/effect policy;
+- WGT-specific cross-service compositions.
 
-A foreign bounded context owns the meaning and business semantics of the data and actions it publishes.
+A foreign bounded context continues to own the meaning and business semantics of its data and actions.
 
-The default model is:
+WGT does **not** gain ownership of a provider workflow merely because it hosts or presents it.
+
+### Two presentation shapes are valid
+
+#### A. WGT-native composed capability
+
+Use WGT-native presentation when the experience is genuinely WGT-owned composition or when a bounded provider contract maps naturally to a small WGT surface.
 
 ```text
 foreign Service semantics
         ↓
-versioned Published Contract
+versioned Published/Application Contract
         ↓
 WGT integration boundary
         ↓
-WGT-native presentation
+WGT-native composition
 ```
 
-Embedded foreign React/Avalonia/WebView UI is not the normal integration mechanism. A standalone foreign UI may still exist for provider administration, development, rich desktop workflows, or independent operation.
+The existing Vocation Opportunity Overview and Vocation Map Projection integrations are valid examples. They are not a requirement to rebuild the complete Vocation application in WGT.
 
-### Contract-driven extension is the preferred remote/read path
+#### B. Provider-owned Product Surface
 
-For remote, out-of-process, and read-oriented Services, WGT consumes explicit versioned semantic contracts through an integration boundary. The target architectural property is:
+For a rich provider-specific product workflow, WGT may host a provider-owned presentation artifact through an explicit provider-specific boundary.
 
-> Adding an ordinary compatible Service or Capability should not inherently require a new WGT/iOS build when existing WGT integration, invocation, and presentation capabilities suffice.
+```text
+provider-owned product/runtime
+        ↓
+provider-owned Product Surface
+        ↓
+WGT provider-specific host adapter
+        ↓
+WGT Atlas / platform composition
+```
 
-This is a target property, not a claim that the current v0.2.0 shipped-adapter implementation supports arbitrary runtime registration. Current V1 shipped Integration Adapters remain valid implementation scaffolding.
+A Product Surface may be native or browser-based according to the provider and target platform. The presentation technology does not define bounded-context ownership.
+
+The first concrete implementation direction is a Windows WGT host for Vocation's existing provider-owned React/FastAPI product.
+
+### Contract-driven extension remains the preferred bounded integration path
+
+For remote, out-of-process and read/command-oriented capabilities, WGT consumes explicit versioned provider contracts through an integration boundary.
+
+The target architectural property remains:
+
+> Adding an ordinary compatible Service or Capability should not inherently require a new WGT/iOS build when existing WGT integration, invocation and presentation capabilities suffice.
+
+This does not mean every rich product must be represented as a generic data/form schema.
 
 ### A WGT rebuild remains legitimate
 
@@ -49,50 +82,61 @@ A new WGT build is expected when the WGT platform changes, including:
 
 - a new native/platform capability;
 - a new WGT presentation primitive;
-- new WGT executable integration logic not expressible through an accepted contract;
+- new executable provider-specific host integration;
 - bundling or changing a local executable foreign capability runtime;
-- platform, signing, or runtime changes.
+- platform, signing or runtime changes.
 
-The goal is to avoid unnecessary rebuilds for ordinary compatible Services, not to prohibit WGT rebuilds.
+The goal is to avoid unnecessary rebuilds for ordinary compatible service data/metadata changes, not to prohibit WGT rebuilds.
 
-### Local executable runtimes are different
+### Local executable runtimes remain valid
 
-Illumination remains a valid example of a locally hosted executable capability runtime. A future iPhone WGT build may contain WGT presentation alongside an Illumination Application/Domain/Persistence runtime. The bounded-context boundary remains explicit even when process-local. Changing executable Illumination runtime code on iPhone can legitimately require a new signed WGT/iOS build.
+Illumination remains a valid example of a locally hosted executable capability runtime. A future WGT build may contain WGT presentation/hosting alongside an Illumination Application/Domain/Persistence runtime while preserving explicit bounded-context boundaries.
 
 Downloaded arbitrary native/.NET plugin execution is not introduced.
 
 ### Transport does not define presentation
 
-The same provider contract should remain usable across transport mechanisms where its semantics permit it. The concrete Vocation direction is:
+Provider semantics should remain usable across transports where the contract permits it. Conveyance remains transport/delivery infrastructure and is not a UI or business-contract abstraction.
 
-```text
-Windows: WGT → local Vocation HTTP Published Contract
-iPhone:  WGT → Conveyance-delivered copy of the same Vocation Published Contract
-```
+A provider-owned Product Surface likewise does not authorize cross-device writes or synchronization. Domain-changing cross-device behavior still requires provider-owned authority/merge/conflict/reconciliation semantics.
 
-WGT presentation consumes the validated provider contract and does not depend on whether the bytes came directly from the provider or through Conveyance. Conveyance is not a UI or business-contract abstraction.
+### No universal UI language or plugin host now
 
-### No universal UI language now
+Do not define a permanent universal `List / Detail / Form / Map / Action / ...` schema, mini-HTML framework, generic downloaded plugin runtime, or one mandatory provider UI technology.
 
-Do not define a permanent universal `List / Detail / Form / Map / Action / ...` presentation schema or a mini-HTML/mini-Flutter framework. Implement concrete WGT-native capabilities, observe repeated integration pressure, and generalize only proven presentation/invocation primitives. Capability taxonomy and generic requirement schema remain deferred.
+Concrete provider hosts may legitimately differ:
+
+- Vocation can use a provider-owned web Product Surface;
+- Illumination may use a statically bundled .NET/Avalonia Product Surface;
+- Orientation may use its provider-owned browser product for full Orientation while retaining its narrow generic map Embed Host for foreign compositions.
+
+A reusable Product Surface / Presentation Contribution / Service Host contract may be introduced only after repeated real integrations reveal stable common semantics and the Architecture Control Plane accepts them.
 
 ### Integration activation remains WGT-owned
 
-WGT owns whether an integration is known, configured, or enabled for a Device. A Service does not become enabled merely because its contract exists. This ADR does not define a generic Registry or install-store lifecycle; future discovery/install mechanisms remain separate decisions.
+WGT owns whether an integration is known, configured or enabled for a Device. A Service does not become enabled merely because its product identity or a Product Surface exists.
+
+The Atlas may truthfully show a known first-class service before a client adapter exists, but it must not invent provider capabilities, availability or contracts.
+
+### Full-service parity across supported platforms
+
+WGT should not intentionally create reduced `Desktop full / mobile lite` editions.
+
+Desktop landscape, phone landscape and phone portrait may differ in layout, density, effects and interaction composition. The supported provider capability set should remain equivalent unless a genuine provider/platform requirement makes a capability unavailable.
+
+Vocation and Orientation do not yet have accepted full iPhone runtime topologies. This remains provider-owned architecture work and must not be hidden by expanding read-only contracts into ad-hoc write APIs.
 
 ### Mac availability is operational, not domain architecture
 
-Rare Mac access does not force WGT into a browser/WebView architecture. WGT remains a real Windows/iPhone product, while the architecture should minimize unnecessary iOS rebuilds. The existing real Mac/Xcode/iPhone runtime gate remains mandatory before the first real provider integration is accepted on iPhone. Windows can implement and validate the first real WGT-native integration before that Apple runtime step.
-
-### Web remains optional
-
-A future Web client remains valid, but Web is not implemented or prioritized solely to avoid the Mac build requirement. It requires a concrete product scenario.
+Limited Mac availability does not force WGT into one presentation technology. Real Mac/Xcode/iPhone runtime validation remains mandatory before claiming actual iPhone support for a provider integration.
 
 ## Consequences
 
-- WGT-native presentation is the default coherent product experience.
-- Provider ownership remains behind explicit versioned Published Contracts.
-- Vocation Published Opportunity Overview 1.0 is the first concrete read integration implemented by WGT on Windows.
-- Conveyance may transport an opaque/protected copy of that contract without interpreting its semantics.
-- Current V1 shipped adapters remain valid, while arbitrary dynamic executable plugins are not introduced.
-- Future generic extension must be justified by concrete integrations and accepted separately where it changes architecture.
+- WGT owns the coherent product composition without needing to duplicate every rich provider UI.
+- WGT-native presentation remains preferred for genuinely WGT-owned cross-service composition and bounded capability surfaces.
+- Provider-owned Product Surfaces are valid for justified rich service experiences under Architecture ADR-0005.
+- Provider domain ownership remains behind explicit provider boundaries; direct DB/domain coupling remains prohibited.
+- Vocation Opportunity Overview 1.0 and Map Projection 1.0 remain valid narrow contracts and are not promoted into full-product APIs.
+- Illumination and Orientation can become first-class WGT products using provider-appropriate presentation/runtime boundaries.
+- Current shipped adapters remain valid; arbitrary dynamic executable plugins are not introduced.
+- Future generic presentation-host abstractions require concrete repeated evidence and a separate architecture decision.
