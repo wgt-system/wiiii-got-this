@@ -1,17 +1,17 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using WiiiiGotThis.Application;
+using ShapePath = Avalonia.Controls.Shapes.Path;
 
 namespace WiiiiGotThis.Presentation;
 
 public sealed partial class DesktopAtlasView
 {
-    private Path? inspectorTether;
+    private ShapePath? inspectorTether;
     private ShellViewModel? polishShell;
     private bool polishEventsAttached;
 
@@ -77,7 +77,7 @@ public sealed partial class DesktopAtlasView
         if (inspectorTether is not null)
             return;
 
-        inspectorTether = new Path
+        inspectorTether = new ShapePath
         {
             IsHitTestVisible = false,
             IsVisible = false
