@@ -47,4 +47,100 @@ public sealed class AtlasPresentationTests
 
         Assert.False(node.CanOpenProductSurface);
     }
+
+    [Fact]
+    public void Focus_from_vocation_reveals_its_capability_dependency_path_without_unrelated_services()
+    {
+        var graph = FocusGraph();
+
+        var focused = AtlasPresentationFocus.Build(graph.Connections, "service:vocation");
+
+        Assert.Contains("wgt.core", focused);
+        Assert.Contains("service:vocation", focused);
+        Assert.Contains("capability:vocation:vocation.map_projection", focused);
+        Assert.Contains("service:orientation", focused);
+        Assert.DoesNotContain("service:illumination", focused);
+        Assert.DoesNotContain("service:conveyance", focused);
+    }
+
+    [Fact]
+    public void Focus_from_orientation_reveals_incoming_vocation_dependency_and_owner_path()
+    {
+        var graph = FocusGraph();
+
+        var focused = AtlasPresentationFocus.Build(graph.Connections, "service:orientation");
+
+        Assert.Contains("wgt.core", focused);
+        Assert.Contains("service:orientation", focused);
+        Assert.Contains("capability:vocation:vocation.map_projection", focused);
+        Assert.Contains("service:vocation", focused);
+        Assert.DoesNotContain("service:illumination", focused);
+        Assert.DoesNotContain("service:conveyance", focused);
+    }
+
+    [Fact]
+    public void Focus_from_core_stops_at_first_class_services_instead_of_expanding_every_dependency()
+    {
+        var graph = FocusGraph();
+
+        var focused = AtlasPresentationFocus.Build(graph.Connections, "wgt.core");
+
+        Assert.Contains("service:vocation", focused);
+        Assert.Contains("service:orientation", focused);
+        Assert.Contains("service:illumination", focused);
+        Assert.Contains("service:conveyance", focused);
+        Assert.DoesNotContain("capability:vocation:vocation.map_projection", focused);
+    }
+
+    private static AtlasPresentationLayout FocusGraph()
+    {
+        var core = Node("wgt.core", AtlasNodeKind.Core, "WGT");
+        var vocation = Node("service:vocation", AtlasNodeKind.Service, "Vocation", "vocation");
+        var orientation = Node("service:orientation", AtlasNodeKind.Service, "Orientation", "orientation");
+        var illumination = Node("service:illumination", AtlasNodeKind.Service, "Illumination", "illumination");
+        var conveyance = Node("service:conveyance", AtlasNodeKind.Service, "Conveyance", "conveyance");
+        var map = new AtlasNodePresentationViewModel(
+            new AtlasNode(
+                "capability:vocation:vocation.map_projection",
+                AtlasNodeKind.Capability,
+                "Map Projection",
+                "Available",
+                new ServiceIdentity("vocation"),
+                new CapabilityIdentity("vocation.map_projection")),
+            0,
+            0);
+
+        AtlasConnectionPresentationViewModel Edge(
+            string id,
+            AtlasConnectionKind kind,
+            AtlasNodePresentationViewModel source,
+            AtlasNodePresentationViewModel target) =>
+            new(new AtlasConnection(id, kind, source.NodeId, target.NodeId), source, target);
+
+        return new AtlasPresentationLayout(
+            [core, vocation, orientation, illumination, conveyance, map],
+            [
+                Edge("composition:vocation", AtlasConnectionKind.Composition, core, vocation),
+                Edge("composition:orientation", AtlasConnectionKind.Composition, core, orientation),
+                Edge("composition:illumination", AtlasConnectionKind.Composition, core, illumination),
+                Edge("composition:conveyance", AtlasConnectionKind.Composition, core, conveyance),
+                Edge("capability:vocation:map", AtlasConnectionKind.CapabilityOwnership, vocation, map),
+                Edge("dependency:vocation:map:orientation", AtlasConnectionKind.CapabilityDependency, map, orientation)
+            ]);
+    }
+
+    private static AtlasNodePresentationViewModel Node(
+        string nodeId,
+        AtlasNodeKind kind,
+        string title,
+        string? serviceId = null) =>
+        new(
+            new AtlasNode(
+                nodeId,
+                kind,
+                title,
+                "Available",
+                serviceId is null ? null : new ServiceIdentity(serviceId)),
+            0,
+            0);
 }
