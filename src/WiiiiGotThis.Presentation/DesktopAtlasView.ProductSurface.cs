@@ -31,7 +31,7 @@ public sealed partial class DesktopAtlasView
         if (string.Equals(serviceId, "vocation", StringComparison.Ordinal))
         {
             EnsureVocationProductOverlay();
-            vocationProductOverlay!.IsVisible = true;
+            ShowOnlyProductOverlay(vocationProductOverlay!);
             vocationProductView!.Reload();
         }
         else if (string.Equals(serviceId, "illumination", StringComparison.Ordinal))
@@ -41,7 +41,7 @@ public sealed partial class DesktopAtlasView
         else if (string.Equals(serviceId, "orientation", StringComparison.Ordinal))
         {
             EnsureOrientationProductOverlay();
-            orientationProductOverlay!.IsVisible = true;
+            ShowOnlyProductOverlay(orientationProductOverlay!);
             orientationProductView!.Reload();
         }
 
@@ -56,6 +56,7 @@ public sealed partial class DesktopAtlasView
         vocationProductView = new VocationProductView();
         vocationProductOverlay = CreateProductOverlay(
             vocationProductView,
+            "Vocation",
             "Vocation in Wiiii Got This",
             "ReturnToAtlasFromVocation");
         AtlasViewport.Children.Add(vocationProductOverlay);
@@ -69,6 +70,7 @@ public sealed partial class DesktopAtlasView
         orientationProductView = new OrientationProductView();
         orientationProductOverlay = CreateProductOverlay(
             orientationProductView,
+            "Orientation",
             "Orientation in Wiiii Got This",
             "ReturnToAtlasFromOrientation");
         AtlasViewport.Children.Add(orientationProductOverlay);
@@ -77,7 +79,7 @@ public sealed partial class DesktopAtlasView
     private async Task OpenIlluminationProductSurfaceAsync()
     {
         EnsureIlluminationProductOverlay();
-        illuminationProductOverlay!.IsVisible = true;
+        ShowOnlyProductOverlay(illuminationProductOverlay!);
 
         if (illuminationProductSurface is not null || illuminationProductSurfaceLoading)
             return;
@@ -98,6 +100,7 @@ public sealed partial class DesktopAtlasView
         };
         illuminationProductOverlay = CreateProductOverlay(
             illuminationProductContent,
+            "Illumination",
             "Illumination in Wiiii Got This",
             "ReturnToAtlasFromIllumination");
         AtlasViewport.Children.Add(illuminationProductOverlay);
@@ -135,37 +138,89 @@ public sealed partial class DesktopAtlasView
         }
     }
 
-    private Grid CreateProductOverlay(Control productContent, string automationName, string returnAutomationId)
+    private Grid CreateProductOverlay(
+        Control productContent,
+        string serviceName,
+        string automationName,
+        string returnAutomationId)
     {
         var returnButton = new Button
         {
-            Width = 46,
-            Height = 46,
-            CornerRadius = new Avalonia.CornerRadius(23),
+            Width = 44,
+            Height = 44,
+            CornerRadius = new Avalonia.CornerRadius(22),
             Padding = new Avalonia.Thickness(0),
             Content = "◎",
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
-            Margin = new Avalonia.Thickness(18)
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            ToolTip = "Return to WGT Atlas"
         };
         returnButton.Classes.Add("wgt-product-return");
-        ToolTip.SetTip(returnButton, "Return to WGT Atlas");
         AutomationProperties.SetName(returnButton, "Return to WGT Atlas");
         AutomationProperties.SetAutomationId(returnButton, returnAutomationId);
         returnButton.Click += OnReturnFromProductSurface;
 
+        var serviceLabel = new TextBlock
+        {
+            Text = serviceName,
+            FontSize = 11,
+            FontWeight = FontWeight.SemiBold,
+            Opacity = 0.72,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            TextAlignment = TextAlignment.Center
+        };
+
+        var rail = new Border
+        {
+            Width = 68,
+            Background = new SolidColorBrush(Color.Parse("#FF111318")),
+            BorderBrush = new SolidColorBrush(Color.Parse("#FF2B2F38")),
+            BorderThickness = new Avalonia.Thickness(0, 0, 1, 0),
+            Child = new Grid
+            {
+                RowDefinitions = new RowDefinitions("Auto,*,Auto"),
+                Children =
+                {
+                    returnButton,
+                    serviceLabel
+                }
+            }
+        };
+        rail.Classes.Add("wgt-product-rail");
+        Grid.SetRow(returnButton, 0);
+        returnButton.Margin = new Avalonia.Thickness(0, 16, 0, 0);
+        Grid.SetRow(serviceLabel, 2);
+        serviceLabel.Margin = new Avalonia.Thickness(6, 0, 6, 18);
+
+        var contentHost = new Border
+        {
+            Background = new SolidColorBrush(Color.Parse("#FF0E1014")),
+            Child = productContent
+        };
+        Grid.SetColumn(contentHost, 1);
+
         var overlay = new Grid
         {
-            Background = new SolidColorBrush(Colors.Transparent),
+            ColumnDefinitions = new ColumnDefinitions("68,*"),
+            Background = new SolidColorBrush(Color.Parse("#FF0E1014")),
             IsVisible = false,
             Children =
             {
-                productContent,
-                returnButton
+                rail,
+                contentHost
             }
         };
         AutomationProperties.SetName(overlay, automationName);
         return overlay;
+    }
+
+    private void ShowOnlyProductOverlay(Grid overlay)
+    {
+        if (vocationProductOverlay is not null)
+            vocationProductOverlay.IsVisible = ReferenceEquals(vocationProductOverlay, overlay);
+        if (orientationProductOverlay is not null)
+            orientationProductOverlay.IsVisible = ReferenceEquals(orientationProductOverlay, overlay);
+        if (illuminationProductOverlay is not null)
+            illuminationProductOverlay.IsVisible = ReferenceEquals(illuminationProductOverlay, overlay);
     }
 
     private StackPanel BuildIlluminationErrorState(string message)
