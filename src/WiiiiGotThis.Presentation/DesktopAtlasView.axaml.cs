@@ -336,34 +336,10 @@ public sealed partial class DesktopAtlasView : UserControl
         }
     }
 
-    private HashSet<string> BuildFocusNodeSet(string? selectedId)
-    {
-        var focused = new HashSet<string>(StringComparer.Ordinal);
-        if (string.IsNullOrWhiteSpace(selectedId) || shell is null)
-            return focused;
-
-        focused.Add(selectedId);
-        foreach (var connection in shell.AtlasConnections)
-        {
-            if (string.Equals(connection.Source.NodeId, selectedId, StringComparison.Ordinal)
-                || string.Equals(connection.Target.NodeId, selectedId, StringComparison.Ordinal))
-            {
-                focused.Add(connection.Source.NodeId);
-                focused.Add(connection.Target.NodeId);
-            }
-        }
-
-        foreach (var connection in shell.AtlasConnections.Where(item => item.Kind == AtlasConnectionKind.CapabilityDependency))
-        {
-            if (focused.Contains(connection.Source.NodeId) || focused.Contains(connection.Target.NodeId))
-            {
-                focused.Add(connection.Source.NodeId);
-                focused.Add(connection.Target.NodeId);
-            }
-        }
-
-        return focused;
-    }
+    private IReadOnlySet<string> BuildFocusNodeSet(string? selectedId) =>
+        shell is null
+            ? new HashSet<string>(StringComparer.Ordinal)
+            : AtlasPresentationFocus.Build(shell.AtlasConnections, selectedId);
 
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
     {
