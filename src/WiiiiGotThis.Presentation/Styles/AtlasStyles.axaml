@@ -43,30 +43,25 @@
     <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasNodeBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="18" />
-    <Setter Property="BoxShadow" Value="0 8 24 0 #26000000" />
   </Style>
   <Style Selector="Button.wgt-atlas-node:pointerover">
     <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
-    <Setter Property="BoxShadow" Value="0 10 30 0 #34000000" />
   </Style>
   <Style Selector="Button.wgt-atlas-node.core">
     <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
     <Setter Property="BorderThickness" Value="2" />
     <Setter Property="CornerRadius" Value="26" />
-    <Setter Property="BoxShadow" Value="0 14 38 0 #42000000" />
   </Style>
   <Style Selector="Button.wgt-atlas-node.service">
     <Setter Property="CornerRadius" Value="20" />
   </Style>
   <Style Selector="Button.wgt-atlas-node.capability">
     <Setter Property="CornerRadius" Value="14" />
-    <Setter Property="BoxShadow" Value="0 5 16 0 #1F000000" />
   </Style>
   <Style Selector="Button.wgt-atlas-node.selected">
     <Setter Property="Background" Value="{DynamicResource WgtAtlasSelectedBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
     <Setter Property="BorderThickness" Value="2" />
-    <Setter Property="BoxShadow" Value="0 12 36 0 #42000000" />
   </Style>
   <Style Selector="Button.wgt-atlas-node.unavailable">
     <Setter Property="Opacity" Value="0.66" />
@@ -170,7 +165,6 @@
     <Setter Property="Background" Value="{DynamicResource WgtAtlasChromeBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="BoxShadow" Value="0 8 22 0 #38000000" />
   </Style>
 
   <Style Selector="Border.wgt-atlas-inspector">
@@ -234,7 +228,6 @@
     <Setter Property="Background" Value="{DynamicResource WgtAtlasChromeBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="BoxShadow" Value="0 6 18 0 #32000000" />
   </Style>
   <Style Selector="Button.wgt-theme-choice.selected">
     <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
@@ -252,7 +245,6 @@
     <Setter Property="Background" Value="{DynamicResource WgtAtlasChromeBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
     <Setter Property="BorderThickness" Value="1.5" />
-    <Setter Property="BoxShadow" Value="0 8 26 0 #4A000000" />
     <Setter Property="FontSize" Value="18" />
   </Style>
 </Styles>
