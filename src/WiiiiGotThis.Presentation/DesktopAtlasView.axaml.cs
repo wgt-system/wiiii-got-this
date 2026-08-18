@@ -17,6 +17,7 @@ public sealed partial class DesktopAtlasView : UserControl
     private const double WorldHeight = 1320;
     private const double WorldCenterX = WorldWidth / 2;
     private const double WorldCenterY = WorldHeight / 2;
+    private const double InitialZoom = 0.82;
     private const double MinimumZoom = 0.55;
     private const double MaximumZoom = 1.8;
     private const double GridSpacing = 100;
@@ -30,7 +31,7 @@ public sealed partial class DesktopAtlasView : UserControl
         "theme-world"
     ];
 
-    private readonly ScaleTransform sceneScale = new() { ScaleX = 1, ScaleY = 1 };
+    private readonly ScaleTransform sceneScale = new() { ScaleX = InitialZoom, ScaleY = InitialZoom };
     private readonly TranslateTransform sceneTranslate = new();
     private ShellViewModel? shell;
     private AtlasThemePreference visualTheme = AtlasThemePreference.Technical;
@@ -180,6 +181,7 @@ public sealed partial class DesktopAtlasView : UserControl
         var path = new Avalonia.Controls.Shapes.Path
         {
             Data = geometry,
+            DataContext = connection,
             IsHitTestVisible = false
         };
         path.Classes.Add("wgt-atlas-connection");
@@ -195,9 +197,9 @@ public sealed partial class DesktopAtlasView : UserControl
     {
         var (width, height) = node.Kind switch
         {
-            AtlasNodeKind.Core => (210d, 108d),
-            AtlasNodeKind.Service => (178d, 92d),
-            _ => (146d, 68d)
+            AtlasNodeKind.Core => (184d, 184d),
+            AtlasNodeKind.Service => (146d, 146d),
+            _ => (154d, 60d)
         };
 
         var kind = new TextBlock
@@ -216,10 +218,10 @@ public sealed partial class DesktopAtlasView : UserControl
         {
             Text = node.Title,
             FontWeight = FontWeight.SemiBold,
-            FontSize = node.IsCore ? 17 : 15,
+            FontSize = node.IsCore ? 19 : node.IsService ? 15 : 12,
             TextAlignment = TextAlignment.Center,
             TextWrapping = TextWrapping.Wrap,
-            MaxWidth = width - 24
+            MaxWidth = width - 26
         };
 
         var statusDot = new Border
@@ -235,9 +237,10 @@ public sealed partial class DesktopAtlasView : UserControl
 
         var state = new TextBlock
         {
-            Text = node.IsCore ? "system space" : node.AvailabilityText,
-            FontSize = 11,
-            Opacity = 0.76,
+            Text = node.CompactStateText,
+            FontSize = 10,
+            FontWeight = FontWeight.SemiBold,
+            Opacity = 0.72,
             TextAlignment = TextAlignment.Center,
             TextWrapping = TextWrapping.Wrap,
             MaxWidth = width - 38
@@ -253,7 +256,7 @@ public sealed partial class DesktopAtlasView : UserControl
 
         var content = new StackPanel
         {
-            Spacing = node.IsCapability ? 3 : 5,
+            Spacing = node.IsCapability ? 2 : 6,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             Children = { kind, title, stateRow }
@@ -263,7 +266,7 @@ public sealed partial class DesktopAtlasView : UserControl
         {
             Width = width,
             Height = height,
-            Padding = new Thickness(11, 8),
+            Padding = new Thickness(node.IsCapability ? 8 : 12),
             HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
             Content = content,
@@ -299,16 +302,67 @@ public sealed partial class DesktopAtlasView : UserControl
     private void RefreshNodeSelection()
     {
         var selectedId = shell?.SelectedAtlasNode?.NodeId;
+        var focusNodeIds = BuildFocusNodeSet(selectedId);
+
         foreach (var nodeShell in SceneCanvas.Children.OfType<Border>())
         {
             if (!nodeShell.Classes.Contains("wgt-atlas-node-shell") || nodeShell.DataContext is not AtlasNodePresentationViewModel node)
                 continue;
 
             var selected = string.Equals(node.NodeId, selectedId, StringComparison.Ordinal);
+            var contextual = selectedId is not null && !selected && focusNodeIds.Contains(node.NodeId);
+            var dimmed = selectedId is not null && !focusNodeIds.Contains(node.NodeId);
             SetSelectedClass(nodeShell, selected);
+            SetStateClass(nodeShell, "contextual", contextual);
+            SetStateClass(nodeShell, "dimmed", dimmed);
             if (nodeShell.Child is Button button)
+            {
                 SetSelectedClass(button, selected);
+                SetStateClass(button, "contextual", contextual);
+                SetStateClass(button, "dimmed", dimmed);
+            }
         }
+
+        foreach (var path in SceneCanvas.Children.OfType<Avalonia.Controls.Shapes.Path>())
+        {
+            if (!path.Classes.Contains("wgt-atlas-connection") || path.DataContext is not AtlasConnectionPresentationViewModel connection)
+                continue;
+
+            var focused = selectedId is not null
+                && focusNodeIds.Contains(connection.Source.NodeId)
+                && focusNodeIds.Contains(connection.Target.NodeId);
+            SetStateClass(path, "focused", focused);
+            SetStateClass(path, "dimmed", selectedId is not null && !focused);
+        }
+    }
+
+    private HashSet<string> BuildFocusNodeSet(string? selectedId)
+    {
+        var focused = new HashSet<string>(StringComparer.Ordinal);
+        if (string.IsNullOrWhiteSpace(selectedId) || shell is null)
+            return focused;
+
+        focused.Add(selectedId);
+        foreach (var connection in shell.AtlasConnections)
+        {
+            if (string.Equals(connection.Source.NodeId, selectedId, StringComparison.Ordinal)
+                || string.Equals(connection.Target.NodeId, selectedId, StringComparison.Ordinal))
+            {
+                focused.Add(connection.Source.NodeId);
+                focused.Add(connection.Target.NodeId);
+            }
+        }
+
+        foreach (var connection in shell.AtlasConnections.Where(item => item.Kind == AtlasConnectionKind.CapabilityDependency))
+        {
+            if (focused.Contains(connection.Source.NodeId) || focused.Contains(connection.Target.NodeId))
+            {
+                focused.Add(connection.Source.NodeId);
+                focused.Add(connection.Target.NodeId);
+            }
+        }
+
+        return focused;
     }
 
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e)
@@ -323,10 +377,10 @@ public sealed partial class DesktopAtlasView : UserControl
 
     private void ResetCamera()
     {
-        sceneScale.ScaleX = 1;
-        sceneScale.ScaleY = 1;
-        sceneTranslate.X = AtlasViewport.Bounds.Width / 2 - WorldCenterX;
-        sceneTranslate.Y = AtlasViewport.Bounds.Height / 2 - WorldCenterY;
+        sceneScale.ScaleX = InitialZoom;
+        sceneScale.ScaleY = InitialZoom;
+        sceneTranslate.X = AtlasViewport.Bounds.Width / 2 - WorldCenterX * InitialZoom;
+        sceneTranslate.Y = AtlasViewport.Bounds.Height / 2 - WorldCenterY * InitialZoom;
         PositionInspector();
     }
 
@@ -348,16 +402,16 @@ public sealed partial class DesktopAtlasView : UserControl
         var world = WorldPoint(node);
         var x = world.X * sceneScale.ScaleX + sceneTranslate.X;
         var y = world.Y * sceneScale.ScaleY + sceneTranslate.Y;
-        const double cardWidth = 382;
-        const double estimatedHeight = 500;
-        const double gap = 30;
+        const double cardWidth = 404;
+        const double estimatedHeight = 560;
+        const double gap = 34;
 
         var left = x + gap;
         if (left + cardWidth > AtlasViewport.Bounds.Width - 20)
             left = x - cardWidth - gap;
         left = Math.Clamp(left, 20, Math.Max(20, AtlasViewport.Bounds.Width - cardWidth - 20));
 
-        var top = Math.Clamp(y - 110, 88, Math.Max(88, AtlasViewport.Bounds.Height - estimatedHeight - 20));
+        var top = Math.Clamp(y - 128, 94, Math.Max(94, AtlasViewport.Bounds.Height - estimatedHeight - 20));
         InspectorCard.Margin = new Thickness(left, top, 0, 0);
     }
 
@@ -546,16 +600,19 @@ public sealed partial class DesktopAtlasView : UserControl
         });
     }
 
-    private static void SetSelectedClass(StyledElement element, bool selected)
+    private static void SetSelectedClass(StyledElement element, bool selected) =>
+        SetStateClass(element, "selected", selected);
+
+    private static void SetStateClass(StyledElement element, string className, bool enabled)
     {
-        if (selected)
+        if (enabled)
         {
-            if (!element.Classes.Contains("selected"))
-                element.Classes.Add("selected");
+            if (!element.Classes.Contains(className))
+                element.Classes.Add(className);
         }
         else
         {
-            element.Classes.Remove("selected");
+            element.Classes.Remove(className);
         }
     }
 
