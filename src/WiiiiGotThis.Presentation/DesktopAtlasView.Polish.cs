@@ -4,14 +4,13 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
-using WiiiiGotThis.Application;
-using ShapePath = Avalonia.Controls.Shapes.Path;
+using AtlasPath = Avalonia.Controls.Shapes.Path;
 
 namespace WiiiiGotThis.Presentation;
 
 public sealed partial class DesktopAtlasView
 {
-    private ShapePath? inspectorTether;
+    private AtlasPath? inspectorTether;
     private ShellViewModel? polishShell;
     private bool polishEventsAttached;
 
@@ -21,11 +20,13 @@ public sealed partial class DesktopAtlasView
             return;
 
         polishEventsAttached = true;
+        EnsureThemeRenderer();
         EnsureInspectorTether();
         sceneScale.PropertyChanged += OnAtlasCameraTransformChanged;
         sceneTranslate.PropertyChanged += OnAtlasCameraTransformChanged;
         InspectorCard.LayoutUpdated += OnInspectorLayoutUpdated;
         AttachPolishShell(DataContext as ShellViewModel);
+        ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
         UpdateInspectorTether();
     }
 
@@ -44,6 +45,7 @@ public sealed partial class DesktopAtlasView
     private void OnAtlasPolishDataContextChanged(object? sender, EventArgs e)
     {
         AttachPolishShell(DataContext as ShellViewModel);
+        ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
         UpdateInspectorTether();
     }
 
@@ -63,9 +65,15 @@ public sealed partial class DesktopAtlasView
     private void OnPolishShellPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(ShellViewModel.SelectedAtlasNode))
+        {
             UpdateInspectorTether();
-        else if (e.PropertyName == nameof(ShellViewModel.AtlasTheme) && inspectorTether is not null)
-            ApplyThemeClass(inspectorTether);
+        }
+        else if (e.PropertyName == nameof(ShellViewModel.AtlasTheme) && polishShell is not null)
+        {
+            ApplyThemeRenderer(polishShell.AtlasTheme);
+            if (inspectorTether is not null)
+                ApplyThemeClass(inspectorTether);
+        }
     }
 
     private void OnAtlasCameraTransformChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => UpdateInspectorTether();
@@ -77,7 +85,7 @@ public sealed partial class DesktopAtlasView
         if (inspectorTether is not null)
             return;
 
-        inspectorTether = new ShapePath
+        inspectorTether = new AtlasPath
         {
             IsHitTestVisible = false,
             IsVisible = false
@@ -108,8 +116,8 @@ public sealed partial class DesktopAtlasView
         var direction = cardOnRight ? 1d : -1d;
         var nodeRadius = node.Kind switch
         {
-            AtlasNodeKind.Core => 92d,
-            AtlasNodeKind.Service => 73d,
+            Application.AtlasNodeKind.Core => 92d,
+            Application.AtlasNodeKind.Service => 73d,
             _ => 31d
         } * sceneScale.ScaleX;
 
