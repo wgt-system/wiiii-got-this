@@ -20,6 +20,7 @@ public sealed partial class DesktopAtlasView : UserControl
     private const double MinimumZoom = 0.55;
     private const double MaximumZoom = 1.8;
     private const double GridSpacing = 100;
+    private const double DragThreshold = 4;
 
     private static readonly string[] ThemeClasses =
     [
@@ -34,6 +35,7 @@ public sealed partial class DesktopAtlasView : UserControl
     private ShellViewModel? shell;
     private AtlasThemePreference visualTheme = AtlasThemePreference.Technical;
     private bool isDragging;
+    private bool dragMoved;
     private bool cameraInitialized;
     private Point dragStart;
     private Vector translateStart;
@@ -109,28 +111,10 @@ public sealed partial class DesktopAtlasView : UserControl
         AddGridLines();
 
         foreach (var connection in currentShell.AtlasConnections)
-        {
-            var line = new Line
-            {
-                StartPoint = WorldPoint(connection.Source),
-                EndPoint = WorldPoint(connection.Target),
-                IsHitTestVisible = false
-            };
-            line.Classes.Add("wgt-atlas-connection");
-            if (connection.Kind == AtlasConnectionKind.CapabilityOwnership)
-                line.Classes.Add("capability");
-            else if (connection.Kind == AtlasConnectionKind.CapabilityDependency)
-                line.Classes.Add("dependency");
-            ApplyThemeClass(line);
-            SceneCanvas.Children.Add(line);
-        }
+            SceneCanvas.Children.Add(CreateConnectionPath(connection));
 
         foreach (var node in currentShell.AtlasNodes)
-        {
-            var button = CreateNodeButton(node, currentShell);
-            ApplyThemeClass(button);
-            SceneCanvas.Children.Add(button);
-        }
+            SceneCanvas.Children.Add(CreateNodeVisual(node, currentShell));
 
         RefreshNodeSelection();
         PositionInspector();
@@ -165,7 +149,49 @@ public sealed partial class DesktopAtlasView : UserControl
         }
     }
 
-    private static Button CreateNodeButton(AtlasNodePresentationViewModel node, ShellViewModel currentShell)
+    private Path CreateConnectionPath(AtlasConnectionPresentationViewModel connection)
+    {
+        var start = WorldPoint(connection.Source);
+        var end = WorldPoint(connection.Target);
+        var deltaX = end.X - start.X;
+        var deltaY = end.Y - start.Y;
+        var length = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+        var bend = connection.Kind switch
+        {
+            AtlasConnectionKind.CapabilityDependency => 58d,
+            AtlasConnectionKind.CapabilityOwnership => 28d,
+            _ => 20d
+        };
+        var direction = StableCurveDirection(connection.Model.ConnectionId);
+        var control = length < 0.001
+            ? new Point((start.X + end.X) / 2, (start.Y + end.Y) / 2)
+            : new Point(
+                (start.X + end.X) / 2 + (-deltaY / length) * bend * direction,
+                (start.Y + end.Y) / 2 + (deltaX / length) * bend * direction);
+
+        var geometry = new StreamGeometry();
+        using (var context = geometry.Open())
+        {
+            context.BeginFigure(start, isFilled: false);
+            context.QuadraticBezierTo(control, end, isStroked: true);
+            context.EndFigure(isClosed: false);
+        }
+
+        var path = new Path
+        {
+            Data = geometry,
+            IsHitTestVisible = false
+        };
+        path.Classes.Add("wgt-atlas-connection");
+        if (connection.Kind == AtlasConnectionKind.CapabilityOwnership)
+            path.Classes.Add("capability");
+        else if (connection.Kind == AtlasConnectionKind.CapabilityDependency)
+            path.Classes.Add("dependency");
+        ApplyThemeClass(path);
+        return path;
+    }
+
+    private Border CreateNodeVisual(AtlasNodePresentationViewModel node, ShellViewModel currentShell)
     {
         var (width, height) = node.Kind switch
         {
@@ -246,37 +272,42 @@ public sealed partial class DesktopAtlasView : UserControl
             CommandParameter = node
         };
         button.Classes.Add("wgt-atlas-node");
-        button.Classes.Add(node.Kind switch
-        {
-            AtlasNodeKind.Core => "core",
-            AtlasNodeKind.Service => "service",
-            _ => "capability"
-        });
+        button.Classes.Add(NodeKindClass(node.Kind));
         if (!node.IsAvailable)
             button.Classes.Add("unavailable");
+        ApplyThemeClass(button);
+
+        var nodeShell = new Border
+        {
+            Width = width,
+            Height = height,
+            DataContext = node,
+            Child = button
+        };
+        nodeShell.Classes.Add("wgt-atlas-node-shell");
+        nodeShell.Classes.Add(NodeKindClass(node.Kind));
+        if (!node.IsAvailable)
+            nodeShell.Classes.Add("unavailable");
+        ApplyThemeClass(nodeShell);
 
         var world = WorldPoint(node);
-        Canvas.SetLeft(button, world.X - width / 2);
-        Canvas.SetTop(button, world.Y - height / 2);
-        return button;
+        Canvas.SetLeft(nodeShell, world.X - width / 2);
+        Canvas.SetTop(nodeShell, world.Y - height / 2);
+        return nodeShell;
     }
 
     private void RefreshNodeSelection()
     {
         var selectedId = shell?.SelectedAtlasNode?.NodeId;
-        foreach (var button in SceneCanvas.Children.OfType<Button>())
+        foreach (var nodeShell in SceneCanvas.Children.OfType<Border>())
         {
-            if (button.DataContext is not AtlasNodePresentationViewModel node)
+            if (!nodeShell.Classes.Contains("wgt-atlas-node-shell") || nodeShell.DataContext is not AtlasNodePresentationViewModel node)
                 continue;
-            if (string.Equals(node.NodeId, selectedId, StringComparison.Ordinal))
-            {
-                if (!button.Classes.Contains("selected"))
-                    button.Classes.Add("selected");
-            }
-            else
-            {
-                button.Classes.Remove("selected");
-            }
+
+            var selected = string.Equals(node.NodeId, selectedId, StringComparison.Ordinal);
+            SetSelectedClass(nodeShell, selected);
+            if (nodeShell.Child is Button button)
+                SetSelectedClass(button, selected);
         }
     }
 
@@ -327,8 +358,7 @@ public sealed partial class DesktopAtlasView : UserControl
         left = Math.Clamp(left, 20, Math.Max(20, AtlasViewport.Bounds.Width - cardWidth - 20));
 
         var top = Math.Clamp(y - 110, 88, Math.Max(88, AtlasViewport.Bounds.Height - estimatedHeight - 20));
-        Canvas.SetLeft(InspectorCard, left);
-        Canvas.SetTop(InspectorCard, top);
+        InspectorCard.Margin = new Thickness(left, top, 0, 0);
     }
 
     private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -338,6 +368,7 @@ public sealed partial class DesktopAtlasView : UserControl
             return;
 
         isDragging = true;
+        dragMoved = false;
         dragStart = e.GetPosition(AtlasViewport);
         translateStart = new Vector(sceneTranslate.X, sceneTranslate.Y);
         e.Pointer.Capture(AtlasViewport);
@@ -350,8 +381,12 @@ public sealed partial class DesktopAtlasView : UserControl
         if (!isDragging)
             return;
         var current = e.GetPosition(AtlasViewport);
-        sceneTranslate.X = translateStart.X + current.X - dragStart.X;
-        sceneTranslate.Y = translateStart.Y + current.Y - dragStart.Y;
+        var deltaX = current.X - dragStart.X;
+        var deltaY = current.Y - dragStart.Y;
+        if (!dragMoved && Math.Sqrt(deltaX * deltaX + deltaY * deltaY) >= DragThreshold)
+            dragMoved = true;
+        sceneTranslate.X = translateStart.X + deltaX;
+        sceneTranslate.Y = translateStart.Y + deltaY;
         PositionInspector();
         e.Handled = true;
     }
@@ -360,13 +395,19 @@ public sealed partial class DesktopAtlasView : UserControl
     {
         if (!isDragging)
             return;
+
+        var closeContext = !dragMoved;
         isDragging = false;
         e.Pointer.Capture(null);
+        if (closeContext)
+            CloseTransientAtlasContext();
         e.Handled = true;
     }
 
     private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
+        if (IsInteractiveSource(e.Source))
+            return;
         var factor = e.Delta.Y > 0 ? 1.1 : 0.9;
         ZoomAt(e.GetPosition(AtlasViewport), factor);
         e.Handled = true;
@@ -424,7 +465,7 @@ public sealed partial class DesktopAtlasView : UserControl
                 ResetCamera();
                 break;
             case Key.Escape:
-                shell?.SelectAtlasNodeCommand.Execute(null);
+                CloseTransientAtlasContext();
                 break;
             default:
                 return;
@@ -438,6 +479,14 @@ public sealed partial class DesktopAtlasView : UserControl
         shell?.SelectAtlasNodeCommand.Execute(null);
         AtlasViewport.Focus();
         e.Handled = true;
+    }
+
+    private void CloseTransientAtlasContext()
+    {
+        shell?.SelectAtlasNodeCommand.Execute(null);
+        ThemeChoices.IsVisible = false;
+        if (shell?.AtlasSettingsExpanded == true)
+            shell.ToggleAtlasSettingsCommand.Execute(null);
     }
 
     private void OnToggleThemeMenu(object? sender, RoutedEventArgs e)
@@ -471,7 +520,11 @@ public sealed partial class DesktopAtlasView : UserControl
         ApplyThemeClass(ThemeMenuButton);
 
         foreach (var element in SceneCanvas.Children.OfType<StyledElement>())
+        {
             ApplyThemeClass(element);
+            if (element is Border { Child: StyledElement child } && element.Classes.Contains("wgt-atlas-node-shell"))
+                ApplyThemeClass(child);
+        }
 
         SetSelectedClass(TechnicalThemeButton, theme == AtlasThemePreference.Technical);
         SetSelectedClass(ElegantThemeButton, theme == AtlasThemePreference.Elegant);
@@ -506,16 +559,35 @@ public sealed partial class DesktopAtlasView : UserControl
         }
     }
 
-    private static bool IsInteractiveSource(object? source)
+    private bool IsInteractiveSource(object? source)
     {
         if (source is not Visual visual)
             return false;
+
+        if (ReferenceEquals(visual, InspectorCard) || visual.GetVisualAncestors().Any(ancestor => ReferenceEquals(ancestor, InspectorCard)))
+            return true;
+
         return visual is Button or TextBox or TabControl or ListBox ||
                visual.FindAncestorOfType<Button>() is not null ||
                visual.FindAncestorOfType<TextBox>() is not null ||
                visual.FindAncestorOfType<TabControl>() is not null ||
                visual.FindAncestorOfType<ListBox>() is not null;
     }
+
+    private static double StableCurveDirection(string connectionId)
+    {
+        var checksum = 0;
+        foreach (var character in connectionId)
+            checksum = (checksum + character) % 2;
+        return checksum == 0 ? 1 : -1;
+    }
+
+    private static string NodeKindClass(AtlasNodeKind kind) => kind switch
+    {
+        AtlasNodeKind.Core => "core",
+        AtlasNodeKind.Service => "service",
+        _ => "capability"
+    };
 
     private static Point WorldPoint(AtlasNodePresentationViewModel node) =>
         new(WorldCenterX + node.X, WorldCenterY + node.Y);
