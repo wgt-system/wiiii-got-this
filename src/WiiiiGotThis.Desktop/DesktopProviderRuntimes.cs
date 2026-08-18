@@ -149,15 +149,18 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
         try
         {
             var mapReady = await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, productUri, cancellationToken);
+            var isDefaultEndpoint = DesktopProviderRuntimeSupport.IsSameEndpoint(productUri, DefaultProductUri);
+            if (!isDefaultEndpoint)
+            {
+                return mapReady
+                    ? ProductRuntimeReadiness.Ready
+                    : ProductRuntimeReadiness.Unavailable(
+                        $"The configured Orientation endpoint {productUri} is not running. WGT will not infer or start additional backend processes for a custom provider endpoint.");
+            }
+
             var backendReady = await DesktopProviderRuntimeSupport.IsHttpServerRespondingAsync(httpClient, BackendProbeUri, cancellationToken);
             if (mapReady && backendReady)
                 return ProductRuntimeReadiness.Ready;
-
-            if (!DesktopProviderRuntimeSupport.IsSameEndpoint(productUri, DefaultProductUri))
-            {
-                return ProductRuntimeReadiness.Unavailable(
-                    $"The configured Orientation endpoint {productUri} is not running. Automatic startup is limited to the default local Orientation endpoint.");
-            }
 
             var root = DesktopProviderRuntimeSupport.ResolveRepositoryRoot("WGT_ORIENTATION_ROOT", "orientation", Path.Combine("backend", "pom.xml"));
             if (root is null)
