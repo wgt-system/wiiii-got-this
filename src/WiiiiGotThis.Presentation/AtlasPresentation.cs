@@ -78,6 +78,14 @@ public sealed record AtlasPresentationLayout(
 
 public static class AtlasPresentationLayoutBuilder
 {
+    private static readonly IReadOnlyDictionary<string, int> PrimaryServiceOrder = new Dictionary<string, int>(StringComparer.Ordinal)
+    {
+        ["illumination"] = 0,
+        ["orientation"] = 1,
+        ["conveyance"] = 2,
+        ["vocation"] = 3
+    };
+
     public static AtlasPresentationLayout Build(AtlasProjection projection)
     {
         ArgumentNullException.ThrowIfNull(projection);
@@ -88,7 +96,8 @@ public static class AtlasPresentationLayoutBuilder
 
         var services = projection.Nodes
             .Where(node => node.Kind == AtlasNodeKind.Service)
-            .OrderBy(node => node.Title, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(ServiceLayoutOrder)
+            .ThenBy(node => node.Title, StringComparer.OrdinalIgnoreCase)
             .ThenBy(node => node.NodeId, StringComparer.Ordinal)
             .ToArray();
 
@@ -140,6 +149,14 @@ public static class AtlasPresentationLayoutBuilder
         }
 
         return new AtlasPresentationLayout(nodes, connections);
+    }
+
+    private static int ServiceLayoutOrder(AtlasNode node)
+    {
+        var id = node.ServiceIdentity?.Value;
+        return id is not null && PrimaryServiceOrder.TryGetValue(id, out var order)
+            ? order
+            : PrimaryServiceOrder.Count + 100;
     }
 
     private static double ServiceAngle(int index, int count)
