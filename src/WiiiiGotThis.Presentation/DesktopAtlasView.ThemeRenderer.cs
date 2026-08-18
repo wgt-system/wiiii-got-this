@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Media;
 
 namespace WiiiiGotThis.Presentation;
 
@@ -20,7 +19,8 @@ public sealed partial class DesktopAtlasView
             Height = 880,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            IsHitTestVisible = false
+            IsHitTestVisible = false,
+            ClipToBounds = false
         };
         themeAmbientLayer.Classes.Add("wgt-theme-ambient-layer");
 
@@ -37,14 +37,14 @@ public sealed partial class DesktopAtlasView
         AddAmbientCorner("wgt-theme-machine-corner", 1074, 648, -1, -1);
 
         AddAmbientRing("wgt-theme-world-orbit", 640, 640, 370, 120, 320);
-        AddAmbientRing("wgt-theme-world-orbit", 970, 610, 205, 136, 485);
-        AddAmbientRing("wgt-theme-world-orbit", 420, 300, 710, 510, 210);
+        AddAmbientRing("wgt-theme-world-orbit", 970, 610, 205, 136, 305);
+        AddAmbientRing("wgt-theme-world-orbit", 420, 300, 710, 510, 150);
         AddAmbientDot("wgt-theme-world-beacon", 8, 8, 406, 196);
         AddAmbientDot("wgt-theme-world-beacon", 6, 6, 1014, 222);
         AddAmbientDot("wgt-theme-world-beacon", 7, 7, 1048, 646);
         AddAmbientDot("wgt-theme-world-beacon", 5, 5, 333, 670);
 
-        AddAmbientRing("wgt-theme-elegant-halo", 760, 500, 310, 190, 420);
+        AddAmbientRing("wgt-theme-elegant-halo", 760, 500, 310, 190, 250);
         AddAmbientRing("wgt-theme-elegant-halo", 390, 390, 710, 250, 195);
 
         AtlasViewport.Children.Insert(0, themeAmbientLayer);
