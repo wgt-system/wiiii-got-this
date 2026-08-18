@@ -28,7 +28,8 @@ internal static class Program
         var adapters = new StaticIntegrationAdapterCatalog([
             new ReferenceIntegrationAdapter(),
             new VocationIntegrationAdapter(vocationSource, vocationMapSource),
-            new IlluminationDesktopIntegrationAdapter()]);
+            new IlluminationDesktopIntegrationAdapter(),
+            new OrientationDesktopIntegrationAdapter()]);
         var ensureDevice = new EnsureCurrentDeviceUseCase(deviceStore);
         var register = new RegisterKnownIntegrationsUseCase(adapters, integrationStore);
         var refresh = new RefreshPublicationsUseCase(adapters, publicationStore);
