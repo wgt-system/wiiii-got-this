@@ -1,0 +1,155 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <SolidColorBrush x:Key="WgtAtlasThemeChoiceBrush" Color="#FF1A1E25" />
+    <SolidColorBrush x:Key="WgtAtlasThemeChoiceHoverBrush" Color="#FF202631" />
+    <SolidColorBrush x:Key="WgtAtlasThemeHeaderBrush" Color="#FF14181E" />
+  </Styles.Resources>
+
+  <!-- Appearance chooser: explicit renderer identities instead of cryptic single-letter orbs. -->
+  <Style Selector="Border.wgt-theme-chooser-header">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasThemeHeaderBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="BoxShadow" Value="0 10 28 0 #48000000" />
+  </Style>
+  <Style Selector="Button.wgt-theme-choice">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasThemeChoiceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Opacity" Value="0.94" />
+    <Setter Property="BoxShadow" Value="0 8 22 0 #30000000" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+        <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.16" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.wgt-theme-choice:pointerover">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasThemeChoiceHoverBrush}" />
+    <Setter Property="Opacity" Value="1" />
+    <Setter Property="BoxShadow" Value="0 12 30 0 #48000000" />
+  </Style>
+  <Style Selector="Button.wgt-theme-choice.selected">
+    <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="BorderThickness" Value="1.5" />
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+  <Style Selector="Border.wgt-theme-choice-glyph">
+    <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Button.wgt-theme-choice.selected Border.wgt-theme-choice-glyph">
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+  </Style>
+
+  <!-- Node-bound depth belongs to the renderer/layout layer and moves with the Atlas camera. -->
+  <Style Selector="Border.wgt-atlas-depth-node">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasConnectionBrush}" />
+    <Setter Property="Opacity" Value="0.18" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="QuadraticEaseOut" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="QuadraticEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.inner">
+    <Setter Property="Opacity" Value="0.11" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.core">
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="Opacity" Value="0.26" />
+    <Setter Property="BoxShadow" Value="0 0 48 0 #1F46D8FF" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.service">
+    <Setter Property="BoxShadow" Value="0 0 30 0 #14000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.contextual">
+    <Setter Property="Opacity" Value="0.34" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.selected">
+    <Setter Property="Opacity" Value="0.62" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="BoxShadow" Value="0 0 54 0 #3346D8FF" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.dimmed">
+    <Setter Property="Opacity" Value="0.035" />
+  </Style>
+
+  <Style Selector="Border.wgt-atlas-depth-node.theme-elegant">
+    <Setter Property="Opacity" Value="0.1" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasElegantLineBrush}" />
+    <Setter Property="BoxShadow" Value="0 18 54 0 #18000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-elegant.selected">
+    <Setter Property="Opacity" Value="0.34" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-machine">
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasMachineLineBrush}" />
+    <Setter Property="Opacity" Value="0.3" />
+    <Setter Property="BoxShadow" Value="0 0 34 0 #2058FFC7" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-machine.inner">
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Opacity" Value="0.17" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-machine.selected">
+    <Setter Property="Opacity" Value="0.7" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-world">
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasWorldLineBrush}" />
+    <Setter Property="Opacity" Value="0.28" />
+    <Setter Property="BoxShadow" Value="0 0 40 0 #1E78D6A8" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-world.inner">
+    <Setter Property="BorderThickness" Value="1.5" />
+    <Setter Property="Opacity" Value="0.16" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-world.selected">
+    <Setter Property="Opacity" Value="0.68" />
+  </Style>
+
+  <!-- Full products occupy a deeper WGT level; transitions are brief and state-driven. -->
+  <Style Selector="Grid.wgt-product-overlay">
+    <Setter Property="Opacity" Value="1" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.17" Easing="QuadraticEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.wgt-product-rail">
+    <Setter Property="BoxShadow" Value="10 0 32 0 #3D000000" />
+  </Style>
+  <Style Selector="Border.wgt-product-stage">
+    <Setter Property="BorderBrush" Value="#1FFFFFFF" />
+    <Setter Property="BorderThickness" Value="1,0,0,0" />
+  </Style>
+  <Style Selector="Button.wgt-product-return">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.16" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.wgt-product-return:pointerover">
+    <Setter Property="Background" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="Foreground" Value="White" />
+    <Setter Property="BoxShadow" Value="0 0 28 0 #3346D8FF" />
+  </Style>
+  <Style Selector="Border.wgt-product-service-mark">
+    <Setter Property="BoxShadow" Value="0 0 24 0 #2446D8FF" />
+  </Style>
+</Styles>

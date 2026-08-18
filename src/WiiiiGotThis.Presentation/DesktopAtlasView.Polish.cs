@@ -27,7 +27,9 @@ public sealed partial class DesktopAtlasView
         sceneTranslate.PropertyChanged += OnAtlasCameraTransformChanged;
         InspectorCard.LayoutUpdated += OnInspectorLayoutUpdated;
         AttachPolishShell(DataContext as ShellViewModel);
+        AttachExperienceShell(DataContext as ShellViewModel);
         ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
+        UpdateExperienceState();
         UpdateInspectorTether();
     }
 
@@ -40,13 +42,16 @@ public sealed partial class DesktopAtlasView
         sceneScale.PropertyChanged -= OnAtlasCameraTransformChanged;
         sceneTranslate.PropertyChanged -= OnAtlasCameraTransformChanged;
         InspectorCard.LayoutUpdated -= OnInspectorLayoutUpdated;
+        AttachExperienceShell(null);
         AttachPolishShell(null);
     }
 
     private void OnAtlasPolishDataContextChanged(object? sender, EventArgs e)
     {
         AttachPolishShell(DataContext as ShellViewModel);
+        AttachExperienceShell(DataContext as ShellViewModel);
         ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
+        UpdateExperienceState();
         UpdateInspectorTether();
     }
 
@@ -67,13 +72,20 @@ public sealed partial class DesktopAtlasView
     {
         if (e.PropertyName == nameof(ShellViewModel.SelectedAtlasNode))
         {
+            UpdateSpatialDepthSelection();
             UpdateInspectorTether();
         }
         else if (e.PropertyName == nameof(ShellViewModel.AtlasTheme) && polishShell is not null)
         {
             ApplyThemeRenderer(polishShell.AtlasTheme);
+            ApplyThemeToSpatialDepth();
+            UpdateExperienceState();
             if (inspectorTether is not null)
                 ApplyThemeClass(inspectorTether);
+        }
+        else if (e.PropertyName == nameof(ShellViewModel.AtlasSettingsExpanded))
+        {
+            UpdateExperienceState();
         }
     }
 

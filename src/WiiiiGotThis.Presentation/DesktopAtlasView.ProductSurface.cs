@@ -2,11 +2,14 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace WiiiiGotThis.Presentation;
 
 public sealed partial class DesktopAtlasView
 {
+    private const int ProductSurfaceTransitionMilliseconds = 170;
+
     private Grid? vocationProductOverlay;
     private VocationProductView? vocationProductView;
     private Grid? orientationProductOverlay;
@@ -163,10 +166,10 @@ public sealed partial class DesktopAtlasView
 
         var wgtCaption = new TextBlock
         {
-            Text = "WGT",
-            FontSize = 9,
+            Text = "WGT CORE",
+            FontSize = 8,
             FontWeight = FontWeight.SemiBold,
-            Opacity = 0.62,
+            Opacity = 0.58,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
         var returnStack = new StackPanel
@@ -178,8 +181,8 @@ public sealed partial class DesktopAtlasView
 
         var serviceMark = new Border
         {
-            Width = 36,
-            Height = 36,
+            Width = 38,
+            Height = 38,
             Child = new TextBlock
             {
                 Text = serviceName[0].ToString(),
@@ -195,7 +198,7 @@ public sealed partial class DesktopAtlasView
             Text = serviceName,
             FontSize = 11,
             FontWeight = FontWeight.SemiBold,
-            Opacity = 0.82,
+            Opacity = 0.86,
             MaxWidth = 64,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             TextAlignment = TextAlignment.Center,
@@ -211,10 +214,10 @@ public sealed partial class DesktopAtlasView
 
         var surfaceCaption = new TextBlock
         {
-            Text = "SERVICE",
-            FontSize = 8,
+            Text = "FULL PRODUCT",
+            FontSize = 7,
             FontWeight = FontWeight.SemiBold,
-            Opacity = 0.42,
+            Opacity = 0.4,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
 
@@ -238,7 +241,8 @@ public sealed partial class DesktopAtlasView
 
         var contentHost = new Border
         {
-            Child = productContent
+            Child = productContent,
+            ClipToBounds = true
         };
         contentHost.Classes.Add("wgt-product-stage");
         Grid.SetColumn(contentHost, 1);
@@ -247,6 +251,8 @@ public sealed partial class DesktopAtlasView
         {
             ColumnDefinitions = new ColumnDefinitions("76,*"),
             IsVisible = false,
+            Opacity = 1,
+            ClipToBounds = true,
             Children = { rail, contentHost }
         };
         overlay.Classes.Add("wgt-product-overlay");
@@ -256,12 +262,33 @@ public sealed partial class DesktopAtlasView
 
     private void ShowOnlyProductOverlay(Grid overlay)
     {
+        foreach (var candidate in ProductOverlays())
+        {
+            if (ReferenceEquals(candidate, overlay))
+                continue;
+            candidate.IsVisible = false;
+            candidate.Opacity = 1;
+        }
+
+        overlay.Opacity = 0;
+        overlay.IsVisible = true;
+        Dispatcher.UIThread.Post(
+            () =>
+            {
+                if (overlay.IsVisible)
+                    overlay.Opacity = 1;
+            },
+            DispatcherPriority.Render);
+    }
+
+    private IEnumerable<Grid> ProductOverlays()
+    {
         if (vocationProductOverlay is not null)
-            vocationProductOverlay.IsVisible = ReferenceEquals(vocationProductOverlay, overlay);
+            yield return vocationProductOverlay;
         if (orientationProductOverlay is not null)
-            orientationProductOverlay.IsVisible = ReferenceEquals(orientationProductOverlay, overlay);
+            yield return orientationProductOverlay;
         if (illuminationProductOverlay is not null)
-            illuminationProductOverlay.IsVisible = ReferenceEquals(illuminationProductOverlay, overlay);
+            yield return illuminationProductOverlay;
     }
 
     private StackPanel BuildIlluminationErrorState(string message)
@@ -322,14 +349,17 @@ public sealed partial class DesktopAtlasView
         e.Handled = true;
     }
 
-    private void OnReturnFromProductSurface(object? sender, RoutedEventArgs e)
+    private async void OnReturnFromProductSurface(object? sender, RoutedEventArgs e)
     {
-        if (vocationProductOverlay is not null)
-            vocationProductOverlay.IsVisible = false;
-        if (orientationProductOverlay is not null)
-            orientationProductOverlay.IsVisible = false;
-        if (illuminationProductOverlay is not null)
-            illuminationProductOverlay.IsVisible = false;
+        var activeOverlay = ProductOverlays().FirstOrDefault(candidate => candidate.IsVisible);
+        if (activeOverlay is not null)
+        {
+            activeOverlay.Opacity = 0;
+            await Task.Delay(ProductSurfaceTransitionMilliseconds);
+            activeOverlay.IsVisible = false;
+            activeOverlay.Opacity = 1;
+        }
+
         AtlasViewport.Focus();
         e.Handled = true;
     }
