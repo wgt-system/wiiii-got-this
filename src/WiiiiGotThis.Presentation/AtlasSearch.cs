@@ -8,8 +8,7 @@ public static class AtlasSearch
         int limit = 6)
     {
         ArgumentNullException.ThrowIfNull(nodes);
-        if (limit <= 0)
-            throw new ArgumentOutOfRangeException(nameof(limit));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(limit);
 
         var normalized = query?.Trim();
         if (string.IsNullOrWhiteSpace(normalized))
