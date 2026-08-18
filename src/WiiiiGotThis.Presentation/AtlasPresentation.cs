@@ -6,6 +6,7 @@ namespace WiiiiGotThis.Presentation;
 public sealed record AtlasRelationshipPresentationViewModel(
     string Direction,
     string RelatedNodeTitle,
+    string RelatedNodeId,
     string Description);
 
 public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, double y)
@@ -36,6 +37,21 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     public bool IsCapability => Kind == AtlasNodeKind.Capability;
     public IReadOnlyList<AtlasRelationshipPresentationViewModel> Relationships => relationships;
     public bool HasRelationships => relationships.Count > 0;
+    public bool HasNoRelationships => relationships.Count == 0;
+    public int ChildNodeCount { get; internal set; }
+    public string ScopeSummaryText => Kind switch
+    {
+        AtlasNodeKind.Core => ChildNodeCount == 1 ? "1 service" : $"{ChildNodeCount} services",
+        AtlasNodeKind.Service => ChildNodeCount == 1 ? "1 capability" : $"{ChildNodeCount} capabilities",
+        AtlasNodeKind.Capability => "Published capability",
+        _ => "Atlas node"
+    };
+    public string RelationshipSummaryText => relationships.Count switch
+    {
+        0 => "No cross-service links",
+        1 => "1 cross-service link",
+        _ => $"{relationships.Count} cross-service links"
+    };
     public string KindLabel => Kind switch
     {
         AtlasNodeKind.Core => "WGT CORE",
@@ -154,7 +170,8 @@ public static class AtlasPresentationLayoutBuilder
 
         var byId = new Dictionary<string, AtlasNodePresentationViewModel>(StringComparer.Ordinal);
         var core = projection.Nodes.Single(node => node.Kind == AtlasNodeKind.Core);
-        byId.Add(core.NodeId, new AtlasNodePresentationViewModel(core, 0, 0));
+        var corePresentation = new AtlasNodePresentationViewModel(core, 0, 0);
+        byId.Add(core.NodeId, corePresentation);
 
         var services = projection.Nodes
             .Where(node => node.Kind == AtlasNodeKind.Service)
@@ -162,6 +179,7 @@ public static class AtlasPresentationLayoutBuilder
             .ThenBy(node => node.Title, StringComparer.OrdinalIgnoreCase)
             .ThenBy(node => node.NodeId, StringComparer.Ordinal)
             .ToArray();
+        corePresentation.ChildNodeCount = services.Length;
 
         const double serviceRadius = 350;
         for (var index = 0; index < services.Length; index++)
@@ -170,13 +188,18 @@ public static class AtlasPresentationLayoutBuilder
             var serviceX = Math.Cos(angle) * serviceRadius;
             var serviceY = Math.Sin(angle) * serviceRadius;
             var service = services[index];
-            byId.Add(service.NodeId, new AtlasNodePresentationViewModel(service, serviceX, serviceY));
 
             var capabilities = projection.Nodes
                 .Where(node => node.Kind == AtlasNodeKind.Capability && node.ServiceIdentity == service.ServiceIdentity)
                 .OrderBy(node => node.Title, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(node => node.NodeId, StringComparer.Ordinal)
                 .ToArray();
+
+            var servicePresentation = new AtlasNodePresentationViewModel(service, serviceX, serviceY)
+            {
+                ChildNodeCount = capabilities.Length
+            };
+            byId.Add(service.NodeId, servicePresentation);
 
             const double capabilityRadius = 152;
             const double spread = Math.PI * 0.5;
@@ -206,8 +229,16 @@ public static class AtlasPresentationLayoutBuilder
         foreach (var connection in connections.Where(connection => connection.Kind == AtlasConnectionKind.CapabilityDependency))
         {
             var description = connection.Model.Description ?? "This capability depends on another WGT service.";
-            connection.Source.AddRelationship(new("Uses", connection.Target.Title, description));
-            connection.Target.AddRelationship(new("Used by", connection.Source.Title, description));
+            connection.Source.AddRelationship(new(
+                "Uses",
+                connection.Target.Title,
+                connection.Target.NodeId,
+                description));
+            connection.Target.AddRelationship(new(
+                "Used by",
+                connection.Source.Title,
+                connection.Source.NodeId,
+                description));
         }
 
         return new AtlasPresentationLayout(nodes, connections);

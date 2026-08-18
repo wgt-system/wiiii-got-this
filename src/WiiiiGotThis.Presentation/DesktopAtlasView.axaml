@@ -5,7 +5,10 @@
              x:DataType="vm:ShellViewModel"
              Focusable="True"
              KeyDown="OnKeyDown"
-             SizeChanged="OnSizeChanged">
+             SizeChanged="OnSizeChanged"
+             AttachedToVisualTree="OnAtlasPolishAttached"
+             DetachedFromVisualTree="OnAtlasPolishDetached"
+             DataContextChanged="OnAtlasPolishDataContextChanged">
   <Grid x:Name="AtlasViewport"
         Classes="wgt-atlas-root"
         ClipToBounds="True"
@@ -158,16 +161,22 @@
             Classes="wgt-atlas-inspector"
             IsVisible="{Binding HasSelectedAtlasNode}"
             Width="404"
-            MaxHeight="610"
+            MaxHeight="640"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
-            Padding="20">
-      <Grid RowDefinitions="Auto,Auto,*" RowSpacing="13">
+            Padding="20"
+            AutomationProperties.Name="Atlas node inspector">
+      <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="13">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
-          <StackPanel Spacing="5">
-            <Border Classes="wgt-atlas-kind-chip" HorizontalAlignment="Left" Padding="8,3">
-              <TextBlock Classes="wgt-caption" Text="{Binding SelectedAtlasNode.KindLabel}" />
-            </Border>
+          <StackPanel Spacing="6">
+            <StackPanel Orientation="Horizontal" Spacing="7">
+              <Border Classes="wgt-atlas-kind-chip" Padding="8,3">
+                <TextBlock Classes="wgt-caption" Text="{Binding SelectedAtlasNode.KindLabel}" />
+              </Border>
+              <Border Classes="wgt-atlas-state-chip" Padding="8,3">
+                <TextBlock Classes="wgt-caption" Text="{Binding SelectedAtlasNode.CompactStateText}" />
+              </Border>
+            </StackPanel>
             <TextBlock Classes="wgt-section-title"
                        FontSize="22"
                        Text="{Binding SelectedAtlasNode.Title}"
@@ -193,9 +202,28 @@
                   AutomationProperties.Name="Close node details" />
         </Grid>
 
-        <Separator Grid.Row="1" />
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+          <Border Classes="wgt-inspector-metric" Padding="10,8">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="wgt-caption" Text="SCOPE" />
+              <TextBlock FontWeight="SemiBold"
+                         Text="{Binding SelectedAtlasNode.ScopeSummaryText}"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="1" Classes="wgt-inspector-metric" Padding="10,8">
+            <StackPanel Spacing="2">
+              <TextBlock Classes="wgt-caption" Text="RELATIONSHIPS" />
+              <TextBlock FontWeight="SemiBold"
+                         Text="{Binding SelectedAtlasNode.RelationshipSummaryText}"
+                         TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+        </Grid>
 
-        <TabControl Grid.Row="2" Classes="wgt-atlas-tabs">
+        <Separator Grid.Row="2" />
+
+        <TabControl Grid.Row="3" Classes="wgt-atlas-tabs">
           <TabItem Header="Overview">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
               <StackPanel Margin="0,12,0,0" Spacing="12">
@@ -296,23 +324,37 @@
           </TabItem>
 
           <TabItem Header="Dependencies">
-            <Grid Margin="0,12,0,0" RowDefinitions="Auto,*" RowSpacing="9">
+            <Grid Margin="0,12,0,0" RowDefinitions="Auto,Auto,*" RowSpacing="9">
               <TextBlock Classes="wgt-secondary"
-                         Text="The highlighted Atlas path shows only explicit WGT composition relationships, not guesses derived from the drawing."
+                         Text="Only explicit WGT composition relationships are shown here. Select a relationship to jump to the connected Atlas node."
                          TextWrapping="Wrap" />
-              <ListBox Grid.Row="1"
+              <TextBlock Grid.Row="1"
+                         IsVisible="{Binding SelectedAtlasNode.HasNoRelationships}"
+                         Classes="wgt-secondary"
+                         Text="No explicit cross-service dependency is attached to this node."
+                         TextWrapping="Wrap" />
+              <ListBox Grid.Row="2"
+                       Classes="wgt-atlas-relationships"
+                       IsVisible="{Binding SelectedAtlasNode.HasRelationships}"
                        ItemsSource="{Binding SelectedAtlasNode.Relationships}"
+                       SelectionChanged="OnRelationshipSelectionChanged"
                        MaxHeight="300">
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:AtlasRelationshipPresentationViewModel">
-                    <StackPanel Margin="3,7" Spacing="3">
-                      <TextBlock FontWeight="SemiBold">
-                        <Run Text="{Binding Direction}" />
-                        <Run Text=" " />
-                        <Run Text="{Binding RelatedNodeTitle}" />
-                      </TextBlock>
-                      <TextBlock Classes="wgt-caption" Text="{Binding Description}" TextWrapping="Wrap" />
-                    </StackPanel>
+                    <Grid Margin="3,7" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                      <StackPanel Spacing="3">
+                        <TextBlock FontWeight="SemiBold">
+                          <Run Text="{Binding Direction}" />
+                          <Run Text=" " />
+                          <Run Text="{Binding RelatedNodeTitle}" />
+                        </TextBlock>
+                        <TextBlock Classes="wgt-caption" Text="{Binding Description}" TextWrapping="Wrap" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="1"
+                                 Classes="wgt-caption"
+                                 VerticalAlignment="Center"
+                                 Text="→" />
+                    </Grid>
                   </DataTemplate>
                 </ListBox.ItemTemplate>
               </ListBox>

@@ -161,56 +161,95 @@ public sealed partial class DesktopAtlasView
         AutomationProperties.SetAutomationId(returnButton, returnAutomationId);
         returnButton.Click += OnReturnFromProductSurface;
 
+        var wgtCaption = new TextBlock
+        {
+            Text = "WGT",
+            FontSize = 9,
+            FontWeight = FontWeight.SemiBold,
+            Opacity = 0.62,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+        var returnStack = new StackPanel
+        {
+            Spacing = 5,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Children = { returnButton, wgtCaption }
+        };
+
+        var serviceMark = new Border
+        {
+            Width = 36,
+            Height = 36,
+            Child = new TextBlock
+            {
+                Text = serviceName[0].ToString(),
+                FontWeight = FontWeight.SemiBold,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            }
+        };
+        serviceMark.Classes.Add("wgt-product-service-mark");
+
         var serviceLabel = new TextBlock
         {
             Text = serviceName,
             FontSize = 11,
             FontWeight = FontWeight.SemiBold,
-            Opacity = 0.72,
+            Opacity = 0.82,
+            MaxWidth = 64,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            TextAlignment = TextAlignment.Center
+            TextAlignment = TextAlignment.Center,
+            TextWrapping = TextWrapping.Wrap
         };
+        var serviceIdentity = new StackPanel
+        {
+            Spacing = 8,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Children = { serviceMark, serviceLabel }
+        };
+
+        var surfaceCaption = new TextBlock
+        {
+            Text = "SERVICE",
+            FontSize = 8,
+            FontWeight = FontWeight.SemiBold,
+            Opacity = 0.42,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+
+        var railGrid = new Grid
+        {
+            RowDefinitions = new RowDefinitions("Auto,*,Auto"),
+            Children = { returnStack, serviceIdentity, surfaceCaption }
+        };
+        Grid.SetRow(returnStack, 0);
+        returnStack.Margin = new Avalonia.Thickness(0, 16, 0, 0);
+        Grid.SetRow(serviceIdentity, 1);
+        Grid.SetRow(surfaceCaption, 2);
+        surfaceCaption.Margin = new Avalonia.Thickness(0, 0, 0, 18);
 
         var rail = new Border
         {
-            Width = 68,
-            Background = new SolidColorBrush(Color.Parse("#FF111318")),
-            BorderBrush = new SolidColorBrush(Color.Parse("#FF2B2F38")),
-            BorderThickness = new Avalonia.Thickness(0, 0, 1, 0),
-            Child = new Grid
-            {
-                RowDefinitions = new RowDefinitions("Auto,*,Auto"),
-                Children =
-                {
-                    returnButton,
-                    serviceLabel
-                }
-            }
+            Width = 76,
+            Child = railGrid
         };
         rail.Classes.Add("wgt-product-rail");
-        Grid.SetRow(returnButton, 0);
-        returnButton.Margin = new Avalonia.Thickness(0, 16, 0, 0);
-        Grid.SetRow(serviceLabel, 2);
-        serviceLabel.Margin = new Avalonia.Thickness(6, 0, 6, 18);
 
         var contentHost = new Border
         {
-            Background = new SolidColorBrush(Color.Parse("#FF0E1014")),
             Child = productContent
         };
+        contentHost.Classes.Add("wgt-product-stage");
         Grid.SetColumn(contentHost, 1);
 
         var overlay = new Grid
         {
-            ColumnDefinitions = new ColumnDefinitions("68,*"),
-            Background = new SolidColorBrush(Color.Parse("#FF0E1014")),
+            ColumnDefinitions = new ColumnDefinitions("76,*"),
             IsVisible = false,
-            Children =
-            {
-                rail,
-                contentHost
-            }
+            Children = { rail, contentHost }
         };
+        overlay.Classes.Add("wgt-product-overlay");
         AutomationProperties.SetName(overlay, automationName);
         return overlay;
     }
@@ -291,7 +330,7 @@ public sealed partial class DesktopAtlasView
             orientationProductOverlay.IsVisible = false;
         if (illuminationProductOverlay is not null)
             illuminationProductOverlay.IsVisible = false;
-        AtlasSearch.Focus();
+        AtlasViewport.Focus();
         e.Handled = true;
     }
 }

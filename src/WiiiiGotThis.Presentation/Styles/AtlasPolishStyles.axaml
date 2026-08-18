@@ -3,6 +3,7 @@
     <SolidColorBrush x:Key="WgtAtlasOpaqueChromeBrush" Color="#FF171A20" />
     <SolidColorBrush x:Key="WgtAtlasOpaqueRaisedBrush" Color="#FF1C2028" />
     <SolidColorBrush x:Key="WgtAtlasCoreBrush" Color="#FF171D26" />
+    <SolidColorBrush x:Key="WgtAtlasMetricBrush" Color="#FF151920" />
   </Styles.Resources>
 
   <!-- Global WGT chrome must remain visually separate from the spatial world. -->
@@ -17,6 +18,37 @@
     <Setter Property="Opacity" Value="1" />
     <Setter Property="CornerRadius" Value="22" />
     <Setter Property="BoxShadow" Value="0 22 54 0 #72000000" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemBaseLowColor}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether">
+    <Setter Property="Stroke" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="StrokeThickness" Value="1.6" />
+    <Setter Property="Opacity" Value="0.58" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether.theme-elegant">
+    <Setter Property="Opacity" Value="0.34" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether.theme-machine">
+    <Setter Property="StrokeThickness" Value="2.1" />
+    <Setter Property="Opacity" Value="0.76" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether.theme-world">
+    <Setter Property="Opacity" Value="0.42" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-state-chip">
+    <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
+    <Setter Property="CornerRadius" Value="9" />
+  </Style>
+  <Style Selector="Border.wgt-inspector-metric">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasMetricBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemBaseLowColor}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="12" />
+  </Style>
+  <Style Selector="ListBox.wgt-atlas-relationships">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
   </Style>
   <Style Selector="Border.wgt-atlas-controls">
     <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueChromeBrush}" />
@@ -60,16 +92,21 @@
   </Style>
   <Style Selector="Button.wgt-atlas-node.contextual">
     <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="BorderThickness" Value="1.4" />
   </Style>
   <Style Selector="Border.wgt-atlas-node-shell.dimmed">
-    <Setter Property="Opacity" Value="0.34" />
+    <Setter Property="Opacity" Value="0.28" />
   </Style>
   <Style Selector="Border.wgt-atlas-node-shell.selected">
     <Setter Property="Opacity" Value="1" />
     <Setter Property="BoxShadow" Value="0 18 56 0 #78000000" />
   </Style>
+  <Style Selector="Button.wgt-atlas-node.selected">
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="BorderThickness" Value="2.2" />
+  </Style>
   <Style Selector="Path.wgt-atlas-connection.dimmed">
-    <Setter Property="Opacity" Value="0.12" />
+    <Setter Property="Opacity" Value="0.1" />
   </Style>
   <Style Selector="Path.wgt-atlas-connection.focused">
     <Setter Property="Opacity" Value="1" />
@@ -96,7 +133,27 @@
     <Setter Property="CornerRadius" Value="8" />
   </Style>
 
+  <!-- Provider surfaces are entered as another WGT depth level, not as a card over the Atlas. -->
+  <Style Selector="Grid.wgt-product-overlay">
+    <Setter Property="Background" Value="#FF0E1014" />
+  </Style>
   <Style Selector="Border.wgt-product-rail">
     <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueChromeBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemBaseLowColor}" />
+    <Setter Property="BorderThickness" Value="0,0,1,0" />
+  </Style>
+  <Style Selector="Border.wgt-product-stage">
+    <Setter Property="Background" Value="#FF0E1014" />
+  </Style>
+  <Style Selector="Button.wgt-product-return">
+    <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Border.wgt-product-service-mark">
+    <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemBaseLowColor}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="18" />
   </Style>
 </Styles>
