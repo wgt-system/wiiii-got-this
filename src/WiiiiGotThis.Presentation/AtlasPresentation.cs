@@ -57,7 +57,8 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
 
     private static bool IsSupportedProductSurfaceService(string? serviceId) =>
         string.Equals(serviceId, "vocation", StringComparison.Ordinal)
-        || string.Equals(serviceId, "illumination", StringComparison.Ordinal);
+        || string.Equals(serviceId, "illumination", StringComparison.Ordinal)
+        || string.Equals(serviceId, "orientation", StringComparison.Ordinal);
 }
 
 public sealed class AtlasConnectionPresentationViewModel(
