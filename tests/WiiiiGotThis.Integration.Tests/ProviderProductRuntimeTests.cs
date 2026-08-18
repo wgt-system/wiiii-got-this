@@ -20,6 +20,19 @@ public sealed class ProviderProductRuntimeTests
         Assert.True(second.IsReady, second.FailureMessage);
     }
 
+    [Fact]
+    public async Task Orientation_reuses_a_configured_running_loopback_product_without_assuming_default_backend()
+    {
+        await using var server = new LoopbackHttpServer("app.html");
+        using var runtime = new OrientationDesktopProductRuntime();
+
+        var first = await runtime.EnsureReadyAsync(server.ProductUri);
+        var second = await runtime.EnsureReadyAsync(server.ProductUri);
+
+        Assert.True(first.IsReady, first.FailureMessage);
+        Assert.True(second.IsReady, second.FailureMessage);
+    }
+
     private sealed class LoopbackHttpServer : IAsyncDisposable
     {
         private static readonly byte[] Response = Encoding.ASCII.GetBytes(
@@ -29,11 +42,12 @@ public sealed class ProviderProductRuntimeTests
         private readonly CancellationTokenSource cancellation = new();
         private readonly Task serverLoop;
 
-        public LoopbackHttpServer()
+        public LoopbackHttpServer(string relativePath = "")
         {
             listener.Start();
             var endpoint = (IPEndPoint)listener.LocalEndpoint;
-            ProductUri = new Uri($"http://127.0.0.1:{endpoint.Port}/", UriKind.Absolute);
+            var path = string.IsNullOrWhiteSpace(relativePath) ? string.Empty : relativePath.TrimStart('/');
+            ProductUri = new Uri($"http://127.0.0.1:{endpoint.Port}/{path}", UriKind.Absolute);
             serverLoop = ServeAsync(cancellation.Token);
         }
 
