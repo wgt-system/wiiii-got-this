@@ -25,10 +25,16 @@ public sealed partial class DesktopAtlasView
 
     private async void OnOpenProductSurface(object? sender, RoutedEventArgs e)
     {
+        if (await OpenSelectedProductSurfaceAsync())
+            e.Handled = true;
+    }
+
+    private async Task<bool> OpenSelectedProductSurfaceAsync()
+    {
         var selectedNode = shell?.SelectedAtlasNode;
         var serviceId = selectedNode?.ServiceIdentity?.Value;
         if (selectedNode?.CanOpenProductSurface != true || string.IsNullOrWhiteSpace(serviceId) || shell is null)
-            return;
+            return false;
 
         if (!selectedNode.IsEnabled && shell.EnableOnThisDeviceCommand.CanExecute(null))
             await shell.EnableOnThisDeviceCommand.ExecuteAsync(null);
@@ -38,19 +44,24 @@ public sealed partial class DesktopAtlasView
             EnsureVocationProductOverlay();
             ShowOnlyProductOverlay(vocationProductOverlay!);
             await vocationProductView!.ReloadAsync();
+            return true;
         }
-        else if (string.Equals(serviceId, "illumination", StringComparison.Ordinal))
+
+        if (string.Equals(serviceId, "illumination", StringComparison.Ordinal))
         {
             await OpenIlluminationProductSurfaceAsync();
+            return true;
         }
-        else if (string.Equals(serviceId, "orientation", StringComparison.Ordinal))
+
+        if (string.Equals(serviceId, "orientation", StringComparison.Ordinal))
         {
             EnsureOrientationProductOverlay();
             ShowOnlyProductOverlay(orientationProductOverlay!);
             await orientationProductView!.ReloadAsync();
+            return true;
         }
 
-        e.Handled = true;
+        return false;
     }
 
     private void EnsureVocationProductOverlay()
