@@ -18,20 +18,17 @@
     <Setter Property="BorderBrush" Value="{DynamicResource WgtDividerBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Opacity" Value="0.94" />
-    <Setter Property="BoxShadow" Value="0 8 22 0 #30000000" />
     <Setter Property="Transitions">
       <Transitions>
         <BrushTransition Property="Background" Duration="0:0:0.14" />
         <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
         <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
-        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.16" />
       </Transitions>
     </Setter>
   </Style>
   <Style Selector="Button.wgt-theme-choice:pointerover">
     <Setter Property="Background" Value="{DynamicResource WgtAtlasThemeChoiceHoverBrush}" />
     <Setter Property="Opacity" Value="1" />
-    <Setter Property="BoxShadow" Value="0 12 30 0 #48000000" />
   </Style>
   <Style Selector="Button.wgt-theme-choice.selected">
     <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
@@ -140,14 +137,12 @@
       <Transitions>
         <BrushTransition Property="Background" Duration="0:0:0.14" />
         <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
-        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.16" />
       </Transitions>
     </Setter>
   </Style>
   <Style Selector="Button.wgt-product-return:pointerover">
     <Setter Property="Background" Value="{DynamicResource WgtAccentBrush}" />
     <Setter Property="Foreground" Value="White" />
-    <Setter Property="BoxShadow" Value="0 0 28 0 #3346D8FF" />
   </Style>
   <Style Selector="Border.wgt-product-service-mark">
     <Setter Property="BoxShadow" Value="0 0 24 0 #2446D8FF" />
