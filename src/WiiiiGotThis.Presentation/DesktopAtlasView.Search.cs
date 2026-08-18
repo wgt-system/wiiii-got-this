@@ -17,6 +17,15 @@ public sealed partial class DesktopAtlasView
 
     private void OnSearchKeyDownRanked(object? sender, KeyEventArgs e)
     {
+        if (e.Key == Key.Escape)
+        {
+            if (shell is not null)
+                shell.AtlasSearchText = string.Empty;
+            AtlasViewport.Focus();
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key != Key.Enter || shell?.AtlasSearchResults.FirstOrDefault() is not { } node)
             return;
 
