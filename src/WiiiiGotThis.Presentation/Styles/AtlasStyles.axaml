@@ -38,6 +38,50 @@
     <Setter Property="Opacity" Value="0.16" />
   </Style>
 
+  <Style Selector="Border.wgt-atlas-node-shell">
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasNodeBrush}" />
+    <Setter Property="CornerRadius" Value="18" />
+    <Setter Property="BoxShadow" Value="0 8 24 0 #29000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell:pointerover">
+    <Setter Property="BoxShadow" Value="0 12 34 0 #3D000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core">
+    <Setter Property="CornerRadius" Value="26" />
+    <Setter Property="BoxShadow" Value="0 16 42 0 #48000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.capability">
+    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="BoxShadow" Value="0 5 17 0 #20000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.selected">
+    <Setter Property="BoxShadow" Value="0 15 44 0 #52000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.theme-technical">
+    <Setter Property="CornerRadius" Value="11" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-technical">
+    <Setter Property="CornerRadius" Value="15" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.theme-elegant">
+    <Setter Property="CornerRadius" Value="30" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-elegant">
+    <Setter Property="CornerRadius" Value="40" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.theme-machine">
+    <Setter Property="CornerRadius" Value="3" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.capability.theme-machine">
+    <Setter Property="CornerRadius" Value="2" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.theme-world">
+    <Setter Property="CornerRadius" Value="30" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-world">
+    <Setter Property="CornerRadius" Value="46" />
+  </Style>
+
   <Style Selector="Button.wgt-atlas-node">
     <Setter Property="Background" Value="{DynamicResource WgtAtlasNodeBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasNodeBorderBrush}" />
@@ -111,43 +155,43 @@
     <Setter Property="CornerRadius" Value="32" />
   </Style>
 
-  <Style Selector="Line.wgt-atlas-connection">
+  <Style Selector="Path.wgt-atlas-connection">
     <Setter Property="Stroke" Value="{DynamicResource WgtAtlasConnectionBrush}" />
     <Setter Property="StrokeThickness" Value="1.7" />
   </Style>
-  <Style Selector="Line.wgt-atlas-connection.capability">
+  <Style Selector="Path.wgt-atlas-connection.capability">
     <Setter Property="Stroke" Value="{DynamicResource WgtAtlasCapabilityConnectionBrush}" />
     <Setter Property="StrokeThickness" Value="1.35" />
   </Style>
-  <Style Selector="Line.wgt-atlas-connection.dependency">
+  <Style Selector="Path.wgt-atlas-connection.dependency">
     <Setter Property="Stroke" Value="{DynamicResource WgtAtlasDependencyConnectionBrush}" />
     <Setter Property="StrokeThickness" Value="2.4" />
     <Setter Property="StrokeDashArray" Value="7,4" />
   </Style>
-  <Style Selector="Line.wgt-atlas-connection.theme-elegant">
+  <Style Selector="Path.wgt-atlas-connection.theme-elegant">
     <Setter Property="StrokeThickness" Value="1" />
     <Setter Property="Opacity" Value="0.58" />
   </Style>
-  <Style Selector="Line.wgt-atlas-connection.dependency.theme-elegant">
+  <Style Selector="Path.wgt-atlas-connection.dependency.theme-elegant">
     <Setter Property="StrokeThickness" Value="1.5" />
     <Setter Property="StrokeDashArray" Value="4,5" />
   </Style>
-  <Style Selector="Line.wgt-atlas-connection.theme-machine">
+  <Style Selector="Path.wgt-atlas-connection.theme-machine">
     <Setter Property="StrokeThickness" Value="2.6" />
   </Style>
-  <Style Selector="Line.wgt-atlas-connection.capability.theme-machine">
+  <Style Selector="Path.wgt-atlas-connection.capability.theme-machine">
     <Setter Property="StrokeThickness" Value="2" />
   </Style>
-  <Style Selector="Line.wgt-atlas-connection.dependency.theme-machine">
+  <Style Selector="Path.wgt-atlas-connection.dependency.theme-machine">
     <Setter Property="StrokeThickness" Value="3" />
     <Setter Property="StrokeDashArray" Value="10,3" />
   </Style>
-  <Style Selector="Line.wgt-atlas-connection.theme-world">
+  <Style Selector="Path.wgt-atlas-connection.theme-world">
     <Setter Property="Stroke" Value="{DynamicResource WgtAccentBrush}" />
     <Setter Property="StrokeThickness" Value="2.25" />
     <Setter Property="Opacity" Value="0.46" />
   </Style>
-  <Style Selector="Line.wgt-atlas-connection.dependency.theme-world">
+  <Style Selector="Path.wgt-atlas-connection.dependency.theme-world">
     <Setter Property="StrokeThickness" Value="3" />
     <Setter Property="StrokeDashArray" Value="2,5" />
     <Setter Property="Opacity" Value="0.72" />
