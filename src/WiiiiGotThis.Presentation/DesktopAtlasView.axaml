@@ -21,13 +21,13 @@
             VerticalAlignment="Top" />
 
     <Border Classes="wgt-atlas-search-dock"
-            Width="460"
+            Width="520"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
-            Margin="0,26,0,0"
-            Padding="8">
-      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-        <Border Width="34" Height="34" CornerRadius="17"
+            Margin="0,24,0,0"
+            Padding="9">
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
+        <Border Width="36" Height="36" CornerRadius="18"
                 Background="{DynamicResource WgtAccentLowBrush}"
                 VerticalAlignment="Center">
           <TextBlock Text="⌕"
@@ -37,7 +37,7 @@
         </Border>
         <TextBox x:Name="AtlasSearch"
                  Grid.Column="1"
-                 Height="40"
+                 Height="42"
                  BorderThickness="0"
                  Background="Transparent"
                  VerticalContentAlignment="Center"
@@ -51,7 +51,7 @@
 
     <Canvas Width="268"
             Height="112"
-            Margin="0,26,26,0"
+            Margin="0,24,26,0"
             HorizontalAlignment="Right"
             VerticalAlignment="Top">
       <Button Canvas.Right="0"
@@ -124,19 +124,19 @@
     <Border x:Name="InspectorCard"
             Classes="wgt-atlas-inspector"
             IsVisible="{Binding HasSelectedAtlasNode}"
-            Width="382"
-            MaxHeight="570"
+            Width="404"
+            MaxHeight="610"
             HorizontalAlignment="Left"
             VerticalAlignment="Top"
-            Padding="18">
-      <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12">
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            Padding="20">
+      <Grid RowDefinitions="Auto,Auto,*" RowSpacing="13">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
           <StackPanel Spacing="5">
             <Border Classes="wgt-atlas-kind-chip" HorizontalAlignment="Left" Padding="8,3">
               <TextBlock Classes="wgt-caption" Text="{Binding SelectedAtlasNode.KindLabel}" />
             </Border>
             <TextBlock Classes="wgt-section-title"
-                       FontSize="21"
+                       FontSize="22"
                        Text="{Binding SelectedAtlasNode.Title}"
                        TextWrapping="Wrap" />
             <TextBlock Classes="wgt-secondary"
@@ -150,9 +150,9 @@
           </StackPanel>
           <Button Grid.Column="1"
                   Classes="wgt-inspector-close"
-                  Width="32"
-                  Height="32"
-                  CornerRadius="16"
+                  Width="34"
+                  Height="34"
+                  CornerRadius="17"
                   Padding="0"
                   Content="×"
                   Click="OnCloseInspector"
@@ -249,7 +249,7 @@
                        IsVisible="{Binding SelectedAtlasNode.IsIntegratedService}"
                        ItemsSource="{Binding SelectedIntegrationCapabilities}"
                        SelectedItem="{Binding SelectedCapability, Mode=TwoWay}"
-                       MaxHeight="280">
+                       MaxHeight="300">
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:CapabilityPresentationViewModel">
                     <StackPanel Margin="3,7" Spacing="2">
@@ -265,11 +265,11 @@
           <TabItem Header="Dependencies">
             <Grid Margin="0,12,0,0" RowDefinitions="Auto,*" RowSpacing="9">
               <TextBlock Classes="wgt-secondary"
-                         Text="These are explicit WGT composition relationships, not guesses derived from the drawing."
+                         Text="The highlighted Atlas path shows only explicit WGT composition relationships, not guesses derived from the drawing."
                          TextWrapping="Wrap" />
               <ListBox Grid.Row="1"
                        ItemsSource="{Binding SelectedAtlasNode.Relationships}"
-                       MaxHeight="280">
+                       MaxHeight="300">
                 <ListBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:AtlasRelationshipPresentationViewModel">
                     <StackPanel Margin="3,7" Spacing="3">
