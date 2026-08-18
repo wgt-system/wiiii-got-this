@@ -60,7 +60,8 @@ public sealed class BuildAtlasProjectionUseCase
     [
         new(new ServiceIdentity("vocation"), "Vocation", "Personal job-market, research and application work."),
         new(new ServiceIdentity("illumination"), "Illumination", "Learning, review, study and learning insight."),
-        new(new ServiceIdentity("orientation"), "Orientation", "Spatial discovery, exploration, navigation and mobility.")
+        new(new ServiceIdentity("orientation"), "Orientation", "Spatial discovery, exploration, navigation and mobility."),
+        new(new ServiceIdentity("conveyance"), "Conveyance", "Durable opaque delivery between devices without taking ownership of provider data.")
     ]);
 
     private static readonly IReadOnlyList<AtlasProductDependency> DefaultProductDependencies = Array.AsReadOnly<AtlasProductDependency>(
