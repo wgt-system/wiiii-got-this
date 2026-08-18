@@ -87,6 +87,42 @@ public sealed record AtlasPresentationLayout(
     IReadOnlyList<AtlasNodePresentationViewModel> Nodes,
     IReadOnlyList<AtlasConnectionPresentationViewModel> Connections);
 
+public static class AtlasPresentationFocus
+{
+    public static IReadOnlySet<string> Build(
+        IReadOnlyCollection<AtlasConnectionPresentationViewModel> connections,
+        string? selectedNodeId)
+    {
+        ArgumentNullException.ThrowIfNull(connections);
+
+        var focused = new HashSet<string>(StringComparer.Ordinal);
+        if (string.IsNullOrWhiteSpace(selectedNodeId))
+            return focused;
+
+        focused.Add(selectedNodeId);
+        foreach (var connection in connections)
+        {
+            if (string.Equals(connection.Source.NodeId, selectedNodeId, StringComparison.Ordinal)
+                || string.Equals(connection.Target.NodeId, selectedNodeId, StringComparison.Ordinal))
+            {
+                focused.Add(connection.Source.NodeId);
+                focused.Add(connection.Target.NodeId);
+            }
+        }
+
+        foreach (var connection in connections.Where(item => item.Kind == AtlasConnectionKind.CapabilityDependency))
+        {
+            if (focused.Contains(connection.Source.NodeId) || focused.Contains(connection.Target.NodeId))
+            {
+                focused.Add(connection.Source.NodeId);
+                focused.Add(connection.Target.NodeId);
+            }
+        }
+
+        return focused;
+    }
+}
+
 public static class AtlasPresentationLayoutBuilder
 {
     private static readonly Dictionary<string, int> PrimaryServiceOrder = new(StringComparer.Ordinal)
