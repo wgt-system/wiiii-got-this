@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using WiiiiGotThis.Application;
 using AtlasPath = Avalonia.Controls.Shapes.Path;
 
 namespace WiiiiGotThis.Presentation;
@@ -116,8 +117,8 @@ public sealed partial class DesktopAtlasView
         var direction = cardOnRight ? 1d : -1d;
         var nodeRadius = node.Kind switch
         {
-            Application.AtlasNodeKind.Core => 92d,
-            Application.AtlasNodeKind.Service => 73d,
+            AtlasNodeKind.Core => 92d,
+            AtlasNodeKind.Service => 73d,
             _ => 31d
         } * sceneScale.ScaleX;
 
