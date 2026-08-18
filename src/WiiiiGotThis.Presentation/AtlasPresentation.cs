@@ -52,6 +52,17 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
         WiiiiGotThis.Domain.AvailabilityReason.MissingPrerequisite => "Missing prerequisite",
         _ => Subtitle
     };
+    public string CompactStateText => Kind switch
+    {
+        AtlasNodeKind.Core => "SYSTEM",
+        AtlasNodeKind.Capability when IsAvailable => "READY",
+        AtlasNodeKind.Capability => "OFFLINE",
+        AtlasNodeKind.Service when !IsIntegrated => "KNOWN",
+        AtlasNodeKind.Service when !IsEnabled => "OFF",
+        AtlasNodeKind.Service when IsAvailable => "READY",
+        AtlasNodeKind.Service => "LOCAL",
+        _ => string.Empty
+    };
 
     internal void AddRelationship(AtlasRelationshipPresentationViewModel relationship) => relationships.Add(relationship);
 
@@ -101,7 +112,7 @@ public static class AtlasPresentationLayoutBuilder
             .ThenBy(node => node.NodeId, StringComparer.Ordinal)
             .ToArray();
 
-        const double serviceRadius = 370;
+        const double serviceRadius = 350;
         for (var index = 0; index < services.Length; index++)
         {
             var angle = ServiceAngle(index, services.Length);
@@ -116,8 +127,8 @@ public static class AtlasPresentationLayoutBuilder
                 .ThenBy(node => node.NodeId, StringComparer.Ordinal)
                 .ToArray();
 
-            const double capabilityRadius = 170;
-            const double spread = Math.PI * 0.52;
+            const double capabilityRadius = 152;
+            const double spread = Math.PI * 0.5;
             for (var capabilityIndex = 0; capabilityIndex < capabilities.Length; capabilityIndex++)
             {
                 var offset = capabilities.Length == 1
