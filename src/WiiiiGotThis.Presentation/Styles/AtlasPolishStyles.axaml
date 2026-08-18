@@ -4,6 +4,10 @@
     <SolidColorBrush x:Key="WgtAtlasOpaqueRaisedBrush" Color="#FF1C2028" />
     <SolidColorBrush x:Key="WgtAtlasCoreBrush" Color="#FF171D26" />
     <SolidColorBrush x:Key="WgtAtlasMetricBrush" Color="#FF151920" />
+    <SolidColorBrush x:Key="WgtAtlasTechnicalLineBrush" Color="#6646D8FF" />
+    <SolidColorBrush x:Key="WgtAtlasMachineLineBrush" Color="#9958FFC7" />
+    <SolidColorBrush x:Key="WgtAtlasWorldLineBrush" Color="#7778D6A8" />
+    <SolidColorBrush x:Key="WgtAtlasElegantLineBrush" Color="#44D6D9E1" />
   </Styles.Resources>
 
   <!-- Global WGT chrome must remain visually separate from the spatial world. -->
@@ -12,6 +16,12 @@
     <Setter Property="Opacity" Value="1" />
     <Setter Property="CornerRadius" Value="24" />
     <Setter Property="BoxShadow" Value="0 14 40 0 #66000000" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.18" />
+        <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
+      </Transitions>
+    </Setter>
   </Style>
   <Style Selector="Border.wgt-atlas-inspector">
     <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueRaisedBrush}" />
@@ -20,11 +30,24 @@
     <Setter Property="BoxShadow" Value="0 22 54 0 #72000000" />
     <Setter Property="BorderBrush" Value="{DynamicResource SystemBaseLowColor}" />
     <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.16" />
+        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.2" />
+      </Transitions>
+    </Setter>
   </Style>
   <Style Selector="Path.wgt-atlas-inspector-tether">
     <Setter Property="Stroke" Value="{DynamicResource WgtAccentBrush}" />
     <Setter Property="StrokeThickness" Value="1.6" />
     <Setter Property="Opacity" Value="0.58" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+        <DoubleTransition Property="StrokeThickness" Duration="0:0:0.16" />
+      </Transitions>
+    </Setter>
   </Style>
   <Style Selector="Path.wgt-atlas-inspector-tether.theme-elegant">
     <Setter Property="Opacity" Value="0.34" />
@@ -56,9 +79,52 @@
   </Style>
   <Style Selector="Button.wgt-atlas-orb">
     <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueChromeBrush}" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+      </Transitions>
+    </Setter>
   </Style>
   <Style Selector="Button.wgt-theme-choice">
     <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueRaisedBrush}" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+        <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <!-- Short state transitions keep node feedback tactile without permanent animation. -->
+  <Style Selector="Border.wgt-atlas-node-shell">
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.16" Easing="QuadraticEaseOut" />
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.18" Easing="QuadraticEaseOut" />
+        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.18" Easing="QuadraticEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.wgt-atlas-node">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.16" Easing="QuadraticEaseOut" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.16" Easing="QuadraticEaseOut" />
+        <ThicknessTransition Property="BorderThickness" Duration="0:0:0.14" Easing="QuadraticEaseOut" />
+        <DoubleTransition Property="Opacity" Duration="0:0:0.16" Easing="QuadraticEaseOut" />
+        <CornerRadiusTransition Property="CornerRadius" Duration="0:0:0.18" Easing="QuadraticEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection">
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="QuadraticEaseOut" />
+        <DoubleTransition Property="StrokeThickness" Duration="0:0:0.18" Easing="QuadraticEaseOut" />
+      </Transitions>
+    </Setter>
   </Style>
 
   <!-- Core and services are spatial objects. Detail/status belongs in the inspector. -->
@@ -84,6 +150,9 @@
   </Style>
   <Style Selector="Button.wgt-atlas-node.capability">
     <Setter Property="CornerRadius" Value="16" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell:pointerover">
+    <Setter Property="BoxShadow" Value="0 18 48 0 #5A000000" />
   </Style>
 
   <!-- Selection exposes the local system path instead of making every edge equally loud. -->
@@ -119,18 +188,92 @@
     <Setter Property="StrokeThickness" Value="3.1" />
   </Style>
 
-  <!-- Machine deliberately stays more engineered; other themes retain spatial roundness. -->
+  <!-- Technical: crisp instrumentation around the graph. -->
+  <Style Selector="Border.wgt-theme-ambient">
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.22" Easing="QuadraticEaseOut" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.2" />
+        <BrushTransition Property="Background" Duration="0:0:0.2" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.wgt-theme-technical-reticle.theme-technical">
+    <Setter Property="Opacity" Value="0.24" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasTechnicalLineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-technical">
+    <Setter Property="BoxShadow" Value="0 0 26 0 #3046D8FF, 0 22 62 0 #65000000" />
+  </Style>
+
+  <!-- Elegant: fewer guides, softer depth and quieter chrome. -->
+  <Style Selector="Border.wgt-theme-elegant-halo.theme-elegant">
+    <Setter Property="Opacity" Value="0.18" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasElegantLineBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.theme-elegant">
+    <Setter Property="BoxShadow" Value="0 18 52 0 #33000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-elegant">
+    <Setter Property="BoxShadow" Value="0 26 78 0 #42000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-inspector.theme-elegant">
+    <Setter Property="BorderBrush" Value="#33FFFFFF" />
+    <Setter Property="BoxShadow" Value="0 24 70 0 #44000000" />
+  </Style>
+
+  <!-- Machine: hard geometry, rails and brighter dependency circuitry. -->
   <Style Selector="Border.wgt-atlas-node-shell.core.theme-machine">
     <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="BoxShadow" Value="0 0 24 0 #4058FFC7, 0 16 44 0 #6A000000" />
   </Style>
   <Style Selector="Button.wgt-atlas-node.core.theme-machine">
     <Setter Property="CornerRadius" Value="10" />
   </Style>
   <Style Selector="Border.wgt-atlas-node-shell.service.theme-machine">
     <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="BoxShadow" Value="0 0 14 0 #2458FFC7, 0 12 32 0 #52000000" />
   </Style>
   <Style Selector="Button.wgt-atlas-node.service.theme-machine">
     <Setter Property="CornerRadius" Value="8" />
+  </Style>
+  <Style Selector="Border.wgt-theme-machine-rail.theme-machine">
+    <Setter Property="Opacity" Value="0.34" />
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasMachineLineBrush}" />
+  </Style>
+  <Style Selector="Border.wgt-theme-machine-corner.theme-machine">
+    <Setter Property="Opacity" Value="0.7" />
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasMachineLineBrush}" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection.dependency.theme-machine.focused">
+    <Setter Property="Opacity" Value="1" />
+    <Setter Property="StrokeThickness" Value="3.6" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-inspector.theme-machine">
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasMachineLineBrush}" />
+  </Style>
+
+  <!-- World: orbital/terrain cues without changing semantic node placement. -->
+  <Style Selector="Border.wgt-theme-world-orbit.theme-world">
+    <Setter Property="Opacity" Value="0.24" />
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasWorldLineBrush}" />
+    <Setter Property="BorderThickness" Value="1.4" />
+  </Style>
+  <Style Selector="Border.wgt-theme-world-beacon.theme-world">
+    <Setter Property="Opacity" Value="0.72" />
+    <Setter Property="Background" Value="{DynamicResource WgtAtlasWorldLineBrush}" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-world">
+    <Setter Property="BoxShadow" Value="0 0 34 0 #3478D6A8, 0 24 68 0 #5A000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.service.theme-world">
+    <Setter Property="BoxShadow" Value="0 0 18 0 #2478D6A8, 0 14 38 0 #44000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-inspector.theme-world">
+    <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasWorldLineBrush}" />
   </Style>
 
   <!-- Provider surfaces are entered as another WGT depth level, not as a card over the Atlas. -->
@@ -149,6 +292,17 @@
     <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
     <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+        <ThicknessTransition Property="BorderThickness" Duration="0:0:0.14" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.wgt-product-return:pointerover">
+    <Setter Property="Background" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="BorderThickness" Value="2" />
   </Style>
   <Style Selector="Border.wgt-product-service-mark">
     <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
