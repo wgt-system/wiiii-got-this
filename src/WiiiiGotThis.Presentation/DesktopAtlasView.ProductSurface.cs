@@ -151,10 +151,10 @@ public sealed partial class DesktopAtlasView
             CornerRadius = new Avalonia.CornerRadius(22),
             Padding = new Avalonia.Thickness(0),
             Content = "◎",
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            ToolTip = "Return to WGT Atlas"
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
         returnButton.Classes.Add("wgt-product-return");
+        ToolTip.SetTip(returnButton, "Return to WGT Atlas");
         AutomationProperties.SetName(returnButton, "Return to WGT Atlas");
         AutomationProperties.SetAutomationId(returnButton, returnAutomationId);
         returnButton.Click += OnReturnFromProductSurface;
