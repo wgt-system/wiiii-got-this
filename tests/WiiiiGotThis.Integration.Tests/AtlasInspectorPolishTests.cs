@@ -62,4 +62,18 @@ public sealed class AtlasInspectorPolishTests
         Assert.True(vocation.HasNoRelationships);
         Assert.Equal("No cross-service links", vocation.RelationshipSummaryText);
     }
+
+    [Fact]
+    public void Empty_core_reports_zero_services_without_inventing_relationships()
+    {
+        var layout = AtlasPresentationLayoutBuilder.Build(new AtlasProjection(
+            [new AtlasNode("wgt.core", AtlasNodeKind.Core, "WGT", "System ready")],
+            []));
+
+        var core = Assert.Single(layout.Nodes);
+
+        Assert.Equal("0 services", core.ScopeSummaryText);
+        Assert.True(core.HasNoRelationships);
+        Assert.Equal("No cross-service links", core.RelationshipSummaryText);
+    }
 }
