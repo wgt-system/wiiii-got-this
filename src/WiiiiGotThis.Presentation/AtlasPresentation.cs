@@ -59,8 +59,8 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
         AtlasNodeKind.Capability => "OFFLINE",
         AtlasNodeKind.Service when !IsIntegrated => "KNOWN",
         AtlasNodeKind.Service when !IsEnabled => "OFF",
-        AtlasNodeKind.Service when IsAvailable => "READY",
-        AtlasNodeKind.Service => "LOCAL",
+        AtlasNodeKind.Service when IsAvailable => "COMPOSED",
+        AtlasNodeKind.Service => "DEGRADED",
         _ => string.Empty
     };
 
