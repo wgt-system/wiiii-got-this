@@ -78,7 +78,7 @@ public sealed record AtlasPresentationLayout(
 
 public static class AtlasPresentationLayoutBuilder
 {
-    private static readonly IReadOnlyDictionary<string, int> PrimaryServiceOrder = new Dictionary<string, int>(StringComparer.Ordinal)
+    private static readonly Dictionary<string, int> PrimaryServiceOrder = new(StringComparer.Ordinal)
     {
         ["illumination"] = 0,
         ["orientation"] = 1,
