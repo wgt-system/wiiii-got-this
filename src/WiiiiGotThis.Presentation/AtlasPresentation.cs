@@ -26,10 +26,8 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     public bool IsIntegrated => Model.IsIntegrated;
     public bool IsKnownOnlyService => IsService && !IsIntegrated;
     public bool IsIntegratedService => IsService && IsIntegrated;
-    public bool CanOpenProductSurface =>
-        IsIntegratedService
-        && IsAvailable
-        && string.Equals(ServiceIdentity?.Value, "vocation", StringComparison.Ordinal);
+    public bool CanOpenProductSurface => IsIntegratedService && IsAvailable && IsSupportedProductSurfaceService(ServiceIdentity?.Value);
+    public string OpenProductSurfaceLabel => $"Open {Title}";
     public AvailabilityReason? AvailabilityReason => Model.AvailabilityReason;
     public double X { get; } = x;
     public double Y { get; } = y;
@@ -56,6 +54,10 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     };
 
     internal void AddRelationship(AtlasRelationshipPresentationViewModel relationship) => relationships.Add(relationship);
+
+    private static bool IsSupportedProductSurfaceService(string? serviceId) =>
+        string.Equals(serviceId, "vocation", StringComparison.Ordinal)
+        || string.Equals(serviceId, "illumination", StringComparison.Ordinal);
 }
 
 public sealed class AtlasConnectionPresentationViewModel(
