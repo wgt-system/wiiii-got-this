@@ -55,14 +55,26 @@ internal static class Program
             new GetAtlasAppearancePreferenceUseCase(appearanceStore),
             new SetAtlasAppearancePreferenceUseCase(appearanceStore));
         var illuminationProductSurface = new IlluminationDesktopProductSurfaceSource();
+        using var vocationProductRuntime = new VocationDesktopProductRuntime();
+        using var orientationProductRuntime = new OrientationDesktopProductRuntime();
 
-        BuildAvaloniaApp(shell, illuminationProductSurface).StartWithClassicDesktopLifetime(args);
+        BuildAvaloniaApp(
+            shell,
+            illuminationProductSurface,
+            vocationProductRuntime,
+            orientationProductRuntime).StartWithClassicDesktopLifetime(args);
     }
 
     private static AppBuilder BuildAvaloniaApp(
         ShellViewModel shell,
-        IIlluminationProductSurfaceSource illuminationProductSurface) =>
-        AppBuilder.Configure(() => new App(shell, illuminationProductSurface))
+        IIlluminationProductSurfaceSource illuminationProductSurface,
+        IVocationProductRuntime vocationProductRuntime,
+        IOrientationProductRuntime orientationProductRuntime) =>
+        AppBuilder.Configure(() => new App(
+                shell,
+                illuminationProductSurface,
+                vocationProductRuntime,
+                orientationProductRuntime))
             .UsePlatformDetect()
             .LogToTrace();
 }

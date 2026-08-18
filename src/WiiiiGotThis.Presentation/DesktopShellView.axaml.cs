@@ -11,6 +11,8 @@ public sealed partial class DesktopShellView : UserControl
     private ShellViewModel? shell;
     private bool isAttached;
     private IIlluminationProductSurfaceSource? illuminationProductSurfaceSource;
+    private IVocationProductRuntime? vocationProductRuntime;
+    private IOrientationProductRuntime? orientationProductRuntime;
 
     public DesktopShellView()
     {
@@ -27,6 +29,26 @@ public sealed partial class DesktopShellView : UserControl
         {
             illuminationProductSurfaceSource = value;
             AtlasWorkspace.IlluminationProductSurfaceSource = value;
+        }
+    }
+
+    public IVocationProductRuntime? VocationProductRuntime
+    {
+        get => vocationProductRuntime;
+        set
+        {
+            vocationProductRuntime = value;
+            AtlasWorkspace.VocationProductRuntime = value;
+        }
+    }
+
+    public IOrientationProductRuntime? OrientationProductRuntime
+    {
+        get => orientationProductRuntime;
+        set
+        {
+            orientationProductRuntime = value;
+            AtlasWorkspace.OrientationProductRuntime = value;
         }
     }
 

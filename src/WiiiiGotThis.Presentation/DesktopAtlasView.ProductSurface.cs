@@ -17,6 +17,8 @@ public sealed partial class DesktopAtlasView
     private bool illuminationProductSurfaceLoading;
 
     public IIlluminationProductSurfaceSource? IlluminationProductSurfaceSource { get; set; }
+    public IVocationProductRuntime? VocationProductRuntime { get; set; }
+    public IOrientationProductRuntime? OrientationProductRuntime { get; set; }
 
     private async void OnOpenProductSurface(object? sender, RoutedEventArgs e)
     {
@@ -32,7 +34,7 @@ public sealed partial class DesktopAtlasView
         {
             EnsureVocationProductOverlay();
             ShowOnlyProductOverlay(vocationProductOverlay!);
-            vocationProductView!.Reload();
+            await vocationProductView!.ReloadAsync();
         }
         else if (string.Equals(serviceId, "illumination", StringComparison.Ordinal))
         {
@@ -42,7 +44,7 @@ public sealed partial class DesktopAtlasView
         {
             EnsureOrientationProductOverlay();
             ShowOnlyProductOverlay(orientationProductOverlay!);
-            orientationProductView!.Reload();
+            await orientationProductView!.ReloadAsync();
         }
 
         e.Handled = true;
@@ -53,7 +55,7 @@ public sealed partial class DesktopAtlasView
         if (vocationProductOverlay is not null)
             return;
 
-        vocationProductView = new VocationProductView();
+        vocationProductView = new VocationProductView(VocationProductRuntime);
         vocationProductOverlay = CreateProductOverlay(
             vocationProductView,
             "Vocation",
@@ -67,7 +69,7 @@ public sealed partial class DesktopAtlasView
         if (orientationProductOverlay is not null)
             return;
 
-        orientationProductView = new OrientationProductView();
+        orientationProductView = new OrientationProductView(OrientationProductRuntime);
         orientationProductOverlay = CreateProductOverlay(
             orientationProductView,
             "Orientation",

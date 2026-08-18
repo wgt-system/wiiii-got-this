@@ -33,9 +33,11 @@ public sealed class OrientationProductView : Grid
     };
     private readonly StackPanel statusPanel;
     private readonly Uri? productUri;
+    private bool reloadInProgress;
 
-    public OrientationProductView()
+    public OrientationProductView(IOrientationProductRuntime? runtime = null)
     {
+        Runtime = runtime;
         AutomationProperties.SetName(webView, "Orientation product surface");
         AutomationProperties.SetAutomationId(webView, "OrientationProductSurface");
         AutomationProperties.SetName(hostStatus, "Orientation product status");
@@ -47,7 +49,7 @@ public sealed class OrientationProductView : Grid
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             Children = { progress, hostStatus, retry }
         };
-        retry.Click += (_, _) => Reload();
+        retry.Click += OnRetry;
 
         productUri = ResolveProductUri();
         Children.Add(webView);
@@ -56,19 +58,46 @@ public sealed class OrientationProductView : Grid
         webView.AdapterCreated += OnAdapterCreated;
         webView.NavigationStarted += OnNavigationStarted;
         webView.NavigationCompleted += OnNavigationCompleted;
-        ShowLoading("Starting local Orientation product…");
+        ShowLoading("Preparing local Orientation product…");
     }
 
-    public void Reload()
+    public IOrientationProductRuntime? Runtime { get; set; }
+
+    public async Task ReloadAsync()
     {
+        if (reloadInProgress)
+            return;
         if (productUri is null)
         {
             ShowHostError("The configured Orientation product URL is invalid. Only loopback HTTP(S) URLs are accepted.");
             return;
         }
 
-        ShowLoading("Connecting to local Orientation…");
-        webView.Source = productUri;
+        reloadInProgress = true;
+        try
+        {
+            ShowLoading("Starting local Orientation…");
+            if (Runtime is not null)
+            {
+                var readiness = await Runtime.EnsureReadyAsync(productUri);
+                if (!readiness.IsReady)
+                {
+                    ShowHostError(readiness.FailureMessage ?? "Orientation could not be started.");
+                    return;
+                }
+            }
+
+            ShowLoading("Loading Orientation…");
+            webView.Source = productUri;
+        }
+        catch (Exception ex)
+        {
+            ShowHostError($"Orientation could not be prepared: {ex.Message}");
+        }
+        finally
+        {
+            reloadInProgress = false;
+        }
     }
 
     private static Uri? ResolveProductUri()
@@ -83,7 +112,7 @@ public sealed class OrientationProductView : Grid
         return candidate;
     }
 
-    private void OnAdapterCreated(object? sender, WebViewAdapterEventArgs e)
+    private async void OnAdapterCreated(object? sender, WebViewAdapterEventArgs e)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -91,7 +120,13 @@ public sealed class OrientationProductView : Grid
             return;
         }
 
-        Reload();
+        await ReloadAsync();
+    }
+
+    private async void OnRetry(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        await ReloadAsync();
+        e.Handled = true;
     }
 
     private void OnNavigationStarted(object? sender, WebViewNavigationStartingEventArgs e) =>
@@ -106,7 +141,7 @@ public sealed class OrientationProductView : Grid
             return;
         }
 
-        ShowHostError("Orientation is not running at its local standalone address. Start the Orientation map app, then retry.");
+        ShowHostError("Orientation started, but its local standalone surface could not be loaded. Retry the provider connection.");
     }
 
     private void ShowLoading(string message)

@@ -33,9 +33,11 @@ public sealed class VocationProductView : Grid
     };
     private readonly StackPanel statusPanel;
     private readonly Uri? productUri;
+    private bool reloadInProgress;
 
-    public VocationProductView()
+    public VocationProductView(IVocationProductRuntime? runtime = null)
     {
+        Runtime = runtime;
         AutomationProperties.SetName(webView, "Vocation product surface");
         AutomationProperties.SetAutomationId(webView, "VocationProductSurface");
         AutomationProperties.SetName(hostStatus, "Vocation product status");
@@ -47,7 +49,7 @@ public sealed class VocationProductView : Grid
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             Children = { progress, hostStatus, retry }
         };
-        retry.Click += (_, _) => Reload();
+        retry.Click += OnRetry;
 
         productUri = ResolveProductUri();
         Children.Add(webView);
@@ -56,19 +58,46 @@ public sealed class VocationProductView : Grid
         webView.AdapterCreated += OnAdapterCreated;
         webView.NavigationStarted += OnNavigationStarted;
         webView.NavigationCompleted += OnNavigationCompleted;
-        ShowLoading("Starting local Vocation product…");
+        ShowLoading("Preparing local Vocation product…");
     }
 
-    public void Reload()
+    public IVocationProductRuntime? Runtime { get; set; }
+
+    public async Task ReloadAsync()
     {
+        if (reloadInProgress)
+            return;
         if (productUri is null)
         {
             ShowHostError("The configured Vocation product URL is invalid. Only loopback HTTP(S) URLs are accepted.");
             return;
         }
 
-        ShowLoading("Connecting to local Vocation…");
-        webView.Source = productUri;
+        reloadInProgress = true;
+        try
+        {
+            ShowLoading("Starting local Vocation…");
+            if (Runtime is not null)
+            {
+                var readiness = await Runtime.EnsureReadyAsync(productUri);
+                if (!readiness.IsReady)
+                {
+                    ShowHostError(readiness.FailureMessage ?? "Vocation could not be started.");
+                    return;
+                }
+            }
+
+            ShowLoading("Loading Vocation…");
+            webView.Source = productUri;
+        }
+        catch (Exception ex)
+        {
+            ShowHostError($"Vocation could not be prepared: {ex.Message}");
+        }
+        finally
+        {
+            reloadInProgress = false;
+        }
     }
 
     private static Uri? ResolveProductUri()
@@ -83,7 +112,7 @@ public sealed class VocationProductView : Grid
         return candidate;
     }
 
-    private void OnAdapterCreated(object? sender, WebViewAdapterEventArgs e)
+    private async void OnAdapterCreated(object? sender, WebViewAdapterEventArgs e)
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -91,7 +120,13 @@ public sealed class VocationProductView : Grid
             return;
         }
 
-        Reload();
+        await ReloadAsync();
+    }
+
+    private async void OnRetry(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        await ReloadAsync();
+        e.Handled = true;
     }
 
     private void OnNavigationStarted(object? sender, WebViewNavigationStartingEventArgs e) =>
@@ -106,7 +141,7 @@ public sealed class VocationProductView : Grid
             return;
         }
 
-        ShowHostError("Vocation is not running at its local product address. Start the Vocation provider, then retry.");
+        ShowHostError("Vocation started, but its local product surface could not be loaded. Retry the provider connection.");
     }
 
     private void ShowLoading(string message)

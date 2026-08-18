@@ -11,4 +11,14 @@ public sealed partial class MainWindow : Window
         ArgumentNullException.ThrowIfNull(source);
         ShellView.IlluminationProductSurfaceSource = source;
     }
+
+    public void ConfigureProductRuntimes(
+        IVocationProductRuntime vocationRuntime,
+        IOrientationProductRuntime orientationRuntime)
+    {
+        ArgumentNullException.ThrowIfNull(vocationRuntime);
+        ArgumentNullException.ThrowIfNull(orientationRuntime);
+        ShellView.VocationProductRuntime = vocationRuntime;
+        ShellView.OrientationProductRuntime = orientationRuntime;
+    }
 }
