@@ -12,16 +12,26 @@ public sealed class OrientationProductView : Grid
     private static readonly Uri DefaultProductUri = new("http://127.0.0.1:5173/app.html");
 
     private readonly NativeWebView webView = new();
+    private readonly ProgressBar progress = new()
+    {
+        IsIndeterminate = true,
+        Height = 4,
+        Width = 260
+    };
     private readonly TextBlock hostStatus = new()
     {
-        Text = "Orientation is unavailable.",
+        Text = "Starting Orientation…",
         TextWrapping = Avalonia.Media.TextWrapping.Wrap,
         TextAlignment = Avalonia.Media.TextAlignment.Center,
+        MaxWidth = 520
+    };
+    private readonly Button retry = new()
+    {
+        Content = "Retry Orientation",
         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-        MaxWidth = 500,
         IsVisible = false
     };
+    private readonly StackPanel statusPanel;
     private readonly Uri? productUri;
 
     public OrientationProductView()
@@ -30,19 +40,35 @@ public sealed class OrientationProductView : Grid
         AutomationProperties.SetAutomationId(webView, "OrientationProductSurface");
         AutomationProperties.SetName(hostStatus, "Orientation product status");
 
+        statusPanel = new StackPanel
+        {
+            Spacing = 12,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Children = { progress, hostStatus, retry }
+        };
+        retry.Click += (_, _) => Reload();
+
         productUri = ResolveProductUri();
         Children.Add(webView);
-        Children.Add(hostStatus);
+        Children.Add(statusPanel);
 
         webView.AdapterCreated += OnAdapterCreated;
         webView.NavigationStarted += OnNavigationStarted;
         webView.NavigationCompleted += OnNavigationCompleted;
+        ShowLoading("Starting local Orientation product…");
     }
 
     public void Reload()
     {
-        if (productUri is not null)
-            webView.Source = productUri;
+        if (productUri is null)
+        {
+            ShowHostError("The configured Orientation product URL is invalid. Only loopback HTTP(S) URLs are accepted.");
+            return;
+        }
+
+        ShowLoading("Connecting to local Orientation…");
+        webView.Source = productUri;
     }
 
     private static Uri? ResolveProductUri()
@@ -65,38 +91,41 @@ public sealed class OrientationProductView : Grid
             return;
         }
 
-        if (productUri is null)
-        {
-            ShowHostError("The configured Orientation product URL is invalid. Only loopback HTTP(S) URLs are accepted.");
-            return;
-        }
-
-        webView.Source = productUri;
+        Reload();
     }
 
-    private void OnNavigationStarted(object? sender, WebViewNavigationStartingEventArgs e)
-    {
-        hostStatus.IsVisible = false;
-        webView.IsVisible = true;
-    }
+    private void OnNavigationStarted(object? sender, WebViewNavigationStartingEventArgs e) =>
+        ShowLoading("Loading Orientation…");
 
     private void OnNavigationCompleted(object? sender, WebViewNavigationCompletedEventArgs e)
     {
         if (e.IsSuccess)
         {
-            hostStatus.IsVisible = false;
+            statusPanel.IsVisible = false;
             webView.IsVisible = true;
             return;
         }
 
-        ShowHostError("Orientation could not be loaded. Start the local Orientation standalone UI and try again.");
+        ShowHostError("Orientation is not running at its local standalone address. Start the Orientation map app, then retry.");
+    }
+
+    private void ShowLoading(string message)
+    {
+        hostStatus.Text = message;
+        progress.IsVisible = true;
+        retry.IsVisible = false;
+        webView.IsVisible = false;
+        statusPanel.IsVisible = true;
+        AutomationProperties.SetName(hostStatus, message);
     }
 
     private void ShowHostError(string message)
     {
         hostStatus.Text = message;
-        AutomationProperties.SetName(hostStatus, message);
+        progress.IsVisible = false;
+        retry.IsVisible = true;
         webView.IsVisible = false;
-        hostStatus.IsVisible = true;
+        statusPanel.IsVisible = true;
+        AutomationProperties.SetName(hostStatus, message);
     }
 }
