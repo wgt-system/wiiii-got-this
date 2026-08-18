@@ -31,6 +31,25 @@ public sealed class AtlasPresentationTests
     }
 
     [Fact]
+    public void Integrated_service_compact_state_describes_composition_not_product_process_readiness()
+    {
+        var model = new AtlasNode(
+            "service:vocation",
+            AtlasNodeKind.Service,
+            "Vocation",
+            "Available",
+            new ServiceIdentity("vocation"),
+            IsEnabled: true,
+            IsAvailable: true,
+            IsIntegrated: true);
+
+        var node = new AtlasNodePresentationViewModel(model, 0, 0);
+
+        Assert.Equal("COMPOSED", node.CompactStateText);
+        Assert.DoesNotContain("READY", node.CompactStateText, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Known_only_service_does_not_claim_a_product_surface()
     {
         var model = new AtlasNode(
