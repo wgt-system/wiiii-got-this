@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: wgt-system/illumination
-          ref: 22a37db31f2b53a0bd424c443053baaaeec4e00c
+          ref: 2e341cbcbcb6f3d0148ae921e751ffafe5677276
           path: .providers/illumination
 
       - name: Set up .NET
