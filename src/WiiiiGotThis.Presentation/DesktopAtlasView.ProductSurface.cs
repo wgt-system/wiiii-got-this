@@ -9,6 +9,8 @@ public sealed partial class DesktopAtlasView
 {
     private Grid? vocationProductOverlay;
     private VocationProductView? vocationProductView;
+    private Grid? orientationProductOverlay;
+    private OrientationProductView? orientationProductView;
     private Grid? illuminationProductOverlay;
     private ContentControl? illuminationProductContent;
     private Control? illuminationProductSurface;
@@ -36,6 +38,12 @@ public sealed partial class DesktopAtlasView
         {
             await OpenIlluminationProductSurfaceAsync();
         }
+        else if (string.Equals(serviceId, "orientation", StringComparison.Ordinal))
+        {
+            EnsureOrientationProductOverlay();
+            orientationProductOverlay!.IsVisible = true;
+            orientationProductView!.Reload();
+        }
 
         e.Handled = true;
     }
@@ -51,6 +59,19 @@ public sealed partial class DesktopAtlasView
             "Vocation in Wiiii Got This",
             "ReturnToAtlasFromVocation");
         AtlasViewport.Children.Add(vocationProductOverlay);
+    }
+
+    private void EnsureOrientationProductOverlay()
+    {
+        if (orientationProductOverlay is not null)
+            return;
+
+        orientationProductView = new OrientationProductView();
+        orientationProductOverlay = CreateProductOverlay(
+            orientationProductView,
+            "Orientation in Wiiii Got This",
+            "ReturnToAtlasFromOrientation");
+        AtlasViewport.Children.Add(orientationProductOverlay);
     }
 
     private async Task OpenIlluminationProductSurfaceAsync()
@@ -209,6 +230,8 @@ public sealed partial class DesktopAtlasView
     {
         if (vocationProductOverlay is not null)
             vocationProductOverlay.IsVisible = false;
+        if (orientationProductOverlay is not null)
+            orientationProductOverlay.IsVisible = false;
         if (illuminationProductOverlay is not null)
             illuminationProductOverlay.IsVisible = false;
         AtlasSearch.Focus();
