@@ -18,9 +18,13 @@ public sealed partial class DesktopAtlasView
 
     private async void OnOpenProductSurface(object? sender, RoutedEventArgs e)
     {
-        var serviceId = shell?.SelectedAtlasNode?.ServiceIdentity?.Value;
-        if (shell?.SelectedAtlasNode?.CanOpenProductSurface != true || string.IsNullOrWhiteSpace(serviceId))
+        var selectedNode = shell?.SelectedAtlasNode;
+        var serviceId = selectedNode?.ServiceIdentity?.Value;
+        if (selectedNode?.CanOpenProductSurface != true || string.IsNullOrWhiteSpace(serviceId) || shell is null)
             return;
+
+        if (!selectedNode.IsEnabled && shell.EnableOnThisDeviceCommand.CanExecute(null))
+            await shell.EnableOnThisDeviceCommand.ExecuteAsync(null);
 
         if (string.Equals(serviceId, "vocation", StringComparison.Ordinal))
         {
@@ -114,15 +118,16 @@ public sealed partial class DesktopAtlasView
     {
         var returnButton = new Button
         {
-            Width = 44,
-            Height = 44,
-            CornerRadius = new Avalonia.CornerRadius(22),
+            Width = 46,
+            Height = 46,
+            CornerRadius = new Avalonia.CornerRadius(23),
             Padding = new Avalonia.Thickness(0),
             Content = "◎",
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top,
             Margin = new Avalonia.Thickness(18)
         };
+        returnButton.Classes.Add("wgt-product-return");
         ToolTip.SetTip(returnButton, "Return to WGT Atlas");
         AutomationProperties.SetName(returnButton, "Return to WGT Atlas");
         AutomationProperties.SetAutomationId(returnButton, returnAutomationId);
