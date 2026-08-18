@@ -13,12 +13,13 @@ namespace WiiiiGotThis.Presentation;
 
 public sealed partial class DesktopAtlasView : UserControl
 {
-    private const double WorldWidth = 1800;
-    private const double WorldHeight = 1200;
+    private const double WorldWidth = 2000;
+    private const double WorldHeight = 1320;
     private const double WorldCenterX = WorldWidth / 2;
     private const double WorldCenterY = WorldHeight / 2;
     private const double MinimumZoom = 0.55;
     private const double MaximumZoom = 1.8;
+    private const double GridSpacing = 100;
 
     private static readonly string[] ThemeClasses =
     [
@@ -105,6 +106,8 @@ public sealed partial class DesktopAtlasView : UserControl
         if (currentShell is null)
             return;
 
+        AddGridLines();
+
         foreach (var connection in currentShell.AtlasConnections)
         {
             var line = new Line
@@ -133,44 +136,108 @@ public sealed partial class DesktopAtlasView : UserControl
         PositionInspector();
     }
 
+    private void AddGridLines()
+    {
+        for (var x = 0d; x <= WorldWidth; x += GridSpacing)
+        {
+            var line = new Line
+            {
+                StartPoint = new Point(x, 0),
+                EndPoint = new Point(x, WorldHeight),
+                IsHitTestVisible = false
+            };
+            line.Classes.Add("wgt-atlas-gridline");
+            ApplyThemeClass(line);
+            SceneCanvas.Children.Add(line);
+        }
+
+        for (var y = 0d; y <= WorldHeight; y += GridSpacing)
+        {
+            var line = new Line
+            {
+                StartPoint = new Point(0, y),
+                EndPoint = new Point(WorldWidth, y),
+                IsHitTestVisible = false
+            };
+            line.Classes.Add("wgt-atlas-gridline");
+            ApplyThemeClass(line);
+            SceneCanvas.Children.Add(line);
+        }
+    }
+
     private static Button CreateNodeButton(AtlasNodePresentationViewModel node, ShellViewModel currentShell)
     {
         var (width, height) = node.Kind switch
         {
-            AtlasNodeKind.Core => (184d, 92d),
-            AtlasNodeKind.Service => (158d, 78d),
-            _ => (136d, 62d)
+            AtlasNodeKind.Core => (210d, 108d),
+            AtlasNodeKind.Service => (178d, 92d),
+            _ => (146d, 68d)
         };
+
+        var kind = new TextBlock
+        {
+            Text = node.Kind switch
+            {
+                AtlasNodeKind.Core => "WGT CORE",
+                AtlasNodeKind.Service => "SERVICE",
+                _ => "CAPABILITY"
+            },
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+        kind.Classes.Add("wgt-node-kind");
 
         var title = new TextBlock
         {
             Text = node.Title,
             FontWeight = FontWeight.SemiBold,
+            FontSize = node.IsCore ? 17 : 15,
             TextAlignment = TextAlignment.Center,
             TextWrapping = TextWrapping.Wrap,
             MaxWidth = width - 24
         };
+
+        var statusDot = new Border
+        {
+            Width = 7,
+            Height = 7,
+            CornerRadius = new CornerRadius(4),
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+        statusDot.Classes.Add("wgt-atlas-status-dot");
+        if (!node.IsAvailable)
+            statusDot.Classes.Add("unavailable");
+
         var state = new TextBlock
         {
-            Text = node.IsCore ? "CORE" : node.AvailabilityText,
+            Text = node.IsCore ? "system space" : node.AvailabilityText,
             FontSize = 11,
-            Opacity = 0.72,
+            Opacity = 0.76,
             TextAlignment = TextAlignment.Center,
             TextWrapping = TextWrapping.Wrap,
-            MaxWidth = width - 24
+            MaxWidth = width - 38
         };
+
+        var stateRow = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            Spacing = 6,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Children = { statusDot, state }
+        };
+
         var content = new StackPanel
         {
-            Spacing = 3,
+            Spacing = node.IsCapability ? 3 : 5,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Children = { title, state }
+            Children = { kind, title, stateRow }
         };
+
         var button = new Button
         {
             Width = width,
             Height = height,
-            Padding = new Thickness(10, 8),
+            Padding = new Thickness(11, 8),
             HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
             Content = content,
@@ -250,16 +317,16 @@ public sealed partial class DesktopAtlasView : UserControl
         var world = WorldPoint(node);
         var x = world.X * sceneScale.ScaleX + sceneTranslate.X;
         var y = world.Y * sceneScale.ScaleY + sceneTranslate.Y;
-        const double cardWidth = 336;
-        const double estimatedHeight = 430;
-        const double gap = 28;
+        const double cardWidth = 382;
+        const double estimatedHeight = 500;
+        const double gap = 30;
 
         var left = x + gap;
-        if (left + cardWidth > AtlasViewport.Bounds.Width - 18)
+        if (left + cardWidth > AtlasViewport.Bounds.Width - 20)
             left = x - cardWidth - gap;
-        left = Math.Clamp(left, 18, Math.Max(18, AtlasViewport.Bounds.Width - cardWidth - 18));
+        left = Math.Clamp(left, 20, Math.Max(20, AtlasViewport.Bounds.Width - cardWidth - 20));
 
-        var top = Math.Clamp(y - 96, 70, Math.Max(70, AtlasViewport.Bounds.Height - estimatedHeight - 18));
+        var top = Math.Clamp(y - 110, 88, Math.Max(88, AtlasViewport.Bounds.Height - estimatedHeight - 20));
         Canvas.SetLeft(InspectorCard, left);
         Canvas.SetTop(InspectorCard, top);
     }
@@ -363,6 +430,13 @@ public sealed partial class DesktopAtlasView : UserControl
                 return;
         }
         PositionInspector();
+        e.Handled = true;
+    }
+
+    private void OnCloseInspector(object? sender, RoutedEventArgs e)
+    {
+        shell?.SelectAtlasNodeCommand.Execute(null);
+        AtlasViewport.Focus();
         e.Handled = true;
     }
 
