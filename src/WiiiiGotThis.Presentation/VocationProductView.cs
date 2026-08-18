@@ -12,16 +12,26 @@ public sealed class VocationProductView : Grid
     private static readonly Uri DefaultProductUri = new("http://127.0.0.1:8765/");
 
     private readonly NativeWebView webView = new();
+    private readonly ProgressBar progress = new()
+    {
+        IsIndeterminate = true,
+        Height = 4,
+        Width = 260
+    };
     private readonly TextBlock hostStatus = new()
     {
-        Text = "Vocation is unavailable.",
+        Text = "Starting Vocation…",
         TextWrapping = Avalonia.Media.TextWrapping.Wrap,
         TextAlignment = Avalonia.Media.TextAlignment.Center,
+        MaxWidth = 500
+    };
+    private readonly Button retry = new()
+    {
+        Content = "Retry Vocation",
         HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-        MaxWidth = 460,
         IsVisible = false
     };
+    private readonly StackPanel statusPanel;
     private readonly Uri? productUri;
 
     public VocationProductView()
@@ -30,19 +40,35 @@ public sealed class VocationProductView : Grid
         AutomationProperties.SetAutomationId(webView, "VocationProductSurface");
         AutomationProperties.SetName(hostStatus, "Vocation product status");
 
+        statusPanel = new StackPanel
+        {
+            Spacing = 12,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Children = { progress, hostStatus, retry }
+        };
+        retry.Click += (_, _) => Reload();
+
         productUri = ResolveProductUri();
         Children.Add(webView);
-        Children.Add(hostStatus);
+        Children.Add(statusPanel);
 
         webView.AdapterCreated += OnAdapterCreated;
         webView.NavigationStarted += OnNavigationStarted;
         webView.NavigationCompleted += OnNavigationCompleted;
+        ShowLoading("Starting local Vocation product…");
     }
 
     public void Reload()
     {
-        if (productUri is not null)
-            webView.Source = productUri;
+        if (productUri is null)
+        {
+            ShowHostError("The configured Vocation product URL is invalid. Only loopback HTTP(S) URLs are accepted.");
+            return;
+        }
+
+        ShowLoading("Connecting to local Vocation…");
+        webView.Source = productUri;
     }
 
     private static Uri? ResolveProductUri()
@@ -65,38 +91,41 @@ public sealed class VocationProductView : Grid
             return;
         }
 
-        if (productUri is null)
-        {
-            ShowHostError("The configured Vocation product URL is invalid. Only loopback HTTP(S) URLs are accepted.");
-            return;
-        }
-
-        webView.Source = productUri;
+        Reload();
     }
 
-    private void OnNavigationStarted(object? sender, WebViewNavigationStartingEventArgs e)
-    {
-        hostStatus.IsVisible = false;
-        webView.IsVisible = true;
-    }
+    private void OnNavigationStarted(object? sender, WebViewNavigationStartingEventArgs e) =>
+        ShowLoading("Loading Vocation…");
 
     private void OnNavigationCompleted(object? sender, WebViewNavigationCompletedEventArgs e)
     {
         if (e.IsSuccess)
         {
-            hostStatus.IsVisible = false;
+            statusPanel.IsVisible = false;
             webView.IsVisible = true;
             return;
         }
 
-        ShowHostError("Vocation could not be loaded. Start or restore the local Vocation provider and try again.");
+        ShowHostError("Vocation is not running at its local product address. Start the Vocation provider, then retry.");
+    }
+
+    private void ShowLoading(string message)
+    {
+        hostStatus.Text = message;
+        progress.IsVisible = true;
+        retry.IsVisible = false;
+        webView.IsVisible = false;
+        statusPanel.IsVisible = true;
+        AutomationProperties.SetName(hostStatus, message);
     }
 
     private void ShowHostError(string message)
     {
         hostStatus.Text = message;
-        AutomationProperties.SetName(hostStatus, message);
+        progress.IsVisible = false;
+        retry.IsVisible = true;
         webView.IsVisible = false;
-        hostStatus.IsVisible = true;
+        statusPanel.IsVisible = true;
+        AutomationProperties.SetName(hostStatus, message);
     }
 }
