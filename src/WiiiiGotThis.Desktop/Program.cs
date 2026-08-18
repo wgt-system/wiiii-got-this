@@ -27,7 +27,8 @@ internal static class Program
         var vocationMapSource = new VocationHttpMapProjectionSource(vocationHttpClient);
         var adapters = new StaticIntegrationAdapterCatalog([
             new ReferenceIntegrationAdapter(),
-            new VocationIntegrationAdapter(vocationSource, vocationMapSource)]);
+            new VocationIntegrationAdapter(vocationSource, vocationMapSource),
+            new IlluminationDesktopIntegrationAdapter()]);
         var ensureDevice = new EnsureCurrentDeviceUseCase(deviceStore);
         var register = new RegisterKnownIntegrationsUseCase(adapters, integrationStore);
         var refresh = new RefreshPublicationsUseCase(adapters, publicationStore);
@@ -52,9 +53,15 @@ internal static class Program
             readVocationMapProjection,
             new GetAtlasAppearancePreferenceUseCase(appearanceStore),
             new SetAtlasAppearancePreferenceUseCase(appearanceStore));
+        var illuminationProductSurface = new IlluminationDesktopProductSurfaceSource();
 
-        BuildAvaloniaApp(shell).StartWithClassicDesktopLifetime(args);
+        BuildAvaloniaApp(shell, illuminationProductSurface).StartWithClassicDesktopLifetime(args);
     }
 
-    private static AppBuilder BuildAvaloniaApp(ShellViewModel shell) => AppBuilder.Configure(() => new App(shell)).UsePlatformDetect().LogToTrace();
+    private static AppBuilder BuildAvaloniaApp(
+        ShellViewModel shell,
+        IIlluminationProductSurfaceSource illuminationProductSurface) =>
+        AppBuilder.Configure(() => new App(shell, illuminationProductSurface))
+            .UsePlatformDetect()
+            .LogToTrace();
 }
