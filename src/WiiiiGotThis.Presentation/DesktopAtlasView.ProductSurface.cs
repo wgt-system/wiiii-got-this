@@ -160,20 +160,17 @@ public sealed partial class DesktopAtlasView
         string automationName,
         string returnAutomationId)
     {
-        var returnButton = new Button
-        {
-            Width = 40,
-            Height = 40,
-            CornerRadius = new Avalonia.CornerRadius(20),
-            Padding = new Avalonia.Thickness(0),
-            Content = "◎",
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-        };
-        returnButton.Classes.Add("wgt-product-return");
-        ToolTip.SetTip(returnButton, "Return to WGT Atlas");
-        AutomationProperties.SetName(returnButton, "Return to WGT Atlas");
-        AutomationProperties.SetAutomationId(returnButton, returnAutomationId);
-        returnButton.Click += OnReturnFromProductSurface;
+        var returnButton = BuildRailButton(
+            "◎",
+            "Return to WGT Atlas",
+            returnAutomationId,
+            OnReturnFromProductSurface);
+
+        var settingsButton = BuildRailButton(
+            "⚙",
+            "WGT settings",
+            $"ProductRailWgtSettings{serviceName}",
+            OnProductRailWgtSettings);
 
         var wgtCaption = new TextBlock
         {
@@ -184,20 +181,20 @@ public sealed partial class DesktopAtlasView
             Opacity = 0.62,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
-        var atlasCaption = new TextBlock
+        var wgtTools = new StackPanel
         {
-            Text = "ATLAS",
-            FontSize = 6,
-            FontWeight = FontWeight.SemiBold,
-            LetterSpacing = 1.1,
-            Opacity = 0.34,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-        };
-        var returnStack = new StackPanel
-        {
-            Spacing = 3,
+            Spacing = 8,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            Children = { returnButton, wgtCaption, atlasCaption }
+            Children = { returnButton, wgtCaption, settingsButton }
+        };
+
+        var divider = new Border
+        {
+            Height = 1,
+            Width = 32,
+            Margin = new Avalonia.Thickness(0, 4),
+            Background = new SolidColorBrush(Color.FromArgb(48, 126, 173, 153)),
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
 
         var serviceMark = new Border
@@ -208,49 +205,50 @@ public sealed partial class DesktopAtlasView
         };
         serviceMark.Classes.Add("wgt-product-service-mark");
         serviceMark.Classes.Add(serviceName.ToLowerInvariant());
+        ToolTip.SetTip(serviceMark, serviceName);
+        AutomationProperties.SetName(serviceMark, serviceName);
 
         var serviceLabel = new TextBlock
         {
             Text = serviceName,
-            FontSize = 9,
+            FontSize = 8,
             FontWeight = FontWeight.SemiBold,
-            Opacity = 0.8,
+            Opacity = 0.72,
             MaxWidth = 58,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             TextAlignment = TextAlignment.Center,
             TextWrapping = TextWrapping.Wrap
         };
-        var serviceDepth = new TextBlock
+
+        var providerHeader = new StackPanel
         {
-            Text = "PRODUCT",
-            FontSize = 6,
-            FontWeight = FontWeight.SemiBold,
-            LetterSpacing = 1,
-            Opacity = 0.34,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-        };
-        var serviceIdentity = new StackPanel
-        {
-            Spacing = 6,
+            Spacing = 5,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Children = { serviceMark, serviceLabel, serviceDepth }
+            Children = { serviceMark, serviceLabel }
         };
 
-        var surfaceCaption = new TextBlock
+        var capabilityActions = BuildProviderCapabilityRail(serviceName);
+        var capabilityScroll = new ScrollViewer
         {
-            Text = "FULL PRODUCT",
-            FontSize = 6,
-            FontWeight = FontWeight.SemiBold,
-            LetterSpacing = 0.8,
-            Opacity = 0.28,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Hidden,
+            HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+            Content = capabilityActions,
+            HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
+        AutomationProperties.SetName(capabilityScroll, $"{serviceName} capability controls");
+
+        var providerSection = new Grid
+        {
+            RowDefinitions = new RowDefinitions("Auto,*"),
+            RowSpacing = 8,
+            Children = { providerHeader, capabilityScroll }
+        };
+        Grid.SetRow(capabilityScroll, 1);
 
         var depthTrack = new Border
         {
             Width = 1,
-            Margin = new Avalonia.Thickness(0, 74, 0, 62),
+            Margin = new Avalonia.Thickness(0, 82, 0, 18),
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             IsHitTestVisible = false
         };
@@ -259,14 +257,14 @@ public sealed partial class DesktopAtlasView
 
         var railGrid = new Grid
         {
-            RowDefinitions = new RowDefinitions("Auto,*,Auto"),
-            Children = { depthTrack, returnStack, serviceIdentity, surfaceCaption }
+            RowDefinitions = new RowDefinitions("Auto,Auto,*"),
+            Children = { depthTrack, wgtTools, divider, providerSection }
         };
-        Grid.SetRow(returnStack, 0);
-        returnStack.Margin = new Avalonia.Thickness(0, 14, 0, 0);
-        Grid.SetRow(serviceIdentity, 1);
-        Grid.SetRow(surfaceCaption, 2);
-        surfaceCaption.Margin = new Avalonia.Thickness(0, 0, 0, 16);
+        Grid.SetRow(wgtTools, 0);
+        wgtTools.Margin = new Avalonia.Thickness(0, 14, 0, 8);
+        Grid.SetRow(divider, 1);
+        Grid.SetRow(providerSection, 2);
+        providerSection.Margin = new Avalonia.Thickness(0, 8, 0, 14);
 
         var rail = new Border
         {
@@ -294,6 +292,102 @@ public sealed partial class DesktopAtlasView
         overlay.Classes.Add("wgt-product-overlay");
         AutomationProperties.SetName(overlay, automationName);
         return overlay;
+    }
+
+    private StackPanel BuildProviderCapabilityRail(string serviceName)
+    {
+        var stack = new StackPanel
+        {
+            Spacing = 7,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+
+        var serviceId = serviceName.ToLowerInvariant();
+        var capabilities = shell?.AtlasNodes
+            .Where(node =>
+                node.IsCapability
+                && string.Equals(node.ServiceIdentity?.Value, serviceId, StringComparison.Ordinal))
+            .OrderBy(node => node.Title, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(node => node.NodeId, StringComparer.Ordinal)
+            .ToArray() ?? [];
+
+        foreach (var capability in capabilities)
+        {
+            var glyph = capability.CapabilityIdentity?.Value switch
+            {
+                BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId => "⌖",
+                BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId => "⇄",
+                _ => "◇"
+            };
+            var button = BuildRailButton(
+                glyph,
+                capability.Title,
+                $"ProductRailCapability{serviceName}{capability.CapabilityIdentity?.Value}",
+                OnProductRailCapability);
+            button.Tag = capability;
+            stack.Children.Add(button);
+        }
+
+        if (capabilities.Length == 0)
+        {
+            var quietMark = new TextBlock
+            {
+                Text = "·",
+                FontSize = 16,
+                Opacity = 0.24,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+            };
+            ToolTip.SetTip(quietMark, "No WGT-level provider capabilities are exposed here yet");
+            stack.Children.Add(quietMark);
+        }
+
+        return stack;
+    }
+
+    private static Button BuildRailButton(
+        string glyph,
+        string tooltip,
+        string automationId,
+        EventHandler<RoutedEventArgs> handler)
+    {
+        var button = new Button
+        {
+            Width = 38,
+            Height = 38,
+            CornerRadius = new Avalonia.CornerRadius(19),
+            Padding = new Avalonia.Thickness(0),
+            Content = glyph,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+        button.Classes.Add("wgt-product-rail-action");
+        ToolTip.SetTip(button, tooltip);
+        AutomationProperties.SetName(button, tooltip);
+        AutomationProperties.SetAutomationId(button, automationId);
+        button.Click += handler;
+        return button;
+    }
+
+    private async void OnProductRailWgtSettings(object? sender, RoutedEventArgs e)
+    {
+        await HideActiveProductOverlayAsync();
+        if (shell is not null)
+            shell.AtlasSettingsExpanded = true;
+        AtlasViewport.Focus();
+        e.Handled = true;
+    }
+
+    private async void OnProductRailCapability(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: AtlasNodePresentationViewModel capability } || shell is null)
+            return;
+
+        await HideActiveProductOverlayAsync();
+        shell.SelectAtlasNodeCommand.Execute(capability);
+        CenterOnSelected();
+        AtlasViewport.Focus();
+        e.Handled = true;
     }
 
     private void ShowOnlyProductOverlay(Grid overlay)
@@ -413,21 +507,25 @@ public sealed partial class DesktopAtlasView
         e.Handled = true;
     }
 
-    private async void OnReturnFromProductSurface(object? sender, RoutedEventArgs e)
+    private async Task HideActiveProductOverlayAsync()
     {
         var activeOverlay = ProductOverlays().FirstOrDefault(candidate => candidate.IsVisible);
-        if (activeOverlay is not null)
-        {
-            activeOverlay.Opacity = 0;
-            var delay = shell?.IsAtlasReducedMotion == true
-                ? 0
-                : ProductSurfaceTransitionMilliseconds;
-            if (delay > 0)
-                await Task.Delay(delay);
-            activeOverlay.IsVisible = false;
-            activeOverlay.Opacity = 1;
-        }
+        if (activeOverlay is null)
+            return;
 
+        activeOverlay.Opacity = 0;
+        var delay = shell?.IsAtlasReducedMotion == true
+            ? 0
+            : ProductSurfaceTransitionMilliseconds;
+        if (delay > 0)
+            await Task.Delay(delay);
+        activeOverlay.IsVisible = false;
+        activeOverlay.Opacity = 1;
+    }
+
+    private async void OnReturnFromProductSurface(object? sender, RoutedEventArgs e)
+    {
+        await HideActiveProductOverlayAsync();
         AtlasViewport.Focus();
         e.Handled = true;
     }
