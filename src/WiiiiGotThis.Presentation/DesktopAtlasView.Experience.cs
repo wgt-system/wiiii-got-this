@@ -102,11 +102,19 @@ public sealed partial class DesktopAtlasView
             if (!nodeShell.Classes.Contains("wgt-atlas-node-shell") ||
                 nodeShell.Child is not Button button ||
                 button.DataContext is not AtlasNodePresentationViewModel node ||
-                !node.CanOpenProductSurface ||
-                button.Classes.Contains("direct-product-entry"))
+                !node.CanOpenProductSurface)
             {
                 continue;
             }
+
+            if (!node.IsEnabled)
+            {
+                ToolTip.SetTip(button, $"Select {node.Title} to review activation before opening");
+                continue;
+            }
+
+            if (button.Classes.Contains("direct-product-entry"))
+                continue;
 
             button.Classes.Add("direct-product-entry");
             button.DoubleTapped += OnProductNodeDoubleTapped;
@@ -121,6 +129,12 @@ public sealed partial class DesktopAtlasView
             return;
 
         shell.SelectAtlasNodeCommand.Execute(node);
+        if (!node.IsEnabled)
+        {
+            e.Handled = true;
+            return;
+        }
+
         if (await OpenSelectedProductSurfaceAsync())
             e.Handled = true;
     }
@@ -131,6 +145,12 @@ public sealed partial class DesktopAtlasView
             return;
 
         shell.SelectAtlasNodeCommand.Execute(node);
+        if (!node.IsEnabled)
+        {
+            e.Handled = true;
+            return;
+        }
+
         if (await OpenSelectedProductSurfaceAsync())
             e.Handled = true;
     }
