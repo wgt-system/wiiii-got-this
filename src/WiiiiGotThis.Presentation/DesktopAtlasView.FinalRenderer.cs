@@ -215,43 +215,9 @@ public sealed partial class DesktopAtlasView
     private static StackPanel BuildProductNode(AtlasNodePresentationViewModel node)
     {
         var emblemSize = node.IsCore ? 116d : 78d;
-        Control emblemContent;
-
-        if (node.IsCore)
-        {
-            var glyph = new TextBlock
-            {
-                Text = "WGT",
-                FontSize = 24,
-                FontWeight = FontWeight.Bold,
-                LetterSpacing = 1.4,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            };
-            glyph.Classes.Add("wgt-node-glyph");
-
-            var coreLabel = new TextBlock
-            {
-                Text = "CORE",
-                FontSize = 8,
-                FontWeight = FontWeight.SemiBold,
-                LetterSpacing = 1.6,
-                Opacity = 0.58,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-            };
-            coreLabel.Classes.Add("wgt-node-core-label");
-            emblemContent = new StackPanel
-            {
-                Spacing = 1,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-                Children = { glyph, coreLabel }
-            };
-        }
-        else
-        {
-            emblemContent = ServiceSigilFactory.Create(node.Title, 44);
-        }
+        Control emblemContent = node.IsCore
+            ? CoreSigilFactory.Create(64)
+            : ServiceSigilFactory.Create(node.Title, 44);
 
         var inner = new Border
         {
