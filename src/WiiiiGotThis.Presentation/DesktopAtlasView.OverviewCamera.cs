@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Threading;
+using WiiiiGotThis.Application;
 
 namespace WiiiiGotThis.Presentation;
 
