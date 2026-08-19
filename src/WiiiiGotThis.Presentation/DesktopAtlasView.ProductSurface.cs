@@ -377,7 +377,6 @@ public sealed partial class DesktopAtlasView
 
         var progress = new ProgressBar
         {
-            IsIndeterminate = true,
             Height = 3,
             Width = 220,
             IsVisible = isLoading

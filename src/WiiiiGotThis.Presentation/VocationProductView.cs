@@ -15,7 +15,6 @@ public sealed class VocationProductView : Grid
     private readonly NativeWebView webView = new();
     private readonly ProgressBar progress = new()
     {
-        IsIndeterminate = true,
         Height = 3,
         Width = 220
     };

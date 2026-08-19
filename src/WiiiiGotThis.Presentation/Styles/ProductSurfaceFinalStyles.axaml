@@ -147,7 +147,8 @@
     <Setter Property="BorderThickness" Value="0" />
   </Style>
 
-  <!-- Provider-specific startup/readiness state before the provider surface takes over. -->
+  <!-- Provider-specific startup/readiness is WGT-owned host state until the provider
+       surface takes over, so it may carry the current Atlas renderer language. -->
   <Style Selector="StackPanel.wgt-provider-status-panel">
     <Setter Property="Opacity" Value="0.96" />
   </Style>
@@ -179,7 +180,60 @@
   </Style>
   <Style Selector="ProgressBar.wgt-provider-status-progress">
     <Setter Property="Foreground" Value="#FF4CCAF0" />
+    <Setter Property="IsIndeterminate" Value="True" />
   </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Border.wgt-provider-status-mark">
+    <Setter Property="Background" Value="#FF081721" />
+    <Setter Property="BorderBrush" Value="#FF4FB6D3" />
+    <Setter Property="BoxShadow" Value="0 0 34 2 #2855CFF2" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Border.wgt-provider-status-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF6EDAF7" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical ProgressBar.wgt-provider-status-progress">
+    <Setter Property="Foreground" Value="#FF55CFF2" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-provider-status-mark">
+    <Setter Property="Background" Value="#FF1A161A" />
+    <Setter Property="BorderBrush" Value="#FF75656D" />
+    <Setter Property="CornerRadius" Value="24" />
+    <Setter Property="BoxShadow" Value="0 0 24 1 #22000000" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-provider-status-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FFE0D0BC" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant ProgressBar.wgt-provider-status-progress">
+    <Setter Property="Foreground" Value="#FFC9B8A5" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-provider-status-mark">
+    <Setter Property="Background" Value="#FF05130C" />
+    <Setter Property="BorderBrush" Value="#FF45B97B" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="BoxShadow" Value="0 0 32 2 #2863F5B2" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-provider-status-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF78FFC2" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine ProgressBar.wgt-provider-status-progress">
+    <Setter Property="Foreground" Value="#FF63F5B2" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-provider-status-mark">
+    <Setter Property="Background" Value="#FF0A1A11" />
+    <Setter Property="BorderBrush" Value="#FF4D8866" />
+    <Setter Property="CornerRadius" Value="22" />
+    <Setter Property="BoxShadow" Value="0 0 28 1 #2479D2A5" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-provider-status-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF91DFB8" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world ProgressBar.wgt-provider-status-progress">
+    <Setter Property="Foreground" Value="#FF79D2A5" />
+  </Style>
+
   <Style Selector="Button.wgt-provider-retry">
     <Setter Property="Background" Value="#FF12212A" />
     <Setter Property="BorderBrush" Value="#FF3B6679" />

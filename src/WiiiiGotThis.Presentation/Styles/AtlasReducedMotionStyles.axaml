@@ -54,4 +54,8 @@
   <Style Selector="Grid.wgt-atlas-root.reduced-motion Button.wgt-product-return">
     <Setter Property="Transitions" Value="{x:Null}" />
   </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion ProgressBar.wgt-provider-status-progress">
+    <Setter Property="IsIndeterminate" Value="False" />
+    <Setter Property="Opacity" Value="0" />
+  </Style>
 </Styles>
