@@ -47,14 +47,7 @@ public sealed class OrientationProductView : Grid
         {
             Width = 64,
             Height = 64,
-            Child = new TextBlock
-            {
-                Text = "OR",
-                FontSize = 18,
-                FontWeight = FontWeight.Bold,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            }
+            Child = ServiceSigilFactory.Create("Orientation", 42)
         };
         mark.Classes.Add("wgt-provider-status-mark");
         mark.Classes.Add("orientation");
