@@ -109,6 +109,14 @@ public sealed partial class DesktopAtlasView : UserControl
         if (currentShell is null)
             return;
 
+        if (IsProductionSceneRendererActive)
+        {
+            AttachProductionRendererShell(currentShell);
+            UpdateProductionScene();
+            PositionInspector();
+            return;
+        }
+
         AddGridLines();
 
         foreach (var connection in currentShell.AtlasConnections)
