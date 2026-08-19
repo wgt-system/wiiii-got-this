@@ -48,6 +48,53 @@
     <Setter Property="BorderThickness" Value="1.5" />
   </Style>
 
+  <!-- WGT-global controls stay visually neutral and sit above the provider boundary. -->
+  <Style Selector="Button.wgt-product-rail-global">
+    <Setter Property="Background" Value="#8F101A22" />
+    <Setter Property="BorderBrush" Value="#9A4C6878" />
+    <Setter Property="Foreground" Value="#FFE6F0F4" />
+  </Style>
+  <Style Selector="Button.wgt-product-rail-global:pointerover">
+    <Setter Property="Background" Value="#C0182A35" />
+    <Setter Property="BorderBrush" Value="#E06E9CB1" />
+  </Style>
+
+  <!-- Provider/capability controls inherit the current provider identity from the rail.
+       This is only host chrome: provider business UI remains untouched. -->
+  <Style Selector="Button.wgt-product-rail-provider">
+    <Setter Property="Background" Value="#65101A17" />
+    <Setter Property="BorderBrush" Value="#70496759" />
+    <Setter Property="Foreground" Value="#FFDDEBE3" />
+    <Setter Property="BoxShadow" Value="0 2 9 0 #18000000" />
+  </Style>
+  <Style Selector="Button.wgt-product-rail-toggle">
+    <Setter Property="BorderThickness" Value="1.35" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.vocation Button.wgt-product-rail-provider">
+    <Setter Property="BorderBrush" Value="#8C4CCAF0" />
+    <Setter Property="Foreground" Value="#FFDDF7FF" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.vocation Button.wgt-product-rail-provider:pointerover">
+    <Setter Property="Background" Value="#9A0A2530" />
+    <Setter Property="BorderBrush" Value="#D85BD4F8" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.illumination Button.wgt-product-rail-provider">
+    <Setter Property="BorderBrush" Value="#82B9A76F" />
+    <Setter Property="Foreground" Value="#FFF1E8C9" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.illumination Button.wgt-product-rail-provider:pointerover">
+    <Setter Property="Background" Value="#922A2517" />
+    <Setter Property="BorderBrush" Value="#D8D1BC75" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.orientation Button.wgt-product-rail-provider">
+    <Setter Property="BorderBrush" Value="#8879D2A5" />
+    <Setter Property="Foreground" Value="#FFE2F8EB" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.orientation Button.wgt-product-rail-provider:pointerover">
+    <Setter Property="Background" Value="#92132A1E" />
+    <Setter Property="BorderBrush" Value="#D891DFB8" />
+  </Style>
+
   <Style Selector="Button.wgt-product-return">
     <Setter Property="Background" Value="#94101A21" />
     <Setter Property="BorderBrush" Value="#FF31505F" />
