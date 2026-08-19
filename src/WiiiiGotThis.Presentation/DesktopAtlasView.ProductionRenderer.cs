@@ -31,6 +31,7 @@ public sealed partial class DesktopAtlasView
         SceneCanvas.IsVisible = false;
         SceneCanvas.IsHitTestVisible = false;
         SceneCanvas.Children.Clear();
+        ControlHint.IsVisible = false;
         if (themeAmbientLayer is not null)
             themeAmbientLayer.IsVisible = false;
 
