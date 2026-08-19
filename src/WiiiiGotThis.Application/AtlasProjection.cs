@@ -72,6 +72,7 @@ public sealed class BuildAtlasProjectionUseCase
 {
     public const string CoreNodeId = "wgt.core";
     public const string OrientationGeospatialCapabilityId = "orientation.generic_geospatial";
+    public const string ConveyanceDurableDeliveryCapabilityId = "conveyance.durable_delivery";
     private const string ReferenceDeveloperServiceId = "reference-service";
 
     private static readonly IReadOnlyList<AtlasProductService> DefaultProductServices = Array.AsReadOnly<AtlasProductService>(
@@ -105,7 +106,13 @@ public sealed class BuildAtlasProjectionUseCase
             new CapabilityIdentity(OrientationGeospatialCapabilityId),
             new ServiceIdentity("orientation"),
             "Vocation owns opportunity and work-location meaning while Orientation supplies generic geospatial rendering, exploration and interaction.",
-            "Generic geospatial")
+            "Generic geospatial"),
+        new(
+            new ServiceIdentity("vocation"),
+            new CapabilityIdentity(ConveyanceDurableDeliveryCapabilityId),
+            new ServiceIdentity("conveyance"),
+            "Vocation uses Conveyance for durable opaque cross-device delivery while Vocation retains authority over publication, merge and job-market semantics.",
+            "Cross-device delivery")
     ]);
 
     private readonly StringComparer titleComparer = StringComparer.OrdinalIgnoreCase;
@@ -307,8 +314,9 @@ public sealed class BuildAtlasProjectionUseCase
             }
 
             // CapabilityDependency is retained as the render-neutral relationship kind for
-            // the current renderer stack. Its direction now correctly reads consumer product
-            // -> provider-owned capability rather than Vocation-capability -> provider service.
+            // the current renderer stack. Its direction is consumer product -> provider-owned
+            // capability. A later preference layer may suppress/disable an optional consumption
+            // without changing capability ownership.
             connections.Add(new(
                 $"dependency:{dependency.ConsumerServiceIdentity.Value}:{dependency.ProviderServiceIdentity.Value}:{dependency.ProviderCapabilityIdentity.Value}",
                 AtlasConnectionKind.CapabilityDependency,
