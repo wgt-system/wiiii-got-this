@@ -33,6 +33,7 @@ public sealed class AtlasProductionRendererContractTests
         Assert.DoesNotContain("new Border", renderer, StringComparison.Ordinal);
         Assert.DoesNotContain("new Canvas", renderer, StringComparison.Ordinal);
         Assert.Contains("SceneCanvas.IsVisible = false", host, StringComparison.Ordinal);
+        Assert.Contains("ControlHint.IsVisible = false", host, StringComparison.Ordinal);
         Assert.Contains("AtlasViewport.Children.Insert(0, productionSceneRenderer)", host, StringComparison.Ordinal);
 
         var productionGuard = atlasView.IndexOf("if (IsProductionSceneRendererActive)", StringComparison.Ordinal);
