@@ -97,6 +97,51 @@
     <Setter Property="CornerRadius" Value="10" />
   </Style>
 
+  <!-- Activation is an informed state change, not an implicit side-effect of opening. -->
+  <Style Selector="Border.wgt-activation-preview">
+    <Setter Property="Background" Value="#A60A151C" />
+    <Setter Property="BorderBrush" Value="#8061B9D4" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="BoxShadow" Value="0 8 24 0 #36000000" />
+  </Style>
+  <Style Selector="Border.wgt-activation-fact">
+    <Setter Property="Background" Value="#65071117" />
+    <Setter Property="BorderBrush" Value="#3D3B5966" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="7" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-activation-preview">
+    <Setter Property="Background" Value="#A6191519" />
+    <Setter Property="BorderBrush" Value="#807B6A5E" />
+    <Setter Property="CornerRadius" Value="12" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-activation-fact">
+    <Setter Property="Background" Value="#66120F12" />
+    <Setter Property="BorderBrush" Value="#4256484E" />
+    <Setter Property="CornerRadius" Value="9" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-activation-preview">
+    <Setter Property="Background" Value="#A605120C" />
+    <Setter Property="BorderBrush" Value="#8070DFA8" />
+    <Setter Property="CornerRadius" Value="3" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-activation-fact">
+    <Setter Property="Background" Value="#66030B07" />
+    <Setter Property="BorderBrush" Value="#42488D69" />
+    <Setter Property="CornerRadius" Value="2" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-activation-preview">
+    <Setter Property="Background" Value="#A6081710" />
+    <Setter Property="BorderBrush" Value="#8078C79E" />
+    <Setter Property="CornerRadius" Value="11" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-activation-fact">
+    <Setter Property="Background" Value="#6606110B" />
+    <Setter Property="BorderBrush" Value="#42517C61" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+
   <!-- Provider identities are real vector sigils, not font glyph placeholders. -->
   <Style Selector="Path.wgt-service-sigil">
     <Setter Property="Stroke" Value="#FFE8F4F8" />
