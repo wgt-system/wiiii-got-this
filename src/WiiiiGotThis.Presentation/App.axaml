@@ -8,6 +8,7 @@
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasExperienceStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasFinalStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasInteractionFinalStyles.axaml" />
+    <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasContextualDetailStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/ProductSurfaceFinalStyles.axaml" />
   </Application.Styles>
 </Application>

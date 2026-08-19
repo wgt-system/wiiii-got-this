@@ -1,0 +1,52 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Contextual capability disclosure: compact ports in overview, labels on focus. -->
+  <Style Selector="Border.wgt-atlas-node-shell.capability.compact-port">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BoxShadow" Value="0 0 0 0 #00000000" />
+    <Setter Property="Opacity" Value="0.78" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.compact-port">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.compact-port:pointerover">
+    <Setter Property="Background" Value="#261D3948" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="Border.wgt-node-compact-port-dot">
+    <Setter Property="Background" Value="#FF4CCAF0" />
+    <Setter Property="BoxShadow" Value="0 0 14 2 #454CCAF0" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.16" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.wgt-node-compact-port-dot.unavailable">
+    <Setter Property="Background" Value="#FF5A6870" />
+    <Setter Property="BoxShadow" Value="0 0 8 1 #245A6870" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.compact-port.theme-elegant Border.wgt-node-compact-port-dot">
+    <Setter Property="Background" Value="#FFD1C0AC" />
+    <Setter Property="BoxShadow" Value="0 0 12 1 #32D1C0AC" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.compact-port.theme-machine Border.wgt-node-compact-port-dot">
+    <Setter Property="Background" Value="#FF63F5B2" />
+    <Setter Property="BoxShadow" Value="0 0 14 2 #4063F5B2" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.compact-port.theme-world Border.wgt-node-compact-port-dot">
+    <Setter Property="Background" Value="#FF79D2A5" />
+    <Setter Property="BoxShadow" Value="0 0 14 2 #3879D2A5" />
+  </Style>
+
+  <!-- Service sigils are symbolic rather than repository-name initials. -->
+  <Style Selector="TextBlock.wgt-node-glyph">
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service:pointerover TextBlock.wgt-node-glyph">
+    <Setter Property="Foreground" Value="#FFFFFFFF" />
+  </Style>
+</Styles>

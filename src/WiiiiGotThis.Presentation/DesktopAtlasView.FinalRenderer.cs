@@ -123,9 +123,7 @@ public sealed partial class DesktopAtlasView
                 button.Content = BuildProductNode(node);
             }
 
-            var world = WorldPoint(node);
-            Canvas.SetLeft(nodeShell, world.X - nodeShell.Width / 2);
-            Canvas.SetTop(nodeShell, world.Y - nodeShell.Height / 2);
+            RecenterNodeShell(nodeShell, node);
         }
 
         UpdateFinalOverviewState();
@@ -133,7 +131,10 @@ public sealed partial class DesktopAtlasView
 
     private void UpdateFinalOverviewState()
     {
-        var overview = finalVisualShell?.SelectedAtlasNode is null;
+        var selectedNode = finalVisualShell?.SelectedAtlasNode;
+        var selectedId = selectedNode?.NodeId;
+        var focusNodeIds = BuildFocusNodeSet(selectedId);
+        var detailContext = selectedNode is not null && !selectedNode.IsCore;
 
         foreach (var nodeShell in SceneCanvas.Children.OfType<Border>())
         {
@@ -143,7 +144,11 @@ public sealed partial class DesktopAtlasView
                 continue;
             }
 
-            var secondary = overview && node.IsCapability;
+            var capabilityExpanded = node.IsCapability && detailContext && focusNodeIds.Contains(node.NodeId);
+            if (node.IsCapability && nodeShell.Child is Button capabilityButton)
+                SetCapabilityExpansion(nodeShell, capabilityButton, node, capabilityExpanded);
+
+            var secondary = node.IsCapability && !capabilityExpanded;
             SetStateClass(nodeShell, "overview-secondary", secondary);
             if (nodeShell.Child is Button button)
                 SetStateClass(button, "overview-secondary", secondary);
@@ -160,8 +165,51 @@ public sealed partial class DesktopAtlasView
             SetStateClass(
                 path,
                 "overview-secondary",
-                overview && connection.Kind != AtlasConnectionKind.Composition);
+                selectedNode is null && connection.Kind != AtlasConnectionKind.Composition);
         }
+    }
+
+    private static void SetCapabilityExpansion(
+        Border nodeShell,
+        Button button,
+        AtlasNodePresentationViewModel node,
+        bool expanded)
+    {
+        var compact = button.Classes.Contains("compact-port");
+        if (expanded && compact)
+        {
+            button.Classes.Remove("compact-port");
+            nodeShell.Classes.Remove("compact-port");
+            nodeShell.Width = 160;
+            nodeShell.Height = 48;
+            button.Width = 160;
+            button.Height = 48;
+            button.Padding = new Thickness(12, 6);
+            button.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+            button.Content = BuildCapabilityPort(node);
+        }
+        else if (!expanded && !compact)
+        {
+            button.Classes.Add("compact-port");
+            nodeShell.Classes.Add("compact-port");
+            nodeShell.Width = 32;
+            nodeShell.Height = 32;
+            button.Width = 32;
+            button.Height = 32;
+            button.Padding = new Thickness(0);
+            button.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+            button.Content = BuildCapabilityDot(node);
+            ToolTip.SetTip(button, $"{node.Title} · {node.CompactStateText}");
+        }
+
+        RecenterNodeShell(nodeShell, node);
+    }
+
+    private static void RecenterNodeShell(Border nodeShell, AtlasNodePresentationViewModel node)
+    {
+        var world = WorldPoint(node);
+        Canvas.SetLeft(nodeShell, world.X - nodeShell.Width / 2);
+        Canvas.SetTop(nodeShell, world.Y - nodeShell.Height / 2);
     }
 
     private static StackPanel BuildProductNode(AtlasNodePresentationViewModel node)
@@ -170,9 +218,9 @@ public sealed partial class DesktopAtlasView
         var glyph = new TextBlock
         {
             Text = node.IsCore ? "WGT" : ServiceGlyph(node.Title),
-            FontSize = node.IsCore ? 24 : 19,
+            FontSize = node.IsCore ? 24 : 25,
             FontWeight = FontWeight.Bold,
-            LetterSpacing = node.IsCore ? 1.4 : 1,
+            LetterSpacing = node.IsCore ? 1.4 : 0.4,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
@@ -327,13 +375,29 @@ public sealed partial class DesktopAtlasView
         return content;
     }
 
+    private static Border BuildCapabilityDot(AtlasNodePresentationViewModel node)
+    {
+        var dot = new Border
+        {
+            Width = 9,
+            Height = 9,
+            CornerRadius = new CornerRadius(5),
+            DataContext = node,
+            IsHitTestVisible = false
+        };
+        dot.Classes.Add("wgt-node-compact-port-dot");
+        if (!node.IsAvailable)
+            dot.Classes.Add("unavailable");
+        return dot;
+    }
+
     private static string ServiceGlyph(string title) => title switch
     {
-        "Vocation" => "VO",
-        "Illumination" => "IL",
-        "Orientation" => "OR",
-        "Conveyance" => "CV",
-        _ when title.Length >= 2 => title[..2].ToUpperInvariant(),
-        _ => title.ToUpperInvariant()
+        "Vocation" => "↗",
+        "Illumination" => "✦",
+        "Orientation" => "⌖",
+        "Conveyance" => "⇄",
+        _ when title.Length >= 1 => title[..1].ToUpperInvariant(),
+        _ => "·"
     };
 }
