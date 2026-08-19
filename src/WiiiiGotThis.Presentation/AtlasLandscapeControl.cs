@@ -977,14 +977,14 @@ public sealed class AtlasLandscapeControl : Control
         context.FillRectangle(brush, new Rect(Bounds.Size));
     }
 
-    private static Point PointAlongPolyline(IReadOnlyList<Point> points, double t)
+    private static Point PointAlongPolyline(Point[] points, double t)
     {
-        if (points.Count == 0)
+        if (points.Length == 0)
             return default;
-        if (points.Count == 1)
+        if (points.Length == 1)
             return points[0];
 
-        var lengths = new double[points.Count - 1];
+        var lengths = new double[points.Length - 1];
         var total = 0d;
         for (var index = 0; index < lengths.Length; index++)
         {
