@@ -27,7 +27,7 @@ public sealed class AtlasContextualCapabilityVisualTests
     }
 
     [Fact]
-    public void Service_emblems_use_provider_specific_vector_sigils_instead_of_font_placeholders()
+    public void Atlas_and_provider_entry_share_one_vector_service_identity_factory()
     {
         var root = FindRepositoryRoot();
         var renderer = File.ReadAllText(Path.Combine(
@@ -35,6 +35,11 @@ public sealed class AtlasContextualCapabilityVisualTests
             "src",
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.FinalRenderer.cs"));
+        var factory = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "ServiceSigilFactory.cs"));
         var styles = File.ReadAllText(Path.Combine(
             root,
             "src",
@@ -42,15 +47,13 @@ public sealed class AtlasContextualCapabilityVisualTests
             "Styles",
             "AtlasContextualDetailStyles.axaml"));
 
-        Assert.Contains("BuildServiceSigil", renderer, StringComparison.Ordinal);
-        Assert.Contains("BuildServiceSigilGeometry", renderer, StringComparison.Ordinal);
-        Assert.Contains("case \"Vocation\"", renderer, StringComparison.Ordinal);
-        Assert.Contains("case \"Illumination\"", renderer, StringComparison.Ordinal);
-        Assert.Contains("case \"Orientation\"", renderer, StringComparison.Ordinal);
-        Assert.Contains("case \"Conveyance\"", renderer, StringComparison.Ordinal);
+        Assert.Contains("ServiceSigilFactory.Create(node.Title, 44)", renderer, StringComparison.Ordinal);
+        Assert.Contains("case \"Vocation\"", factory, StringComparison.Ordinal);
+        Assert.Contains("case \"Illumination\"", factory, StringComparison.Ordinal);
+        Assert.Contains("case \"Orientation\"", factory, StringComparison.Ordinal);
+        Assert.Contains("case \"Conveyance\"", factory, StringComparison.Ordinal);
         Assert.Contains("Path.wgt-service-sigil", styles, StringComparison.Ordinal);
-        Assert.DoesNotContain("\"Vocation\" => \"↗\"", renderer, StringComparison.Ordinal);
-        Assert.DoesNotContain("\"Illumination\" => \"✦\"", renderer, StringComparison.Ordinal);
+        Assert.DoesNotContain("BuildServiceSigilGeometry", renderer, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
