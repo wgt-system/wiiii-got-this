@@ -1,11 +1,20 @@
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
+using WiiiiGotThis.Application;
 
 namespace WiiiiGotThis.Presentation;
 
 public sealed partial class DesktopAtlasView
 {
     private bool finalInspectorSectionsPrepared;
+    private Border? activationPreview;
+    private TextBlock? activationCapabilitiesFact;
+    private TextBlock? activationDependenciesFact;
+    private TextBlock? activationDataFact;
+    private TextBlock? activationHostFact;
+    private TextBlock? activationDeviceFact;
+    private TextBlock? activationUnknownsFact;
     private TextBlock? inspectorOwnershipFact;
     private TextBlock? inspectorDataBoundaryFact;
     private TextBlock? inspectorTransportFact;
@@ -29,6 +38,11 @@ public sealed partial class DesktopAtlasView
             finalInspectorSectionsPrepared = true;
             return;
         }
+
+        var overview = existing.FirstOrDefault(item =>
+            string.Equals(item.Header?.ToString(), "Overview", StringComparison.Ordinal));
+        if (overview?.Content is ScrollViewer { Content: StackPanel overviewStack })
+            InsertActivationPreview(overviewStack);
 
         var dependencies = existing.FirstOrDefault(item =>
             string.Equals(item.Header?.ToString(), "Dependencies", StringComparison.Ordinal));
@@ -76,6 +90,85 @@ public sealed partial class DesktopAtlasView
         UpdateFinalInspectorFacts();
     }
 
+    private void InsertActivationPreview(StackPanel overviewStack)
+    {
+        if (activationPreview is not null)
+            return;
+
+        activationCapabilitiesFact = CreateInspectorFactText();
+        activationDependenciesFact = CreateInspectorFactText();
+        activationDataFact = CreateInspectorFactText();
+        activationHostFact = CreateInspectorFactText();
+        activationDeviceFact = CreateInspectorFactText();
+        activationUnknownsFact = CreateInspectorFactText();
+
+        var facts = new StackPanel
+        {
+            Spacing = 6,
+            Children =
+            {
+                BuildActivationFact("CAPABILITIES", activationCapabilitiesFact),
+                BuildActivationFact("EXPLICIT DEPENDENCIES", activationDependenciesFact),
+                BuildActivationFact("DATA BOUNDARY", activationDataFact),
+                BuildActivationFact("HOST / NETWORK", activationHostFact),
+                BuildActivationFact("THIS DEVICE", activationDeviceFact),
+                BuildActivationFact("PERMISSIONS / CROSS-DEVICE", activationUnknownsFact)
+            }
+        };
+
+        var heading = new TextBlock
+        {
+            Text = "BEFORE ACTIVATION",
+            FontSize = 9,
+            FontWeight = Avalonia.Media.FontWeight.SemiBold,
+            LetterSpacing = 1.2
+        };
+        heading.Classes.Add("wgt-caption");
+
+        var intro = new TextBlock
+        {
+            Text = "WGT can explain only the integration facts it actually knows before enabling this service here.",
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap
+        };
+        intro.Classes.Add("wgt-secondary");
+
+        activationPreview = new Border
+        {
+            Padding = new Avalonia.Thickness(10),
+            IsVisible = false,
+            Child = new StackPanel
+            {
+                Spacing = 7,
+                Children = { heading, intro, facts }
+            }
+        };
+        activationPreview.Classes.Add("wgt-activation-preview");
+        AutomationProperties.SetName(activationPreview, "Before activation");
+
+        // Overview currently contains Core summary, known-only summary, integrated
+        // service actions and capability detail. Place the preview immediately before
+        // the integrated service action block so Enable & open cannot visually precede it.
+        overviewStack.Children.Insert(Math.Min(2, overviewStack.Children.Count), activationPreview);
+    }
+
+    private static Border BuildActivationFact(string labelText, TextBlock value)
+    {
+        var label = new TextBlock { Text = labelText };
+        label.Classes.Add("wgt-caption");
+        var content = new StackPanel
+        {
+            Spacing = 2,
+            Children = { label, value }
+        };
+        var card = new Border
+        {
+            Padding = new Avalonia.Thickness(8, 6),
+            Child = content
+        };
+        card.Classes.Add("wgt-activation-fact");
+        return card;
+    }
+
     private void UpdateFinalInspectorFacts()
     {
         EnsureFinalInspectorSections();
@@ -83,6 +176,7 @@ public sealed partial class DesktopAtlasView
             return;
 
         var integration = finalVisualShell.SelectedIntegration;
+        UpdateActivationPreview(node, integration);
         SetFact(inspectorOwnershipFact, OwnershipFact(node));
         SetFact(inspectorDataBoundaryFact, DataBoundaryFact(node));
         SetFact(inspectorTransportFact, TransportBoundaryFact(node));
@@ -98,6 +192,61 @@ public sealed partial class DesktopAtlasView
             integration is null
                 ? "No provider publication connection is attached to this Atlas node."
                 : $"{integration.ConnectionHealthTitle}. {integration.ConnectionHealthDescription}");
+    }
+
+    private void UpdateActivationPreview(
+        AtlasNodePresentationViewModel node,
+        ServiceIntegrationPresentationViewModel? integration)
+    {
+        if (activationPreview is null || finalVisualShell is null)
+            return;
+
+        var show = node.IsIntegratedService && !node.IsEnabled && node.CanOpenProductSurface && integration is not null;
+        activationPreview.IsVisible = show;
+        if (!show)
+            return;
+
+        var capabilityCount = finalVisualShell.SelectedIntegrationCapabilities.Count;
+        var dependencyCount = CountExplicitServiceDependencies(node);
+        SetFact(
+            activationCapabilitiesFact,
+            capabilityCount switch
+            {
+                0 => "No provider capability is currently resolved for this service on this client.",
+                1 => "WGT currently resolves 1 provider capability for this service.",
+                _ => $"WGT currently resolves {capabilityCount} provider capabilities for this service."
+            });
+        SetFact(
+            activationDependenciesFact,
+            dependencyCount switch
+            {
+                0 => "No explicit cross-service capability dependency is currently published to this Atlas.",
+                1 => "1 explicit cross-service capability dependency is currently visible in the Atlas.",
+                _ => $"{dependencyCount} explicit cross-service capability dependencies are currently visible in the Atlas."
+            });
+        SetFact(activationDataFact, DataBoundaryFact(node));
+        SetFact(activationHostFact, TransportBoundaryFact(node));
+        SetFact(
+            activationDeviceFact,
+            $"This action changes the effective integration state on {finalVisualShell.CurrentDeviceName}. {integration.DeviceBehaviorText}");
+        SetFact(
+            activationUnknownsFact,
+            "No additional permission requirement or cross-device guarantee is published to this WGT presentation. Provider-internal behavior remains provider-owned.");
+    }
+
+    private int CountExplicitServiceDependencies(AtlasNodePresentationViewModel serviceNode)
+    {
+        if (finalVisualShell is null || serviceNode.ServiceIdentity is not { } serviceIdentity)
+            return 0;
+
+        var ownedNodeIds = finalVisualShell.AtlasNodes
+            .Where(candidate => candidate.ServiceIdentity == serviceIdentity)
+            .Select(candidate => candidate.NodeId)
+            .ToHashSet(StringComparer.Ordinal);
+
+        return finalVisualShell.AtlasConnections.Count(connection =>
+            connection.Kind == AtlasConnectionKind.CapabilityDependency
+            && (ownedNodeIds.Contains(connection.Source.NodeId) || ownedNodeIds.Contains(connection.Target.NodeId)));
     }
 
     private static ScrollViewer BuildInspectorFactSection(params (string Label, TextBlock Value)[] facts)
@@ -151,9 +300,9 @@ public sealed partial class DesktopAtlasView
 
     private static string OwnershipFact(AtlasNodePresentationViewModel node) => node.Kind switch
     {
-        WiiiiGotThis.Application.AtlasNodeKind.Core =>
+        AtlasNodeKind.Core =>
             "WGT owns Atlas composition and host behavior. Provider domain semantics, provider UI and provider persistence remain provider-owned.",
-        WiiiiGotThis.Application.AtlasNodeKind.Service =>
+        AtlasNodeKind.Service =>
             $"{node.Title} remains a provider-owned bounded context. Hosting or composing it in WGT does not transfer its domain ownership.",
         _ =>
             "This capability is provider-published. WGT renders its availability and explicit relationships without becoming the capability owner."
