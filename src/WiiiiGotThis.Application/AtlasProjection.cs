@@ -198,9 +198,6 @@ public sealed class BuildAtlasProjectionUseCase
                 Description: entry.Product?.Description,
                 ProductRole: entry.Product?.ProductRole));
 
-            // Product composition is not the same thing as service/runtime existence.
-            // Shared infrastructure such as Conveyance stays discoverable without being
-            // projected as a peer end-user product destination.
             if (entry.Product?.ProductRole != AtlasProductRole.SharedCapabilityProvider)
             {
                 connections.Add(new(
@@ -210,11 +207,11 @@ public sealed class BuildAtlasProjectionUseCase
                     serviceNodeId));
             }
 
-            // Known first-class products deliberately do not mirror every published adapter
-            // contract into Atlas. Those contracts remain available to WGT integration code,
-            // but Atlas capabilities are curated user-meaningful system semantics. This keeps
-            // Vocation's transitional Opportunity Overview / Map Projection contracts from
-            // becoming fake global destinations merely because they are published.
+            // Known products do not automatically mirror every published adapter contract
+            // into Atlas. Those contracts remain available to integration code; Atlas only
+            // projects curated user-meaningful system capabilities. This keeps Vocation's
+            // transitional Opportunity Overview / Map Projection contracts from becoming
+            // fake global destinations merely because they are published.
             if (!integrated || entry.Product is not null)
                 continue;
 
@@ -309,9 +306,12 @@ public sealed class BuildAtlasProjectionUseCase
                     $"{provider.Title} owns this generic capability."));
             }
 
+            // CapabilityDependency is retained as the render-neutral relationship kind for
+            // the current renderer stack. Its direction now correctly reads consumer product
+            // -> provider-owned capability rather than Vocation-capability -> provider service.
             connections.Add(new(
-                $"consumption:{dependency.ConsumerServiceIdentity.Value}:{dependency.ProviderServiceIdentity.Value}:{dependency.ProviderCapabilityIdentity.Value}",
-                AtlasConnectionKind.CapabilityConsumption,
+                $"dependency:{dependency.ConsumerServiceIdentity.Value}:{dependency.ProviderServiceIdentity.Value}:{dependency.ProviderCapabilityIdentity.Value}",
+                AtlasConnectionKind.CapabilityDependency,
                 consumer.NodeId,
                 capabilityNodeId,
                 dependency.Description));
