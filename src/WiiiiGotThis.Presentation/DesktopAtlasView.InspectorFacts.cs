@@ -41,16 +41,20 @@ public sealed partial class DesktopAtlasView
 
         var overview = existing.FirstOrDefault(item =>
             string.Equals(item.Header?.ToString(), "Overview", StringComparison.Ordinal));
+        var capabilities = existing.FirstOrDefault(item =>
+            string.Equals(item.Header?.ToString(), "Capabilities", StringComparison.Ordinal));
+        var dependencies = existing.FirstOrDefault(item =>
+            string.Equals(item.Header?.ToString(), "Dependencies", StringComparison.Ordinal));
+        var system = existing.FirstOrDefault(item =>
+            string.Equals(item.Header?.ToString(), "System", StringComparison.Ordinal));
+
         if (overview?.Content is ScrollViewer { Content: StackPanel overviewStack })
             InsertActivationPreview(overviewStack);
 
-        var dependencies = existing.FirstOrDefault(item =>
-            string.Equals(item.Header?.ToString(), "Dependencies", StringComparison.Ordinal));
-        if (dependencies is not null)
-        {
-            dependencies.Header = "Links";
-            ToolTip.SetTip(dependencies, "Dependencies and explicit cross-service relationships");
-        }
+        RenameInspectorTab(overview, "Node", "Overview and actions");
+        RenameInspectorTab(capabilities, "Caps", "Published capabilities");
+        RenameInspectorTab(dependencies, "Links", "Dependencies and explicit cross-service relationships");
+        RenameInspectorTab(system, "Diag", "System and diagnostics");
 
         inspectorOwnershipFact = CreateInspectorFactText();
         inspectorDataBoundaryFact = CreateInspectorFactText();
@@ -81,13 +85,22 @@ public sealed partial class DesktopAtlasView
         };
         ToolTip.SetTip(deviceTab, "Devices / Availability");
 
-        var systemIndex = existing.FindIndex(item =>
-            string.Equals(item.Header?.ToString(), "System", StringComparison.Ordinal));
+        var systemIndex = system is null ? -1 : existing.IndexOf(system);
         var insertIndex = systemIndex >= 0 ? systemIndex : tabs.Items.Count;
         tabs.Items.Insert(insertIndex, dataTab);
         tabs.Items.Insert(insertIndex + 1, deviceTab);
         finalInspectorSectionsPrepared = true;
         UpdateFinalInspectorFacts();
+    }
+
+    private static void RenameInspectorTab(TabItem? tab, string compactHeader, string tooltip)
+    {
+        if (tab is null)
+            return;
+
+        tab.Header = compactHeader;
+        ToolTip.SetTip(tab, tooltip);
+        AutomationProperties.SetName(tab, tooltip);
     }
 
     private void InsertActivationPreview(StackPanel overviewStack)
@@ -308,20 +321,11 @@ public sealed partial class DesktopAtlasView
     private static string DataBoundaryFact(AtlasNodePresentationViewModel node)
     {
         if (node.IsCore)
-        {
             return "The Atlas is a WGT presentation/read model over registered integrations, enablement and published capability state; it is not a shared provider database.";
-        }
-
         if (node.IsKnownOnlyService)
-        {
             return "Only this service identity is known on the current client. No provider capability publication or provider domain data is composed here yet.";
-        }
-
         if (node.IsService)
-        {
             return "WGT keeps host-side integration, enablement and last-known publication metadata. Opening the provider product does not copy provider domain records into WGT.";
-        }
-
         return "WGT uses the provider-published/resolved capability state needed for this integration surface. No additional provider data guarantees are inferred.";
     }
 
