@@ -24,7 +24,7 @@ public sealed class AtlasProjectionTests
     }
 
     [Fact]
-    public void Build_includes_first_class_product_services_without_inventing_capabilities()
+    public void Build_includes_known_product_and_shared_capability_providers_without_inventing_capabilities()
     {
         var projection = new BuildAtlasProjectionUseCase().Build([], []);
 
@@ -41,18 +41,43 @@ public sealed class AtlasProjectionTests
             Assert.Equal("Not composed on this client yet", node.Subtitle);
         });
         Assert.DoesNotContain(projection.Nodes, node => node.Kind == AtlasNodeKind.Capability);
+
+        Assert.Equal(AtlasProductRole.FirstClassProductProvider, projection.Nodes.Single(node => node.NodeId == "service:vocation").ProductRole);
+        Assert.Equal(AtlasProductRole.FirstClassProductProvider, projection.Nodes.Single(node => node.NodeId == "service:illumination").ProductRole);
+        Assert.Equal(AtlasProductRole.DualRoleProvider, projection.Nodes.Single(node => node.NodeId == "service:orientation").ProductRole);
+        Assert.Equal(AtlasProductRole.SharedCapabilityProvider, projection.Nodes.Single(node => node.NodeId == "service:conveyance").ProductRole);
     }
 
     [Fact]
-    public void Build_keeps_Conveyance_truthful_until_a_client_integration_exists()
+    public void Build_keeps_Conveyance_truthful_without_projecting_it_as_a_peer_product()
     {
         var projection = new BuildAtlasProjectionUseCase().Build([], []);
         var conveyance = Assert.Single(projection.Nodes, node => node.NodeId == "service:conveyance");
 
         Assert.Equal("Conveyance", conveyance.Title);
+        Assert.Equal(AtlasProductRole.SharedCapabilityProvider, conveyance.ProductRole);
         Assert.False(conveyance.IsIntegrated);
         Assert.False(conveyance.IsAvailable);
         Assert.DoesNotContain(projection.Nodes, node => node.Kind == AtlasNodeKind.Capability && node.ServiceIdentity?.Value == "conveyance");
+        Assert.DoesNotContain(projection.Connections, edge =>
+            edge.Kind == AtlasConnectionKind.Composition
+            && edge.TargetNodeId == conveyance.NodeId);
+    }
+
+    [Fact]
+    public void Build_composes_the_three_current_first_class_products_with_WGT_core()
+    {
+        var projection = new BuildAtlasProjectionUseCase().Build([], []);
+        var productTargets = projection.Connections
+            .Where(edge => edge.Kind == AtlasConnectionKind.Composition)
+            .Select(edge => edge.TargetNodeId)
+            .OrderBy(id => id, StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal([
+            "service:illumination",
+            "service:orientation",
+            "service:vocation"], productTargets);
     }
 
     [Fact]
@@ -65,6 +90,7 @@ public sealed class AtlasProjectionTests
         Assert.True(vocation.IsIntegrated);
         Assert.True(vocation.IsAvailable);
         Assert.NotNull(vocation.Description);
+        Assert.Equal(AtlasProductRole.FirstClassProductProvider, vocation.ProductRole);
     }
 
     [Fact]
