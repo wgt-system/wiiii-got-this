@@ -67,7 +67,7 @@ public sealed class AtlasWorldInfrastructureOverlay : Control
     {
         base.Render(context);
 
-        foreach (var connection in connections.Where(item => item.Kind == AtlasConnectionKind.CapabilityDependency))
+        foreach (var connection in connections.Where(item => item.IsCapabilityUse && item.IsEnabled))
         {
             if (!connection.Source.IsService || !connection.Target.IsCapability)
                 continue;
