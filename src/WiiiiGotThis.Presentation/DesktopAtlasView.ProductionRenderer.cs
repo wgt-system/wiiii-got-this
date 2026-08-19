@@ -11,6 +11,7 @@ public sealed partial class DesktopAtlasView
     private AtlasLandscapeControl? productionSceneRenderer;
     private AtlasLivingWorldControl? livingWorldRenderer;
     private AtlasWorldEnvironmentalDetailOverlay? livingWorldEnvironmentalOverlay;
+    private AtlasWorldRegionalArchitectureOverlay? livingWorldRegionalArchitectureOverlay;
     private AtlasWorldInfrastructureOverlay? livingWorldInfrastructureOverlay;
     private ShellViewModel? productionRendererShell;
 
@@ -18,6 +19,7 @@ public sealed partial class DesktopAtlasView
         productionSceneRenderer is not null
         || livingWorldRenderer is not null
         || livingWorldEnvironmentalOverlay is not null
+        || livingWorldRegionalArchitectureOverlay is not null
         || livingWorldInfrastructureOverlay is not null;
 
     private void EnsureProductionSceneRenderer()
@@ -25,6 +27,7 @@ public sealed partial class DesktopAtlasView
         if (productionSceneRenderer is not null
             && livingWorldRenderer is not null
             && livingWorldEnvironmentalOverlay is not null
+            && livingWorldRegionalArchitectureOverlay is not null
             && livingWorldInfrastructureOverlay is not null)
         {
             return;
@@ -57,6 +60,14 @@ public sealed partial class DesktopAtlasView
             IsVisible = false
         };
 
+        livingWorldRegionalArchitectureOverlay = new AtlasWorldRegionalArchitectureOverlay
+        {
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+            IsHitTestVisible = false,
+            IsVisible = false
+        };
+
         livingWorldInfrastructureOverlay = new AtlasWorldInfrastructureOverlay
         {
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
@@ -79,7 +90,8 @@ public sealed partial class DesktopAtlasView
         AtlasViewport.Children.Insert(0, productionSceneRenderer);
         AtlasViewport.Children.Insert(1, livingWorldRenderer);
         AtlasViewport.Children.Insert(2, livingWorldEnvironmentalOverlay);
-        AtlasViewport.Children.Insert(3, livingWorldInfrastructureOverlay);
+        AtlasViewport.Children.Insert(3, livingWorldRegionalArchitectureOverlay);
+        AtlasViewport.Children.Insert(4, livingWorldInfrastructureOverlay);
         UpdateProductionScene();
         UpdateProductionSceneCamera();
     }
@@ -127,6 +139,7 @@ public sealed partial class DesktopAtlasView
         if (productionSceneRenderer is null
             || livingWorldRenderer is null
             || livingWorldEnvironmentalOverlay is null
+            || livingWorldRegionalArchitectureOverlay is null
             || livingWorldInfrastructureOverlay is null
             || productionRendererShell is null)
         {
@@ -139,6 +152,7 @@ public sealed partial class DesktopAtlasView
         livingWorldRenderer.IsVisible = isLivingWorld;
         livingWorldRenderer.IsHitTestVisible = isLivingWorld;
         livingWorldEnvironmentalOverlay.IsVisible = isLivingWorld;
+        livingWorldRegionalArchitectureOverlay.IsVisible = isLivingWorld;
         livingWorldInfrastructureOverlay.IsVisible = isLivingWorld;
 
         productionSceneRenderer.SetScene(
@@ -170,6 +184,13 @@ public sealed partial class DesktopAtlasView
             productionRendererShell.SelectedAtlasNode?.NodeId,
             productionRendererShell.IsAtlasReducedMotion);
 
+        // Regional architecture is presentation-only but consumes the same projected service
+        // identities/selection so its landmarks follow availability/focus without owning any
+        // provider capability or interaction semantics.
+        livingWorldRegionalArchitectureOverlay.SetScene(
+            worldBaseNodes,
+            productionRendererShell.SelectedAtlasNode?.NodeId);
+
         livingWorldInfrastructureOverlay.SetScene(
             productionRendererShell.AtlasNodes,
             productionRendererShell.AtlasConnections,
@@ -188,6 +209,10 @@ public sealed partial class DesktopAtlasView
             sceneTranslate.X,
             sceneTranslate.Y);
         livingWorldEnvironmentalOverlay?.SetCamera(
+            sceneScale.ScaleX,
+            sceneTranslate.X,
+            sceneTranslate.Y);
+        livingWorldRegionalArchitectureOverlay?.SetCamera(
             sceneScale.ScaleX,
             sceneTranslate.X,
             sceneTranslate.Y);
