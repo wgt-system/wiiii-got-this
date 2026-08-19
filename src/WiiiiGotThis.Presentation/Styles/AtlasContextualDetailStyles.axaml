@@ -42,6 +42,33 @@
     <Setter Property="BoxShadow" Value="0 0 14 2 #3879D2A5" />
   </Style>
 
+  <!-- Caption material masks topology beneath text without turning the node into a card. -->
+  <Style Selector="Border.wgt-node-caption">
+    <Setter Property="Background" Value="#E6081117" />
+    <Setter Property="BorderBrush" Value="#482C4654" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="9" />
+    <Setter Property="BoxShadow" Value="0 5 14 0 #32000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-elegant Border.wgt-node-caption">
+    <Setter Property="Background" Value="#E6181519" />
+    <Setter Property="BorderBrush" Value="#504D4249" />
+    <Setter Property="CornerRadius" Value="12" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-machine Border.wgt-node-caption">
+    <Setter Property="Background" Value="#E6040E09" />
+    <Setter Property="BorderBrush" Value="#552C7552" />
+    <Setter Property="CornerRadius" Value="3" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-world Border.wgt-node-caption">
+    <Setter Property="Background" Value="#E6081510" />
+    <Setter Property="BorderBrush" Value="#55406953" />
+    <Setter Property="CornerRadius" Value="11" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.selected Border.wgt-node-caption">
+    <Setter Property="BorderBrush" Value="#9977AFC3" />
+  </Style>
+
   <!-- Service sigils are symbolic rather than repository-name initials. -->
   <Style Selector="TextBlock.wgt-node-glyph">
     <Setter Property="FontWeight" Value="SemiBold" />

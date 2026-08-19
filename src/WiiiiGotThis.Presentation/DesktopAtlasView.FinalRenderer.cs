@@ -323,12 +323,26 @@ public sealed partial class DesktopAtlasView
         };
         enterHint.Classes.Add("wgt-node-enter-hint");
 
+        var captionContent = new StackPanel
+        {
+            Spacing = 1,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Children = { title, stateRow, enterHint }
+        };
+        var caption = new Border
+        {
+            Padding = new Thickness(7, 4),
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Child = captionContent
+        };
+        caption.Classes.Add("wgt-node-caption");
+
         return new StackPanel
         {
-            Spacing = node.IsCore ? 6 : 5,
+            Spacing = 4,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Children = { emblem, title, stateRow, enterHint }
+            Children = { emblem, caption }
         };
     }
 
