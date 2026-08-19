@@ -39,6 +39,7 @@ public sealed partial class DesktopAtlasView
         if (primaryNodes.Length == 0)
             return false;
 
+        var isAuthoredWorld = currentShell.AtlasTheme == AtlasThemePreference.World && worldV2Renderer is not null;
         const double serviceHalfWidth = 86d;
         const double serviceHalfHeight = 92d;
         const double coreHalfWidth = 108d;
@@ -50,9 +51,15 @@ public sealed partial class DesktopAtlasView
         var maxY = double.NegativeInfinity;
         foreach (var node in primaryNodes)
         {
-            var point = WorldPoint(node);
-            var halfWidth = node.IsCore ? coreHalfWidth : serviceHalfWidth;
-            var halfHeight = node.IsCore ? coreHalfHeight : serviceHalfHeight;
+            var point = isAuthoredWorld ? ActiveRendererWorldPoint(node) : WorldPoint(node);
+            // World V2 is one contiguous geography. The additional footprint is deliberate: the
+            // camera must fit coast/terrain/roads around a place, not merely its settlement anchor.
+            var halfWidth = isAuthoredWorld
+                ? node.IsCore ? 320d : 285d
+                : node.IsCore ? coreHalfWidth : serviceHalfWidth;
+            var halfHeight = isAuthoredWorld
+                ? node.IsCore ? 260d : 245d
+                : node.IsCore ? coreHalfHeight : serviceHalfHeight;
             minX = Math.Min(minX, point.X - halfWidth);
             maxX = Math.Max(maxX, point.X + halfWidth);
             minY = Math.Min(minY, point.Y - halfHeight);
@@ -68,8 +75,8 @@ public sealed partial class DesktopAtlasView
         var contentHeight = Math.Max(1d, maxY - minY);
         var fittedZoom = Math.Clamp(
             Math.Min(availableWidth / contentWidth, availableHeight / contentHeight),
-            0.66d,
-            1.08d);
+            isAuthoredWorld ? 0.56d : 0.66d,
+            isAuthoredWorld ? 0.94d : 1.08d);
 
         var worldCenterX = (minX + maxX) / 2d;
         var worldCenterY = (minY + maxY) / 2d;
