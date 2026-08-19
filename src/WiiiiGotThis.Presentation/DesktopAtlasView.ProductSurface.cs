@@ -166,12 +166,15 @@ public sealed partial class DesktopAtlasView
             "Return to WGT Atlas",
             returnAutomationId,
             OnReturnFromProductSurface);
+        returnButton.Classes.Add("wgt-product-return");
+        returnButton.Classes.Add("wgt-product-rail-global");
 
         var settingsButton = BuildRailButton(
             "⚙",
             "WGT settings",
             $"ProductRailWgtSettings{serviceName}",
             OnProductRailWgtSettings);
+        settingsButton.Classes.Add("wgt-product-rail-global");
 
         var wgtCaption = new TextBlock
         {
@@ -273,6 +276,7 @@ public sealed partial class DesktopAtlasView
             Child = railGrid
         };
         rail.Classes.Add("wgt-product-rail");
+        rail.Classes.Add(serviceName.ToLowerInvariant());
 
         var contentHost = new Border
         {
@@ -327,6 +331,9 @@ public sealed partial class DesktopAtlasView
                 tooltip,
                 $"ProductRailCapabilityUse{serviceName}{capability.CapabilityIdentity?.Value}",
                 connection.IsUserConfigurable ? OnProductRailCapabilityToggle : OnProductRailCapability);
+            button.Classes.Add("wgt-product-rail-provider");
+            if (connection.IsUserConfigurable)
+                button.Classes.Add("wgt-product-rail-toggle");
             button.Tag = connection.IsUserConfigurable ? connection : capability;
             button.Opacity = connection.IsEnabled ? 1 : 0.42;
             stack.Children.Add(button);
@@ -351,6 +358,7 @@ public sealed partial class DesktopAtlasView
                 capability.Title,
                 $"ProductRailCapability{serviceName}{capability.CapabilityIdentity?.Value}",
                 OnProductRailCapability);
+            button.Classes.Add("wgt-product-rail-provider");
             button.Tag = capability;
             stack.Children.Add(button);
         }
