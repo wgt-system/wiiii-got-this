@@ -41,7 +41,9 @@ public sealed record AtlasProductDependency(
     CapabilityIdentity ProviderCapabilityIdentity,
     ServiceIdentity ProviderServiceIdentity,
     string Description,
-    string? CapabilityDisplayName = null);
+    string? CapabilityDisplayName = null,
+    bool IsDefaultEnabled = true,
+    bool IsUserConfigurable = false);
 
 public sealed record AtlasNode(
     string NodeId,
@@ -62,7 +64,9 @@ public sealed record AtlasConnection(
     AtlasConnectionKind Kind,
     string SourceNodeId,
     string TargetNodeId,
-    string? Description = null);
+    string? Description = null,
+    bool IsEnabled = true,
+    bool IsUserConfigurable = false);
 
 public sealed record AtlasProjection(
     IReadOnlyList<AtlasNode> Nodes,
@@ -112,7 +116,9 @@ public sealed class BuildAtlasProjectionUseCase
             new CapabilityIdentity(ConveyanceDurableDeliveryCapabilityId),
             new ServiceIdentity("conveyance"),
             "Vocation uses Conveyance for durable opaque cross-device delivery while Vocation retains authority over publication, merge and job-market semantics.",
-            "Cross-device delivery")
+            "Cross-device delivery",
+            IsDefaultEnabled: true,
+            IsUserConfigurable: true)
     ]);
 
     private readonly StringComparer titleComparer = StringComparer.OrdinalIgnoreCase;
@@ -147,11 +153,15 @@ public sealed class BuildAtlasProjectionUseCase
     public AtlasProjection Build(
         IReadOnlyCollection<ServiceIntegrationListItem> integrations,
         IReadOnlyCollection<CapabilityCatalogEntry> capabilities,
-        bool includeDeveloperIntegrations = false)
+        bool includeDeveloperIntegrations = false,
+        IReadOnlyCollection<AtlasCapabilityConsumptionPreference>? consumptionPreferences = null)
     {
         ArgumentNullException.ThrowIfNull(integrations);
         ArgumentNullException.ThrowIfNull(capabilities);
 
+        var preferences = (consumptionPreferences ?? Array.Empty<AtlasCapabilityConsumptionPreference>())
+            .GroupBy(preference => preference.Key)
+            .ToDictionary(group => group.Key, group => group.Last().IsEnabled);
         var visibleIntegrations = integrations
             .Where(integration => includeDeveloperIntegrations || !IsDeveloperIntegration(integration.ServiceIdentity))
             .ToDictionary(integration => integration.ServiceIdentity);
@@ -225,7 +235,7 @@ public sealed class BuildAtlasProjectionUseCase
             AddPublishedIntegrationCapabilities(nodes, connections, capabilities, integration!, entry.Identity, serviceNodeId);
         }
 
-        AddDeclaredProductCapabilities(nodes, connections);
+        AddDeclaredProductCapabilities(nodes, connections, preferences);
         return new AtlasProjection(nodes.AsReadOnly(), connections.AsReadOnly());
     }
 
@@ -241,6 +251,12 @@ public sealed class BuildAtlasProjectionUseCase
         ArgumentNullException.ThrowIfNull(capabilityIdentity);
         return $"capability:{serviceIdentity.Value}:{capabilityIdentity.Value}";
     }
+
+    public static AtlasCapabilityConsumptionKey ConsumptionKey(AtlasProductDependency dependency) =>
+        new(
+            dependency.ConsumerServiceIdentity,
+            dependency.ProviderServiceIdentity,
+            dependency.ProviderCapabilityIdentity);
 
     private static void AddPublishedIntegrationCapabilities(
         List<AtlasNode> nodes,
@@ -274,7 +290,10 @@ public sealed class BuildAtlasProjectionUseCase
         }
     }
 
-    private void AddDeclaredProductCapabilities(List<AtlasNode> nodes, List<AtlasConnection> connections)
+    private void AddDeclaredProductCapabilities(
+        List<AtlasNode> nodes,
+        List<AtlasConnection> connections,
+        IReadOnlyDictionary<AtlasCapabilityConsumptionKey, bool> preferences)
     {
         var serviceNodes = nodes
             .Where(node => node.Kind == AtlasNodeKind.Service && node.ServiceIdentity is not null)
@@ -313,16 +332,18 @@ public sealed class BuildAtlasProjectionUseCase
                     $"{provider.Title} owns this generic capability."));
             }
 
-            // CapabilityDependency is retained as the render-neutral relationship kind for
-            // the current renderer stack. Its direction is consumer product -> provider-owned
-            // capability. A later preference layer may suppress/disable an optional consumption
-            // without changing capability ownership.
+            var key = ConsumptionKey(dependency);
+            var isEnabled = preferences.TryGetValue(key, out var configured)
+                ? configured
+                : dependency.IsDefaultEnabled;
             connections.Add(new(
                 $"dependency:{dependency.ConsumerServiceIdentity.Value}:{dependency.ProviderServiceIdentity.Value}:{dependency.ProviderCapabilityIdentity.Value}",
                 AtlasConnectionKind.CapabilityDependency,
                 consumer.NodeId,
                 capabilityNodeId,
-                dependency.Description));
+                dependency.Description,
+                isEnabled,
+                dependency.IsUserConfigurable));
         }
     }
 
