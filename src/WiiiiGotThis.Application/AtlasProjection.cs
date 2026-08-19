@@ -124,6 +124,8 @@ public sealed class BuildAtlasProjectionUseCase
     private readonly StringComparer titleComparer = StringComparer.OrdinalIgnoreCase;
     private readonly IReadOnlyList<AtlasProductService> productServices;
     private readonly IReadOnlyList<AtlasProductDependency> productDependencies;
+    private IReadOnlyCollection<AtlasCapabilityConsumptionPreference> configuredConsumptionPreferences =
+        Array.Empty<AtlasCapabilityConsumptionPreference>();
 
     public BuildAtlasProjectionUseCase(
         IEnumerable<AtlasProductService>? productServices = null,
@@ -150,6 +152,12 @@ public sealed class BuildAtlasProjectionUseCase
         this.productDependencies = Array.AsReadOnly(configuredDependencies);
     }
 
+    public void SetConsumptionPreferences(IEnumerable<AtlasCapabilityConsumptionPreference> preferences)
+    {
+        ArgumentNullException.ThrowIfNull(preferences);
+        configuredConsumptionPreferences = Array.AsReadOnly(preferences.ToArray());
+    }
+
     public AtlasProjection Build(
         IReadOnlyCollection<ServiceIntegrationListItem> integrations,
         IReadOnlyCollection<CapabilityCatalogEntry> capabilities,
@@ -159,7 +167,7 @@ public sealed class BuildAtlasProjectionUseCase
         ArgumentNullException.ThrowIfNull(integrations);
         ArgumentNullException.ThrowIfNull(capabilities);
 
-        var preferences = (consumptionPreferences ?? Array.Empty<AtlasCapabilityConsumptionPreference>())
+        var preferences = (consumptionPreferences ?? configuredConsumptionPreferences)
             .GroupBy(preference => preference.Key)
             .ToDictionary(group => group.Key, group => group.Last().IsEnabled);
         var visibleIntegrations = integrations
