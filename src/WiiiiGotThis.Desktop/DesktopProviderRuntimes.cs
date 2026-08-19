@@ -147,9 +147,9 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IPr
         var uvAvailable = await DesktopProviderRuntimeSupport.CommandSucceedsAsync(
             root,
             TimeSpan.FromSeconds(8),
-            cancellationToken,
             "uv",
-            "--version");
+            ["--version"],
+            cancellationToken);
         if (!uvAvailable)
         {
             return VocationEnvironmentResult.Unavailable(
@@ -159,12 +159,9 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IPr
         var synced = await DesktopProviderRuntimeSupport.RunCommandAsync(
             root,
             TimeSpan.FromMinutes(3),
-            cancellationToken,
             "uv",
-            "sync",
-            "--locked",
-            "--extra",
-            "dev");
+            ["sync", "--locked", "--extra", "dev"],
+            cancellationToken);
         if (!synced || !File.Exists(python))
         {
             return VocationEnvironmentResult.Unavailable(
@@ -186,9 +183,9 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IPr
         var pnpmAvailable = await DesktopProviderRuntimeSupport.CommandSucceedsAsync(
             root,
             TimeSpan.FromSeconds(8),
-            cancellationToken,
             "pnpm",
-            "--version");
+            ["--version"],
+            cancellationToken);
         if (!pnpmAvailable)
         {
             return ProductRuntimeReadiness.Unavailable(
@@ -200,12 +197,9 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IPr
             var installed = await DesktopProviderRuntimeSupport.RunCommandAsync(
                 root,
                 TimeSpan.FromMinutes(3),
-                cancellationToken,
                 "pnpm",
-                "--dir",
-                "frontend",
-                "install",
-                "--frozen-lockfile");
+                ["--dir", "frontend", "install", "--frozen-lockfile"],
+                cancellationToken);
             if (!installed)
             {
                 return ProductRuntimeReadiness.Unavailable(
@@ -216,11 +210,9 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IPr
         var built = await DesktopProviderRuntimeSupport.RunCommandAsync(
             root,
             TimeSpan.FromMinutes(2),
-            cancellationToken,
             "pnpm",
-            "--dir",
-            "frontend",
-            "build");
+            ["--dir", "frontend", "build"],
+            cancellationToken);
         if (!built || !File.Exists(index))
         {
             return ProductRuntimeReadiness.Unavailable(
@@ -415,9 +407,9 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
         var npmAvailable = await DesktopProviderRuntimeSupport.CommandSucceedsAsync(
             mapRoot,
             TimeSpan.FromSeconds(8),
-            cancellationToken,
             "npm",
-            "--version");
+            ["--version"],
+            cancellationToken);
         if (!npmAvailable)
         {
             return ProductRuntimeReadiness.Unavailable(
@@ -427,9 +419,9 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
         var installed = await DesktopProviderRuntimeSupport.RunCommandAsync(
             mapRoot,
             TimeSpan.FromMinutes(3),
-            cancellationToken,
             "npm",
-            "ci");
+            ["ci"],
+            cancellationToken);
         return installed
             ? ProductRuntimeReadiness.Ready
             : ProductRuntimeReadiness.Unavailable(
@@ -494,25 +486,25 @@ internal static class DesktopProviderRuntimeSupport
             ?? throw new InvalidOperationException($"Failed to start {fileName}.");
     }
 
-    public static async Task<bool> CommandSucceedsAsync(
+    public static Task<bool> CommandSucceedsAsync(
         string workingDirectory,
         TimeSpan timeout,
-        CancellationToken cancellationToken,
         string command,
-        params string[] arguments) =>
-        await RunCommandAsync(workingDirectory, timeout, cancellationToken, command, arguments);
+        string[] arguments,
+        CancellationToken cancellationToken) =>
+        RunCommandAsync(workingDirectory, timeout, command, arguments, cancellationToken);
 
     public static async Task<bool> RunCommandAsync(
         string workingDirectory,
         TimeSpan timeout,
-        CancellationToken cancellationToken,
         string command,
-        params string[] arguments)
+        string[] arguments,
+        CancellationToken cancellationToken)
     {
         Process? process = null;
         try
         {
-            process = StartProcess(command, workingDirectory, arguments);
+            process = StartCommandProcess(command, workingDirectory, arguments);
             using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeoutSource.CancelAfter(timeout);
             try
@@ -579,6 +571,19 @@ internal static class DesktopProviderRuntimeSupport
         catch (System.ComponentModel.Win32Exception)
         {
         }
+    }
+
+    private static Process StartCommandProcess(string command, string workingDirectory, string[] arguments)
+    {
+        if (OperatingSystem.IsWindows()
+            && (string.Equals(command, "npm", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(command, "pnpm", StringComparison.OrdinalIgnoreCase)))
+        {
+            var commandLine = string.Join(' ', new[] { command }.Concat(arguments));
+            return StartProcess("cmd.exe", workingDirectory, "/d", "/s", "/c", commandLine);
+        }
+
+        return StartProcess(command, workingDirectory, arguments);
     }
 
     private static bool HasRequiredPath(string root, string relativePath) =>
