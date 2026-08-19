@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -14,6 +15,8 @@ public sealed partial class DesktopAtlasView
     private Canvas? spatialDepthLayer;
     private ShellViewModel? experienceShell;
     private TextBlock? themeChooserHeaderText;
+    private Button? motionPreferenceButton;
+    private TextBlock? motionPreferenceValue;
     private bool themeChooserPrepared;
     private bool spatialDepthRebuildQueued;
 
@@ -61,6 +64,12 @@ public sealed partial class DesktopAtlasView
             UpdateExperienceState();
             if (experienceShell.AtlasSettingsExpanded && experienceShell.ToggleAtlasSettingsCommand.CanExecute(null))
                 experienceShell.ToggleAtlasSettingsCommand.Execute(null);
+            return;
+        }
+
+        if (e.PropertyName == nameof(ShellViewModel.AtlasMotion))
+        {
+            UpdateExperienceState();
             return;
         }
 
@@ -166,7 +175,7 @@ public sealed partial class DesktopAtlasView
         if (ThemeMenuButton.Parent is Canvas settingsCanvas)
         {
             settingsCanvas.Width = 232;
-            settingsCanvas.Height = 286;
+            settingsCanvas.Height = 314;
         }
 
         ThemeChoices.Width = 216;
@@ -197,6 +206,78 @@ public sealed partial class DesktopAtlasView
         ConfigureThemeChoice(ElegantThemeButton, "Elegant", "quiet material");
         ConfigureThemeChoice(MachineThemeButton, "Machine", "engineered grid");
         ConfigureThemeChoice(WorldThemeButton, "World", "spatial terrain");
+
+        motionPreferenceValue = new TextBlock
+        {
+            Text = "Full",
+            FontSize = 8,
+            Opacity = 0.58,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+        var motionText = new StackPanel
+        {
+            Spacing = 0,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = "Motion",
+                    FontSize = 11,
+                    FontWeight = FontWeight.SemiBold
+                },
+                motionPreferenceValue
+            }
+        };
+        var motionMark = new Border
+        {
+            Width = 30,
+            Height = 30,
+            CornerRadius = new CornerRadius(8),
+            Child = new TextBlock
+            {
+                Text = "≈",
+                FontSize = 18,
+                FontWeight = FontWeight.SemiBold,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            }
+        };
+        motionMark.Classes.Add("wgt-motion-choice-mark");
+        var motionContent = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"),
+            ColumnSpacing = 9,
+            Children = { motionMark, motionText }
+        };
+        Grid.SetColumn(motionText, 1);
+
+        motionPreferenceButton = new Button
+        {
+            Width = 216,
+            Height = 42,
+            CornerRadius = new CornerRadius(10),
+            Padding = new Thickness(8, 5),
+            HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+            Content = motionContent
+        };
+        motionPreferenceButton.Classes.Add("wgt-motion-choice");
+        ToolTip.SetTip(motionPreferenceButton, "Toggle reduced motion");
+        AutomationProperties.SetName(motionPreferenceButton, "Toggle reduced motion");
+        motionPreferenceButton.Click += OnToggleMotionPreference;
+        ThemeChoices.Children.Add(motionPreferenceButton);
+    }
+
+    private async void OnToggleMotionPreference(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (experienceShell is null)
+            return;
+
+        var next = experienceShell.IsAtlasReducedMotion
+            ? AtlasMotionPreference.Full
+            : AtlasMotionPreference.Reduced;
+        await experienceShell.SetAtlasMotionAsync(next);
+        e.Handled = true;
     }
 
     private static void ConfigureThemeChoice(Button button, string title, string description)
@@ -341,9 +422,15 @@ public sealed partial class DesktopAtlasView
             return;
 
         var theme = experienceShell?.AtlasTheme ?? visualTheme;
+        var reducedMotion = experienceShell?.IsAtlasReducedMotion == true;
         if (themeChooserHeaderText is not null)
             themeChooserHeaderText.Text = $"APPEARANCE  ·  {theme.ToString().ToUpperInvariant()}";
+        if (motionPreferenceValue is not null)
+            motionPreferenceValue.Text = reducedMotion ? "Reduced" : "Full";
+        if (motionPreferenceButton is not null)
+            SetSelectedClass(motionPreferenceButton, reducedMotion);
 
+        SetStateClass(AtlasViewport, "reduced-motion", reducedMotion);
         ThemeChoices.IsVisible = experienceShell?.AtlasSettingsExpanded == true;
         ToolTip.SetTip(ThemeMenuButton, $"Theme · {theme}");
         UpdateSpatialDepthSelection();
