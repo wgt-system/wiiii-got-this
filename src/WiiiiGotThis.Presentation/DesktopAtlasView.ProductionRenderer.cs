@@ -10,14 +10,22 @@ public sealed partial class DesktopAtlasView
 {
     private AtlasLandscapeControl? productionSceneRenderer;
     private AtlasLivingWorldControl? livingWorldRenderer;
+    private AtlasWorldInfrastructureOverlay? livingWorldInfrastructureOverlay;
     private ShellViewModel? productionRendererShell;
 
-    private bool IsProductionSceneRendererActive => productionSceneRenderer is not null || livingWorldRenderer is not null;
+    private bool IsProductionSceneRendererActive =>
+        productionSceneRenderer is not null
+        || livingWorldRenderer is not null
+        || livingWorldInfrastructureOverlay is not null;
 
     private void EnsureProductionSceneRenderer()
     {
-        if (productionSceneRenderer is not null && livingWorldRenderer is not null)
+        if (productionSceneRenderer is not null
+            && livingWorldRenderer is not null
+            && livingWorldInfrastructureOverlay is not null)
+        {
             return;
+        }
 
         productionSceneRenderer = new AtlasLandscapeControl
         {
@@ -38,6 +46,14 @@ public sealed partial class DesktopAtlasView
         livingWorldRenderer.NodeInvoked += OnProductionSceneNodeInvoked;
         livingWorldRenderer.NodeActivated += OnProductionSceneNodeActivated;
 
+        livingWorldInfrastructureOverlay = new AtlasWorldInfrastructureOverlay
+        {
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+            IsHitTestVisible = false,
+            IsVisible = false
+        };
+
         // The legacy Canvas and the first custom graph/region experiment stay only as
         // migration evidence. The visible production candidate is either the semantic
         // technical landscape or the dedicated living-world projection over the same
@@ -51,6 +67,7 @@ public sealed partial class DesktopAtlasView
 
         AtlasViewport.Children.Insert(0, productionSceneRenderer);
         AtlasViewport.Children.Insert(1, livingWorldRenderer);
+        AtlasViewport.Children.Insert(2, livingWorldInfrastructureOverlay);
         UpdateProductionScene();
         UpdateProductionSceneCamera();
     }
@@ -95,14 +112,20 @@ public sealed partial class DesktopAtlasView
 
     private void UpdateProductionScene()
     {
-        if (productionSceneRenderer is null || livingWorldRenderer is null || productionRendererShell is null)
+        if (productionSceneRenderer is null
+            || livingWorldRenderer is null
+            || livingWorldInfrastructureOverlay is null
+            || productionRendererShell is null)
+        {
             return;
+        }
 
         var isLivingWorld = productionRendererShell.AtlasTheme == AtlasThemePreference.World;
         productionSceneRenderer.IsVisible = !isLivingWorld;
         productionSceneRenderer.IsHitTestVisible = !isLivingWorld;
         livingWorldRenderer.IsVisible = isLivingWorld;
         livingWorldRenderer.IsHitTestVisible = isLivingWorld;
+        livingWorldInfrastructureOverlay.IsVisible = isLivingWorld;
 
         productionSceneRenderer.SetScene(
             productionRendererShell.AtlasNodes,
@@ -116,6 +139,12 @@ public sealed partial class DesktopAtlasView
             productionRendererShell.AtlasConnections,
             productionRendererShell.SelectedAtlasNode?.NodeId,
             productionRendererShell.IsAtlasReducedMotion);
+
+        livingWorldInfrastructureOverlay.SetScene(
+            productionRendererShell.AtlasNodes,
+            productionRendererShell.AtlasConnections,
+            productionRendererShell.SelectedAtlasNode?.NodeId,
+            productionRendererShell.IsAtlasReducedMotion);
     }
 
     private void UpdateProductionSceneCamera()
@@ -125,6 +154,10 @@ public sealed partial class DesktopAtlasView
             sceneTranslate.X,
             sceneTranslate.Y);
         livingWorldRenderer?.SetCamera(
+            sceneScale.ScaleX,
+            sceneTranslate.X,
+            sceneTranslate.Y);
+        livingWorldInfrastructureOverlay?.SetCamera(
             sceneScale.ScaleX,
             sceneTranslate.X,
             sceneTranslate.Y);
