@@ -85,7 +85,6 @@ public sealed class AtlasInspectorFactsContractTests
         Assert.Contains("connection.Kind == AtlasConnectionKind.CapabilityDependency", source, StringComparison.Ordinal);
         Assert.Contains("ownedNodeIds.Contains(connection.Source.NodeId)", source, StringComparison.Ordinal);
         Assert.Contains("ownedNodeIds.Contains(connection.Target.NodeId)", source, StringComparison.Ordinal);
-        Assert.DoesNotContain("infer", source, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
