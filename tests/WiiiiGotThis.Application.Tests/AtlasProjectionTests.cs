@@ -6,25 +6,25 @@ namespace WiiiiGotThis.Application.Tests;
 public sealed class AtlasProjectionTests
 {
     [Fact]
-    public void Build_creates_core_service_and_capability_hierarchy_from_runtime_state()
+    public void Build_projects_published_capabilities_for_nonproduct_integrations()
     {
-        var vocation = new ServiceIdentity("vocation");
-        var opportunityOverview = new CapabilityIdentity("vocation.opportunity_overview");
-        var integration = new ServiceIntegrationListItem(vocation, "Vocation", true, null, true, true, true, IntegrationRefreshStatus.Refreshed, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
-        var capability = new CapabilityCatalogEntry(vocation, "Vocation", opportunityOverview, "Opportunity Overview", new Version(1, 0), new CapabilityResolutionResult(opportunityOverview, Enablement.Enabled, Availability.Available));
+        var sample = new ServiceIdentity("sample");
+        var sampleCapability = new CapabilityIdentity("sample.capability");
+        var integration = new ServiceIntegrationListItem(sample, "Sample", true, null, true, true, true, IntegrationRefreshStatus.Refreshed, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        var capability = new CapabilityCatalogEntry(sample, "Sample", sampleCapability, "Sample Capability", new Version(1, 0), new CapabilityResolutionResult(sampleCapability, Enablement.Enabled, Availability.Available));
 
         var projection = new BuildAtlasProjectionUseCase([], []).Build([integration], [capability]);
 
         Assert.Equal(3, projection.Nodes.Count);
         Assert.Contains(projection.Nodes, node => node.NodeId == "wgt.core");
-        Assert.Contains(projection.Nodes, node => node.NodeId == "service:vocation" && node.IsIntegrated && node.IsAvailable);
-        Assert.Contains(projection.Nodes, node => node.NodeId == "capability:vocation:vocation.opportunity_overview" && node.IsAvailable);
-        Assert.Contains(projection.Connections, edge => edge.Kind == AtlasConnectionKind.Composition && edge.SourceNodeId == "wgt.core" && edge.TargetNodeId == "service:vocation");
-        Assert.Contains(projection.Connections, edge => edge.Kind == AtlasConnectionKind.CapabilityOwnership && edge.SourceNodeId == "service:vocation" && edge.TargetNodeId == "capability:vocation:vocation.opportunity_overview");
+        Assert.Contains(projection.Nodes, node => node.NodeId == "service:sample" && node.IsIntegrated && node.IsAvailable);
+        Assert.Contains(projection.Nodes, node => node.NodeId == "capability:sample:sample.capability" && node.IsAvailable);
+        Assert.Contains(projection.Connections, edge => edge.Kind == AtlasConnectionKind.Composition && edge.SourceNodeId == "wgt.core" && edge.TargetNodeId == "service:sample");
+        Assert.Contains(projection.Connections, edge => edge.Kind == AtlasConnectionKind.CapabilityOwnership && edge.SourceNodeId == "service:sample" && edge.TargetNodeId == "capability:sample:sample.capability");
     }
 
     [Fact]
-    public void Build_includes_known_product_and_shared_capability_providers_without_inventing_capabilities()
+    public void Build_includes_known_products_shared_infrastructure_and_the_declared_Orientation_capability()
     {
         var projection = new BuildAtlasProjectionUseCase().Build([], []);
 
@@ -33,14 +33,21 @@ public sealed class AtlasProjectionTests
             "service:conveyance",
             "service:illumination",
             "service:orientation",
-            "service:vocation"], projection.Nodes.Select(node => node.NodeId));
+            "service:vocation",
+            "capability:orientation:orientation.generic_geospatial"], projection.Nodes.Select(node => node.NodeId));
+
         Assert.All(projection.Nodes.Where(node => node.Kind == AtlasNodeKind.Service), node =>
         {
             Assert.False(node.IsIntegrated);
             Assert.False(node.IsAvailable);
             Assert.Equal("Not composed on this client yet", node.Subtitle);
         });
-        Assert.DoesNotContain(projection.Nodes, node => node.Kind == AtlasNodeKind.Capability);
+
+        var geospatial = Assert.Single(projection.Nodes, node => node.Kind == AtlasNodeKind.Capability);
+        Assert.Equal("orientation", geospatial.ServiceIdentity?.Value);
+        Assert.Equal(BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId, geospatial.CapabilityIdentity?.Value);
+        Assert.Equal("Generic geospatial", geospatial.Title);
+        Assert.False(geospatial.IsAvailable);
 
         Assert.Equal(AtlasProductRole.FirstClassProductProvider, projection.Nodes.Single(node => node.NodeId == "service:vocation").ProductRole);
         Assert.Equal(AtlasProductRole.FirstClassProductProvider, projection.Nodes.Single(node => node.NodeId == "service:illumination").ProductRole);
@@ -94,25 +101,37 @@ public sealed class AtlasProjectionTests
     }
 
     [Fact]
-    public void Build_projects_real_Vocation_map_dependency_to_Orientation_without_fake_Orientation_capability()
+    public void Build_does_not_mirror_Vocation_integration_contracts_into_global_Atlas_capabilities()
     {
         var vocation = new ServiceIdentity("vocation");
+        var opportunity = new CapabilityIdentity("vocation.opportunity_overview");
         var mapProjection = new CapabilityIdentity("vocation.map_projection");
-        var capability = new CapabilityCatalogEntry(
-            vocation,
-            "Vocation",
-            mapProjection,
-            "Map Projection",
-            new Version(1, 0),
-            new CapabilityResolutionResult(mapProjection, Enablement.Enabled, Availability.Available));
+        var capabilities = new[]
+        {
+            new CapabilityCatalogEntry(vocation, "Vocation", opportunity, "Opportunity Overview", new Version(1, 0), new CapabilityResolutionResult(opportunity, Enablement.Enabled, Availability.Available)),
+            new CapabilityCatalogEntry(vocation, "Vocation", mapProjection, "Map Projection", new Version(1, 0), new CapabilityResolutionResult(mapProjection, Enablement.Enabled, Availability.Available))
+        };
 
-        var projection = new BuildAtlasProjectionUseCase().Build([Integration("vocation", "Vocation")], [capability]);
+        var projection = new BuildAtlasProjectionUseCase().Build([Integration("vocation", "Vocation")], capabilities);
+
+        Assert.DoesNotContain(projection.Nodes, node => node.CapabilityIdentity?.Value == "vocation.opportunity_overview");
+        Assert.DoesNotContain(projection.Nodes, node => node.CapabilityIdentity?.Value == "vocation.map_projection");
+        Assert.Contains(projection.Nodes, node => node.CapabilityIdentity?.Value == BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId);
+    }
+
+    [Fact]
+    public void Build_models_Vocation_as_consumer_of_Orientation_owned_generic_geospatial_capability()
+    {
+        var projection = new BuildAtlasProjectionUseCase().Build([Integration("vocation", "Vocation")], []);
+        var geospatial = Assert.Single(projection.Nodes, node => node.CapabilityIdentity?.Value == BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId);
+        var ownership = Assert.Single(projection.Connections, edge => edge.Kind == AtlasConnectionKind.CapabilityOwnership);
         var dependency = Assert.Single(projection.Connections, edge => edge.Kind == AtlasConnectionKind.CapabilityDependency);
 
-        Assert.Equal("capability:vocation:vocation.map_projection", dependency.SourceNodeId);
-        Assert.Equal("service:orientation", dependency.TargetNodeId);
+        Assert.Equal("service:orientation", ownership.SourceNodeId);
+        Assert.Equal(geospatial.NodeId, ownership.TargetNodeId);
+        Assert.Equal("service:vocation", dependency.SourceNodeId);
+        Assert.Equal(geospatial.NodeId, dependency.TargetNodeId);
         Assert.Contains("Orientation", dependency.Description, StringComparison.Ordinal);
-        Assert.DoesNotContain(projection.Nodes, node => node.Kind == AtlasNodeKind.Capability && node.ServiceIdentity?.Value == "orientation");
     }
 
     [Fact]
@@ -128,7 +147,8 @@ public sealed class AtlasProjectionTests
             "service:conveyance",
             "service:illumination",
             "service:orientation",
-            "service:vocation"], projection.Nodes.Select(node => node.NodeId));
+            "service:vocation",
+            "capability:orientation:orientation.generic_geospatial"], projection.Nodes.Select(node => node.NodeId));
     }
 
     [Fact]
@@ -150,7 +170,7 @@ public sealed class AtlasProjectionTests
     }
 
     [Fact]
-    public void Build_preserves_unavailable_capability_reason_without_inventing_product_semantics()
+    public void Build_preserves_unavailable_capability_reason_for_nonproduct_integration()
     {
         var service = new ServiceIdentity("sample");
         var capabilityId = new CapabilityIdentity("sample.capability");
