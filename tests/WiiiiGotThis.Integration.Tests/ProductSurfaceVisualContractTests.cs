@@ -1,0 +1,62 @@
+namespace WiiiiGotThis.Integration.Tests;
+
+public sealed class ProductSurfaceVisualContractTests
+{
+    [Fact]
+    public void Provider_entry_uses_a_narrow_depth_rail_instead_of_a_full_navigation_shell()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "DesktopAtlasView.ProductSurface.cs"));
+
+        Assert.Contains("ColumnDefinitions = new ColumnDefinitions(\"68,*\")", source, StringComparison.Ordinal);
+        Assert.Contains("wgt-product-depth-track", source, StringComparison.Ordinal);
+        Assert.Contains("FULL PRODUCT", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("ColumnDefinitions = new ColumnDefinitions(\"76,*\")", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Provider_startup_states_have_real_service_identity_before_the_product_surface_appears()
+    {
+        var root = FindRepositoryRoot();
+        var vocation = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "VocationProductView.cs"));
+        var orientation = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "OrientationProductView.cs"));
+        var productSurface = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "DesktopAtlasView.ProductSurface.cs"));
+
+        Assert.Contains("Text = \"VO\"", vocation, StringComparison.Ordinal);
+        Assert.Contains("wgt-provider-status-panel", vocation, StringComparison.Ordinal);
+        Assert.Contains("Text = \"OR\"", orientation, StringComparison.Ordinal);
+        Assert.Contains("wgt-provider-status-panel", orientation, StringComparison.Ordinal);
+        Assert.Contains("Text = \"IL\"", productSurface, StringComparison.Ordinal);
+        Assert.Contains("wgt-provider-status-panel", productSurface, StringComparison.Ordinal);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "WiiiiGotThis.sln")))
+                return directory.FullName;
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate the Wiiii Got This repository root from the test output directory.");
+    }
+}

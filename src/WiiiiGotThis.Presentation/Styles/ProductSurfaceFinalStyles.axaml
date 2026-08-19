@@ -1,0 +1,112 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- WGT-owned depth rail around provider-owned full product surfaces. -->
+  <Style Selector="Grid.wgt-product-overlay">
+    <Setter Property="Background" Value="#FF05090D" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.17" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="Border.wgt-product-rail">
+    <Setter Property="Background" Value="#FF070D12" />
+    <Setter Property="BorderBrush" Value="#FF1E2A32" />
+    <Setter Property="BorderThickness" Value="0,0,1,0" />
+    <Setter Property="BoxShadow" Value="8 0 28 0 #40000000" />
+  </Style>
+
+  <Style Selector="Border.wgt-product-depth-track">
+    <Setter Property="Background" Value="#FF274858" />
+    <Setter Property="Opacity" Value="0.38" />
+  </Style>
+
+  <Style Selector="Button.wgt-product-return">
+    <Setter Property="Background" Value="#94101A21" />
+    <Setter Property="BorderBrush" Value="#FF31505F" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="#FFE4EEF2" />
+  </Style>
+  <Style Selector="Button.wgt-product-return:pointerover">
+    <Setter Property="Background" Value="#D5192C36" />
+    <Setter Property="BorderBrush" Value="#FF65B6D0" />
+  </Style>
+
+  <Style Selector="Border.wgt-product-service-mark">
+    <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="Background" Value="#FF0E1B23" />
+    <Setter Property="BorderBrush" Value="#FF3B7D94" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BoxShadow" Value="0 0 22 1 #244CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-product-service-mark.vocation">
+    <Setter Property="BorderBrush" Value="#FF4CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-product-service-mark.illumination">
+    <Setter Property="BorderBrush" Value="#FFB9A76F" />
+    <Setter Property="Background" Value="#FF1A1810" />
+    <Setter Property="BoxShadow" Value="0 0 22 1 #20B9A76F" />
+  </Style>
+  <Style Selector="Border.wgt-product-service-mark.orientation">
+    <Setter Property="BorderBrush" Value="#FF79D2A5" />
+    <Setter Property="Background" Value="#FF0B1912" />
+    <Setter Property="BoxShadow" Value="0 0 22 1 #2079D2A5" />
+  </Style>
+  <Style Selector="Border.wgt-product-service-mark TextBlock">
+    <Setter Property="Foreground" Value="#FFF1F7F9" />
+  </Style>
+
+  <Style Selector="Border.wgt-product-stage">
+    <Setter Property="Background" Value="#FF05090D" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+
+  <!-- Provider-specific startup/readiness state before the provider surface takes over. -->
+  <Style Selector="StackPanel.wgt-provider-status-panel">
+    <Setter Property="Opacity" Value="0.96" />
+  </Style>
+  <Style Selector="Border.wgt-provider-status-mark">
+    <Setter Property="CornerRadius" Value="20" />
+    <Setter Property="Background" Value="#FF0C1820" />
+    <Setter Property="BorderBrush" Value="#FF3B7D94" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BoxShadow" Value="0 0 34 2 #244CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-provider-status-mark.vocation">
+    <Setter Property="BorderBrush" Value="#FF4CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-provider-status-mark.illumination">
+    <Setter Property="Background" Value="#FF1A1810" />
+    <Setter Property="BorderBrush" Value="#FFD1BC75" />
+    <Setter Property="BoxShadow" Value="0 0 34 2 #22D1BC75" />
+  </Style>
+  <Style Selector="Border.wgt-provider-status-mark.orientation">
+    <Setter Property="Background" Value="#FF0B1912" />
+    <Setter Property="BorderBrush" Value="#FF79D2A5" />
+    <Setter Property="BoxShadow" Value="0 0 34 2 #2279D2A5" />
+  </Style>
+  <Style Selector="Border.wgt-provider-status-mark TextBlock">
+    <Setter Property="Foreground" Value="#FFF1F7F9" />
+  </Style>
+  <Style Selector="TextBlock.wgt-provider-status-title">
+    <Setter Property="Foreground" Value="#FFE8EFF3" />
+  </Style>
+  <Style Selector="TextBlock.wgt-provider-status-text">
+    <Setter Property="Foreground" Value="#FF9FB1BC" />
+  </Style>
+  <Style Selector="ProgressBar.wgt-provider-status-progress">
+    <Setter Property="Foreground" Value="#FF4CCAF0" />
+  </Style>
+  <Style Selector="Button.wgt-provider-retry">
+    <Setter Property="Background" Value="#FF12212A" />
+    <Setter Property="BorderBrush" Value="#FF3B6679" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="#FFE4EEF2" />
+    <Setter Property="Padding" Value="16,8" />
+    <Setter Property="CornerRadius" Value="10" />
+  </Style>
+  <Style Selector="Button.wgt-provider-retry:pointerover">
+    <Setter Property="Background" Value="#FF1A303C" />
+    <Setter Property="BorderBrush" Value="#FF65B6D0" />
+  </Style>
+</Styles>

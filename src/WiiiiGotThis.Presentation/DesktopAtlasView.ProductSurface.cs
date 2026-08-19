@@ -162,9 +162,9 @@ public sealed partial class DesktopAtlasView
     {
         var returnButton = new Button
         {
-            Width = 44,
-            Height = 44,
-            CornerRadius = new Avalonia.CornerRadius(22),
+            Width = 40,
+            Height = 40,
+            CornerRadius = new Avalonia.CornerRadius(20),
             Padding = new Avalonia.Thickness(0),
             Content = "◎",
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
@@ -177,75 +177,108 @@ public sealed partial class DesktopAtlasView
 
         var wgtCaption = new TextBlock
         {
-            Text = "WGT CORE",
+            Text = "WGT",
             FontSize = 8,
+            FontWeight = FontWeight.Bold,
+            LetterSpacing = 1.3,
+            Opacity = 0.62,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+        var atlasCaption = new TextBlock
+        {
+            Text = "ATLAS",
+            FontSize = 6,
             FontWeight = FontWeight.SemiBold,
-            Opacity = 0.58,
+            LetterSpacing = 1.1,
+            Opacity = 0.34,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
         var returnStack = new StackPanel
         {
-            Spacing = 5,
+            Spacing = 3,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            Children = { returnButton, wgtCaption }
+            Children = { returnButton, wgtCaption, atlasCaption }
         };
 
         var serviceMark = new Border
         {
-            Width = 38,
-            Height = 38,
+            Width = 42,
+            Height = 42,
             Child = new TextBlock
             {
-                Text = serviceName[0].ToString(),
-                FontWeight = FontWeight.SemiBold,
+                Text = ServiceGlyph(serviceName),
+                FontSize = 11,
+                FontWeight = FontWeight.Bold,
+                LetterSpacing = 0.8,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
             }
         };
         serviceMark.Classes.Add("wgt-product-service-mark");
+        serviceMark.Classes.Add(serviceName.ToLowerInvariant());
 
         var serviceLabel = new TextBlock
         {
             Text = serviceName,
-            FontSize = 11,
+            FontSize = 9,
             FontWeight = FontWeight.SemiBold,
-            Opacity = 0.86,
-            MaxWidth = 64,
+            Opacity = 0.8,
+            MaxWidth = 58,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             TextAlignment = TextAlignment.Center,
             TextWrapping = TextWrapping.Wrap
         };
+        var serviceDepth = new TextBlock
+        {
+            Text = "PRODUCT",
+            FontSize = 6,
+            FontWeight = FontWeight.SemiBold,
+            LetterSpacing = 1,
+            Opacity = 0.34,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
         var serviceIdentity = new StackPanel
         {
-            Spacing = 8,
+            Spacing = 6,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Children = { serviceMark, serviceLabel }
+            Children = { serviceMark, serviceLabel, serviceDepth }
         };
 
         var surfaceCaption = new TextBlock
         {
             Text = "FULL PRODUCT",
-            FontSize = 7,
+            FontSize = 6,
             FontWeight = FontWeight.SemiBold,
-            Opacity = 0.4,
+            LetterSpacing = 0.8,
+            Opacity = 0.28,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
+
+        var depthTrack = new Border
+        {
+            Width = 1,
+            Margin = new Avalonia.Thickness(0, 74, 0, 62),
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            IsHitTestVisible = false
+        };
+        depthTrack.Classes.Add("wgt-product-depth-track");
+        Grid.SetRowSpan(depthTrack, 3);
 
         var railGrid = new Grid
         {
             RowDefinitions = new RowDefinitions("Auto,*,Auto"),
-            Children = { returnStack, serviceIdentity, surfaceCaption }
+            Children = { depthTrack, returnStack, serviceIdentity, surfaceCaption }
         };
         Grid.SetRow(returnStack, 0);
-        returnStack.Margin = new Avalonia.Thickness(0, 16, 0, 0);
+        returnStack.Margin = new Avalonia.Thickness(0, 14, 0, 0);
         Grid.SetRow(serviceIdentity, 1);
         Grid.SetRow(surfaceCaption, 2);
-        surfaceCaption.Margin = new Avalonia.Thickness(0, 0, 0, 18);
+        surfaceCaption.Margin = new Avalonia.Thickness(0, 0, 0, 16);
 
         var rail = new Border
         {
-            Width = 76,
+            Width = 68,
             Child = railGrid
         };
         rail.Classes.Add("wgt-product-rail");
@@ -260,7 +293,7 @@ public sealed partial class DesktopAtlasView
 
         var overlay = new Grid
         {
-            ColumnDefinitions = new ColumnDefinitions("76,*"),
+            ColumnDefinitions = new ColumnDefinitions("68,*"),
             IsVisible = false,
             Opacity = 1,
             ClipToBounds = true,
@@ -309,50 +342,86 @@ public sealed partial class DesktopAtlasView
             Content = "Retry Illumination",
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
+        retry.Classes.Add("wgt-provider-retry");
         retry.Click += OnRetryIllumination;
 
-        return new StackPanel
-        {
-            Width = 420,
-            Spacing = 12,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Children =
-            {
-                new TextBlock
-                {
-                    Text = "Illumination unavailable",
-                    FontSize = 22,
-                    FontWeight = FontWeight.SemiBold,
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
-                },
-                new TextBlock
-                {
-                    Text = message,
-                    TextAlignment = TextAlignment.Center,
-                    TextWrapping = TextWrapping.Wrap
-                },
-                retry
-            }
-        };
+        var panel = BuildIlluminationStatusShell(message, retry, isLoading: false);
+        AutomationProperties.SetName(panel, "Illumination unavailable");
+        return panel;
     }
 
-    private static StackPanel BuildIlluminationLoadingState() => new()
+    private static StackPanel BuildIlluminationLoadingState() =>
+        BuildIlluminationStatusShell("Starting local Illumination…", null, isLoading: true);
+
+    private static StackPanel BuildIlluminationStatusShell(string message, Button? retry, bool isLoading)
     {
-        Width = 320,
-        Spacing = 12,
-        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-        Children =
+        var mark = new Border
         {
-            new ProgressBar { IsIndeterminate = true, Height = 4 },
-            new TextBlock
+            Width = 64,
+            Height = 64,
+            Child = new TextBlock
             {
-                Text = "Starting Illumination…",
-                TextAlignment = TextAlignment.Center
+                Text = "IL",
+                FontSize = 18,
+                FontWeight = FontWeight.Bold,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
             }
-        }
-    };
+        };
+        mark.Classes.Add("wgt-provider-status-mark");
+        mark.Classes.Add("illumination");
+
+        var title = new TextBlock
+        {
+            Text = "Illumination",
+            FontSize = 17,
+            FontWeight = FontWeight.SemiBold,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+        title.Classes.Add("wgt-provider-status-title");
+
+        var type = new TextBlock
+        {
+            Text = "PROVIDER PRODUCT",
+            FontSize = 7,
+            FontWeight = FontWeight.SemiBold,
+            LetterSpacing = 1.4,
+            Opacity = 0.42,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+
+        var progress = new ProgressBar
+        {
+            IsIndeterminate = true,
+            Height = 3,
+            Width = 220,
+            IsVisible = isLoading
+        };
+        progress.Classes.Add("wgt-provider-status-progress");
+
+        var status = new TextBlock
+        {
+            Text = message,
+            MaxWidth = 430,
+            TextAlignment = TextAlignment.Center,
+            TextWrapping = TextWrapping.Wrap,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+        status.Classes.Add("wgt-provider-status-text");
+
+        var panel = new StackPanel
+        {
+            Width = 460,
+            Spacing = 10,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Children = { mark, title, type, progress, status }
+        };
+        panel.Classes.Add("wgt-provider-status-panel");
+        if (retry is not null)
+            panel.Children.Add(retry);
+        return panel;
+    }
 
     private async void OnRetryIllumination(object? sender, RoutedEventArgs e)
     {

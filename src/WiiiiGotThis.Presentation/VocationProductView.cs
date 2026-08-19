@@ -1,5 +1,6 @@
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Media;
 
 namespace WiiiiGotThis.Presentation;
 
@@ -15,14 +16,14 @@ public sealed class VocationProductView : Grid
     private readonly ProgressBar progress = new()
     {
         IsIndeterminate = true,
-        Height = 4,
-        Width = 260
+        Height = 3,
+        Width = 220
     };
     private readonly TextBlock hostStatus = new()
     {
         Text = "Starting Vocation…",
-        TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-        TextAlignment = Avalonia.Media.TextAlignment.Center,
+        TextWrapping = TextWrapping.Wrap,
+        TextAlignment = TextAlignment.Center,
         MaxWidth = 500
     };
     private readonly Button retry = new()
@@ -42,13 +43,54 @@ public sealed class VocationProductView : Grid
         AutomationProperties.SetAutomationId(webView, "VocationProductSurface");
         AutomationProperties.SetName(hostStatus, "Vocation product status");
 
+        var mark = new Border
+        {
+            Width = 64,
+            Height = 64,
+            Child = new TextBlock
+            {
+                Text = "VO",
+                FontSize = 18,
+                FontWeight = FontWeight.Bold,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            }
+        };
+        mark.Classes.Add("wgt-provider-status-mark");
+        mark.Classes.Add("vocation");
+
+        var title = new TextBlock
+        {
+            Text = "Vocation",
+            FontSize = 17,
+            FontWeight = FontWeight.SemiBold,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+        title.Classes.Add("wgt-provider-status-title");
+
+        var type = new TextBlock
+        {
+            Text = "PROVIDER PRODUCT",
+            FontSize = 7,
+            FontWeight = FontWeight.SemiBold,
+            LetterSpacing = 1.4,
+            Opacity = 0.42,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
+        };
+
+        progress.Classes.Add("wgt-provider-status-progress");
+        hostStatus.Classes.Add("wgt-provider-status-text");
+        retry.Classes.Add("wgt-provider-retry");
+
         statusPanel = new StackPanel
         {
-            Spacing = 12,
+            Width = 460,
+            Spacing = 10,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Children = { progress, hostStatus, retry }
+            Children = { mark, title, type, progress, hostStatus, retry }
         };
+        statusPanel.Classes.Add("wgt-provider-status-panel");
         retry.Click += OnRetry;
 
         productUri = ResolveProductUri();
