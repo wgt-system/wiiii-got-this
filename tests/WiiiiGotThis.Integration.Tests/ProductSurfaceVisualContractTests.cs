@@ -19,7 +19,7 @@ public sealed class ProductSurfaceVisualContractTests
     }
 
     [Fact]
-    public void Provider_startup_states_have_real_service_identity_before_the_product_surface_appears()
+    public void Provider_startup_states_reuse_the_same_vector_service_identity_as_the_atlas()
     {
         var root = FindRepositoryRoot();
         var vocation = File.ReadAllText(Path.Combine(
@@ -38,12 +38,16 @@ public sealed class ProductSurfaceVisualContractTests
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.ProductSurface.cs"));
 
-        Assert.Contains("Text = \"VO\"", vocation, StringComparison.Ordinal);
+        Assert.Contains("ServiceSigilFactory.Create(\"Vocation\", 42)", vocation, StringComparison.Ordinal);
         Assert.Contains("wgt-provider-status-panel", vocation, StringComparison.Ordinal);
-        Assert.Contains("Text = \"OR\"", orientation, StringComparison.Ordinal);
+        Assert.Contains("ServiceSigilFactory.Create(\"Orientation\", 42)", orientation, StringComparison.Ordinal);
         Assert.Contains("wgt-provider-status-panel", orientation, StringComparison.Ordinal);
-        Assert.Contains("Text = \"IL\"", productSurface, StringComparison.Ordinal);
+        Assert.Contains("ServiceSigilFactory.Create(\"Illumination\", 42)", productSurface, StringComparison.Ordinal);
+        Assert.Contains("ServiceSigilFactory.Create(serviceName, 28)", productSurface, StringComparison.Ordinal);
         Assert.Contains("wgt-provider-status-panel", productSurface, StringComparison.Ordinal);
+        Assert.DoesNotContain("Text = \"VO\"", vocation, StringComparison.Ordinal);
+        Assert.DoesNotContain("Text = \"OR\"", orientation, StringComparison.Ordinal);
+        Assert.DoesNotContain("Text = \"IL\"", productSurface, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
