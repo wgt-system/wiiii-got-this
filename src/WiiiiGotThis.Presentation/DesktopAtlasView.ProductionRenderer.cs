@@ -9,29 +9,16 @@ namespace WiiiiGotThis.Presentation;
 public sealed partial class DesktopAtlasView
 {
     private AtlasLandscapeControl? productionSceneRenderer;
-    private AtlasLivingWorldControl? livingWorldRenderer;
-    private AtlasWorldEnvironmentalDetailOverlay? livingWorldEnvironmentalOverlay;
-    private AtlasWorldRegionalArchitectureOverlay? livingWorldRegionalArchitectureOverlay;
-    private AtlasWorldInfrastructureOverlay? livingWorldInfrastructureOverlay;
+    private AtlasWorldV2Control? worldV2Renderer;
     private ShellViewModel? productionRendererShell;
 
     private bool IsProductionSceneRendererActive =>
-        productionSceneRenderer is not null
-        || livingWorldRenderer is not null
-        || livingWorldEnvironmentalOverlay is not null
-        || livingWorldRegionalArchitectureOverlay is not null
-        || livingWorldInfrastructureOverlay is not null;
+        productionSceneRenderer is not null || worldV2Renderer is not null;
 
     private void EnsureProductionSceneRenderer()
     {
-        if (productionSceneRenderer is not null
-            && livingWorldRenderer is not null
-            && livingWorldEnvironmentalOverlay is not null
-            && livingWorldRegionalArchitectureOverlay is not null
-            && livingWorldInfrastructureOverlay is not null)
-        {
+        if (productionSceneRenderer is not null && worldV2Renderer is not null)
             return;
-        }
 
         productionSceneRenderer = new AtlasLandscapeControl
         {
@@ -42,44 +29,19 @@ public sealed partial class DesktopAtlasView
         productionSceneRenderer.NodeInvoked += OnProductionSceneNodeInvoked;
         productionSceneRenderer.NodeActivated += OnProductionSceneNodeActivated;
 
-        livingWorldRenderer = new AtlasLivingWorldControl
+        worldV2Renderer = new AtlasWorldV2Control
         {
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
             IsHitTestVisible = false,
             IsVisible = false
         };
-        livingWorldRenderer.NodeInvoked += OnProductionSceneNodeInvoked;
-        livingWorldRenderer.NodeActivated += OnProductionSceneNodeActivated;
+        worldV2Renderer.NodeInvoked += OnProductionSceneNodeInvoked;
+        worldV2Renderer.NodeActivated += OnProductionSceneNodeActivated;
 
-        livingWorldEnvironmentalOverlay = new AtlasWorldEnvironmentalDetailOverlay
-        {
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
-            IsHitTestVisible = false,
-            IsVisible = false
-        };
-
-        livingWorldRegionalArchitectureOverlay = new AtlasWorldRegionalArchitectureOverlay
-        {
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
-            IsHitTestVisible = false,
-            IsVisible = false
-        };
-
-        livingWorldInfrastructureOverlay = new AtlasWorldInfrastructureOverlay
-        {
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
-            IsHitTestVisible = false,
-            IsVisible = false
-        };
-
-        // The legacy Canvas and the first custom graph/region experiment stay only as
-        // migration evidence. The visible production candidate is either the semantic
-        // technical landscape or the dedicated living-world projection over the same
-        // Atlas node/connection model.
+        // The legacy Canvas and the previous World experiments remain in source only as
+        // migration evidence. The active product path is now exactly one renderer at a time:
+        // semantic diagnostic landscape for non-World themes, authored World V2 for World.
         SceneCanvas.IsVisible = false;
         SceneCanvas.IsHitTestVisible = false;
         SceneCanvas.Children.Clear();
@@ -88,10 +50,7 @@ public sealed partial class DesktopAtlasView
             themeAmbientLayer.IsVisible = false;
 
         AtlasViewport.Children.Insert(0, productionSceneRenderer);
-        AtlasViewport.Children.Insert(1, livingWorldRenderer);
-        AtlasViewport.Children.Insert(2, livingWorldEnvironmentalOverlay);
-        AtlasViewport.Children.Insert(3, livingWorldRegionalArchitectureOverlay);
-        AtlasViewport.Children.Insert(4, livingWorldInfrastructureOverlay);
+        AtlasViewport.Children.Insert(1, worldV2Renderer);
         UpdateProductionScene();
         UpdateProductionSceneCamera();
     }
@@ -136,24 +95,14 @@ public sealed partial class DesktopAtlasView
 
     private void UpdateProductionScene()
     {
-        if (productionSceneRenderer is null
-            || livingWorldRenderer is null
-            || livingWorldEnvironmentalOverlay is null
-            || livingWorldRegionalArchitectureOverlay is null
-            || livingWorldInfrastructureOverlay is null
-            || productionRendererShell is null)
-        {
+        if (productionSceneRenderer is null || worldV2Renderer is null || productionRendererShell is null)
             return;
-        }
 
-        var isLivingWorld = productionRendererShell.AtlasTheme == AtlasThemePreference.World;
-        productionSceneRenderer.IsVisible = !isLivingWorld;
-        productionSceneRenderer.IsHitTestVisible = !isLivingWorld;
-        livingWorldRenderer.IsVisible = isLivingWorld;
-        livingWorldRenderer.IsHitTestVisible = isLivingWorld;
-        livingWorldEnvironmentalOverlay.IsVisible = isLivingWorld;
-        livingWorldRegionalArchitectureOverlay.IsVisible = isLivingWorld;
-        livingWorldInfrastructureOverlay.IsVisible = isLivingWorld;
+        var isWorld = productionRendererShell.AtlasTheme == AtlasThemePreference.World;
+        productionSceneRenderer.IsVisible = !isWorld;
+        productionSceneRenderer.IsHitTestVisible = !isWorld;
+        worldV2Renderer.IsVisible = isWorld;
+        worldV2Renderer.IsHitTestVisible = isWorld;
 
         productionSceneRenderer.SetScene(
             productionRendererShell.AtlasNodes,
@@ -162,36 +111,10 @@ public sealed partial class DesktopAtlasView
             productionRendererShell.AtlasTheme,
             productionRendererShell.IsAtlasReducedMotion);
 
-        // World presents shared capability consumption through the dedicated infrastructure
-        // overlay. Do not also feed the same shared capability node/edge into the base town
-        // renderer, otherwise a local relay/factory gets duplicated by a generic graph-like
-        // route/building near the shared provider yard.
-        var worldBaseNodes = productionRendererShell.AtlasNodes
-            .Where(node => !(node.IsCapability && node.ProductRole == AtlasProductRole.SharedCapabilityProvider))
-            .ToArray();
-        var worldBaseNodeIds = worldBaseNodes
-            .Select(node => node.NodeId)
-            .ToHashSet(StringComparer.Ordinal);
-        var worldBaseConnections = productionRendererShell.AtlasConnections
-            .Where(connection =>
-                worldBaseNodeIds.Contains(connection.Source.NodeId)
-                && worldBaseNodeIds.Contains(connection.Target.NodeId))
-            .ToArray();
-
-        livingWorldRenderer.SetScene(
-            worldBaseNodes,
-            worldBaseConnections,
-            productionRendererShell.SelectedAtlasNode?.NodeId,
-            productionRendererShell.IsAtlasReducedMotion);
-
-        // Regional architecture is presentation-only but consumes the same projected service
-        // identities/selection so its landmarks follow availability/focus without owning any
-        // provider capability or interaction semantics.
-        livingWorldRegionalArchitectureOverlay.SetScene(
-            worldBaseNodes,
-            productionRendererShell.SelectedAtlasNode?.NodeId);
-
-        livingWorldInfrastructureOverlay.SetScene(
+        // World receives the complete curated Atlas projection. Shared providers/capabilities are
+        // intentionally retained because World V2 turns them into local facilities and networks
+        // rather than duplicating them as generic product settlements or graph edges.
+        worldV2Renderer.SetScene(
             productionRendererShell.AtlasNodes,
             productionRendererShell.AtlasConnections,
             productionRendererShell.SelectedAtlasNode?.NodeId,
@@ -204,19 +127,7 @@ public sealed partial class DesktopAtlasView
             sceneScale.ScaleX,
             sceneTranslate.X,
             sceneTranslate.Y);
-        livingWorldRenderer?.SetCamera(
-            sceneScale.ScaleX,
-            sceneTranslate.X,
-            sceneTranslate.Y);
-        livingWorldEnvironmentalOverlay?.SetCamera(
-            sceneScale.ScaleX,
-            sceneTranslate.X,
-            sceneTranslate.Y);
-        livingWorldRegionalArchitectureOverlay?.SetCamera(
-            sceneScale.ScaleX,
-            sceneTranslate.X,
-            sceneTranslate.Y);
-        livingWorldInfrastructureOverlay?.SetCamera(
+        worldV2Renderer?.SetCamera(
             sceneScale.ScaleX,
             sceneTranslate.X,
             sceneTranslate.Y);
@@ -246,8 +157,8 @@ public sealed partial class DesktopAtlasView
         }
         catch (Exception)
         {
-            // Provider entry must not terminate the WGT host. Individual provider
-            // surfaces own their detailed failure state; this is the last host guard.
+            // Provider entry must not terminate the WGT host. Individual provider surfaces own
+            // detailed failure state; this remains the last WGT host guard.
         }
     }
 }
