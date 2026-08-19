@@ -44,7 +44,7 @@ public sealed class AtlasInspectorPolishTests
         var orientation = layout.Nodes.Single(node => node.NodeId == "service:orientation");
         var map = layout.Nodes.Single(node => node.NodeId == "capability:vocation:vocation.map_projection");
 
-        Assert.Equal("2 services", core.ScopeSummaryText);
+        Assert.Equal("2 products", core.ScopeSummaryText);
         Assert.Equal("1 capability", vocation.ScopeSummaryText);
         Assert.Equal("0 capabilities", orientation.ScopeSummaryText);
         Assert.Equal("Published capability", map.ScopeSummaryText);
@@ -64,7 +64,7 @@ public sealed class AtlasInspectorPolishTests
     }
 
     [Fact]
-    public void Empty_core_reports_zero_services_without_inventing_relationships()
+    public void Empty_core_reports_zero_products_without_inventing_relationships()
     {
         var layout = AtlasPresentationLayoutBuilder.Build(new AtlasProjection(
             [new AtlasNode("wgt.core", AtlasNodeKind.Core, "WGT", "System ready")],
@@ -72,7 +72,7 @@ public sealed class AtlasInspectorPolishTests
 
         var core = Assert.Single(layout.Nodes);
 
-        Assert.Equal("0 services", core.ScopeSummaryText);
+        Assert.Equal("0 products", core.ScopeSummaryText);
         Assert.True(core.HasNoRelationships);
         Assert.Equal("No cross-service links", core.RelationshipSummaryText);
     }
