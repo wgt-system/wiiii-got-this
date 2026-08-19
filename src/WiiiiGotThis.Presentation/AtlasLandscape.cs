@@ -127,6 +127,7 @@ public static class AtlasLandscapeBuilder
                     }
                     break;
 
+                case AtlasConnectionKind.CapabilityConsumption:
                 case AtlasConnectionKind.CapabilityDependency:
                     if (connection.Source.ServiceIdentity?.Value is not { } sourceServiceId
                         || connection.Target.ServiceIdentity?.Value is not { } targetServiceId
@@ -208,15 +209,6 @@ public static class AtlasLandscapeBuilder
                     new(562, -224), new(672, -160), new(714, -58), new(702, 70),
                     new(636, 164), new(522, 224), new(374, 242), new(244, 202),
                     new(170, 132), new(140, 60), new(154, 0)
-                ]),
-            "conveyance" => new AuthoredRegion(
-                new Point(0, 116),
-                new Point(-214, 414),
-                [
-                    new(-62, 112), new(0, 122), new(62, 112), new(148, 150),
-                    new(220, 214), new(250, 314), new(224, 420), new(134, 502),
-                    new(12, 534), new(-126, 504), new(-220, 416), new(-252, 306),
-                    new(-214, 206), new(-134, 142)
                 ]),
             _ => FallbackRegion(service)
         };
