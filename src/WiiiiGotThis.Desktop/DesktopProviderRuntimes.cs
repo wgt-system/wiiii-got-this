@@ -6,6 +6,7 @@ namespace WiiiiGotThis.Desktop;
 public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDisposable
 {
     private static readonly Uri DefaultProductUri = new("http://127.0.0.1:8765/");
+    private static readonly Uri DefaultHealthUri = new("http://127.0.0.1:8765/api/health");
     private readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(2) };
     private readonly SemaphoreSlim gate = new(1, 1);
     private Process? ownedProcess;
@@ -19,14 +20,20 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
         await gate.WaitAsync(cancellationToken);
         try
         {
-            if (await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, productUri, cancellationToken))
-                return ProductRuntimeReadiness.Ready;
-
-            if (!DesktopProviderRuntimeSupport.IsSameEndpoint(productUri, DefaultProductUri))
+            var isDefaultEndpoint = DesktopProviderRuntimeSupport.IsSameEndpoint(productUri, DefaultProductUri);
+            if (!isDefaultEndpoint)
             {
-                return ProductRuntimeReadiness.Unavailable(
-                    $"The configured Vocation endpoint {productUri} is not running. Automatic startup is limited to the default local Vocation endpoint.");
+                return await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, productUri, cancellationToken)
+                    ? ProductRuntimeReadiness.Ready
+                    : ProductRuntimeReadiness.Unavailable(
+                        $"The configured Vocation endpoint {productUri} is not running. WGT will not start provider processes for a custom endpoint.");
             }
+
+            var healthReady = await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, DefaultHealthUri, cancellationToken);
+            var productReady = healthReady
+                && await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, productUri, cancellationToken);
+            if (productReady)
+                return ProductRuntimeReadiness.Ready;
 
             if (ownedProcess is { HasExited: true })
             {
@@ -41,34 +48,47 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
                     "Vocation is not running and its repository could not be located. Set WGT_VOCATION_ROOT or keep the Vocation repository beside Wiiii Got This.");
             }
 
-            var python = Path.Combine(root, ".venv", "Scripts", "python.exe");
-            if (!File.Exists(python))
-            {
-                return ProductRuntimeReadiness.Unavailable(
-                    "Vocation was found, but its Python environment is missing. Run `uv sync --locked --extra dev` in the Vocation repository.");
-            }
+            var environment = await EnsureVocationEnvironmentAsync(root, cancellationToken);
+            if (!environment.IsReady)
+                return environment.Readiness;
 
             var frontend = await EnsureVocationFrontendAsync(root, cancellationToken);
             if (!frontend.IsReady)
                 return frontend;
 
             ownedProcess ??= DesktopProviderRuntimeSupport.StartProcess(
-                python,
+                environment.PythonPath!,
                 root,
                 "-m",
                 "vocation",
-                "--no-browser");
+                "--no-browser",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "8765");
 
-            var ready = await DesktopProviderRuntimeSupport.WaitForSuccessfulHttpResponseAsync(
+            healthReady = await DesktopProviderRuntimeSupport.WaitForSuccessfulHttpResponseAsync(
+                httpClient,
+                DefaultHealthUri,
+                ownedProcess,
+                TimeSpan.FromSeconds(35),
+                cancellationToken);
+            if (!healthReady)
+            {
+                return ProductRuntimeReadiness.Unavailable(
+                    "WGT started Vocation, but `/api/health` did not become ready within 35 seconds. Check the Vocation Python/migration output and retry.");
+            }
+
+            productReady = await DesktopProviderRuntimeSupport.WaitForSuccessfulHttpResponseAsync(
                 httpClient,
                 productUri,
                 ownedProcess,
-                TimeSpan.FromSeconds(30),
+                TimeSpan.FromSeconds(8),
                 cancellationToken);
-            return ready
+            return productReady
                 ? ProductRuntimeReadiness.Ready
                 : ProductRuntimeReadiness.Unavailable(
-                    "WGT started Vocation, but the provider did not expose its local product surface. Check the Vocation runtime prerequisites and retry.");
+                    "Vocation's backend is healthy, but its provider-owned web surface is not being served. Rebuild `frontend/dist` and retry.");
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -95,45 +115,114 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
         gate.Dispose();
     }
 
+    private static async Task<VocationEnvironmentResult> EnsureVocationEnvironmentAsync(
+        string root,
+        CancellationToken cancellationToken)
+    {
+        var python = Path.Combine(root, ".venv", "Scripts", "python.exe");
+        if (File.Exists(python))
+            return VocationEnvironmentResult.Ready(python);
+
+        var uvAvailable = await DesktopProviderRuntimeSupport.CommandSucceedsAsync(
+            root,
+            TimeSpan.FromSeconds(8),
+            cancellationToken,
+            "uv",
+            "--version");
+        if (!uvAvailable)
+        {
+            return VocationEnvironmentResult.Unavailable(
+                "Vocation was found, but `.venv` is missing and `uv` is not available. Install uv or run `uv sync --locked --extra dev` in Vocation.");
+        }
+
+        var synced = await DesktopProviderRuntimeSupport.RunCommandAsync(
+            root,
+            TimeSpan.FromMinutes(3),
+            cancellationToken,
+            "uv",
+            "sync",
+            "--locked",
+            "--extra",
+            "dev");
+        if (!synced || !File.Exists(python))
+        {
+            return VocationEnvironmentResult.Unavailable(
+                "WGT found Vocation and uv, but could not prepare its locked Python environment. Run `uv sync --locked --extra dev` in Vocation and inspect the provider error.");
+        }
+
+        return VocationEnvironmentResult.Ready(python);
+    }
+
     private static async Task<ProductRuntimeReadiness> EnsureVocationFrontendAsync(
         string root,
         CancellationToken cancellationToken)
     {
-        var index = Path.Combine(root, "frontend", "dist", "index.html");
+        var frontendRoot = Path.Combine(root, "frontend");
+        var index = Path.Combine(frontendRoot, "dist", "index.html");
         if (File.Exists(index))
             return ProductRuntimeReadiness.Ready;
 
-        if (!Directory.Exists(Path.Combine(root, "frontend", "node_modules")))
+        var pnpmAvailable = await DesktopProviderRuntimeSupport.CommandSucceedsAsync(
+            root,
+            TimeSpan.FromSeconds(8),
+            cancellationToken,
+            "pnpm",
+            "--version");
+        if (!pnpmAvailable)
         {
             return ProductRuntimeReadiness.Unavailable(
-                "Vocation's web dependencies are missing. Run `pnpm --dir frontend install --frozen-lockfile` in the Vocation repository.");
+                "Vocation's web surface is not built and `pnpm` is unavailable. Install pnpm, then run `pnpm --dir frontend install --frozen-lockfile` and `pnpm --dir frontend build`.");
         }
 
-        var build = DesktopProviderRuntimeSupport.StartProcess(
-            "cmd.exe",
-            root,
-            "/d",
-            "/s",
-            "/c",
-            "pnpm --dir frontend build");
-        using (build)
+        if (!Directory.Exists(Path.Combine(frontendRoot, "node_modules")))
         {
-            await build.WaitForExitAsync(cancellationToken);
-            if (build.ExitCode != 0 || !File.Exists(index))
+            var installed = await DesktopProviderRuntimeSupport.RunCommandAsync(
+                root,
+                TimeSpan.FromMinutes(3),
+                cancellationToken,
+                "pnpm",
+                "--dir",
+                "frontend",
+                "install",
+                "--frozen-lockfile");
+            if (!installed)
             {
                 return ProductRuntimeReadiness.Unavailable(
-                    "WGT found Vocation but could not build its provider-owned web surface. Run `pnpm --dir frontend build` in Vocation and retry.");
+                    "WGT found Vocation but could not install its locked provider web dependencies. Run `pnpm --dir frontend install --frozen-lockfile` in Vocation and retry.");
             }
         }
 
+        var built = await DesktopProviderRuntimeSupport.RunCommandAsync(
+            root,
+            TimeSpan.FromMinutes(2),
+            cancellationToken,
+            "pnpm",
+            "--dir",
+            "frontend",
+            "build");
+        if (!built || !File.Exists(index))
+        {
+            return ProductRuntimeReadiness.Unavailable(
+                "WGT found Vocation but could not build its provider-owned web surface. Run `pnpm --dir frontend build` in Vocation and inspect the provider build error.");
+        }
+
         return ProductRuntimeReadiness.Ready;
+    }
+
+    private sealed record VocationEnvironmentResult(bool IsReady, string? PythonPath, ProductRuntimeReadiness Readiness)
+    {
+        public static VocationEnvironmentResult Ready(string pythonPath) =>
+            new(true, pythonPath, ProductRuntimeReadiness.Ready);
+
+        public static VocationEnvironmentResult Unavailable(string message) =>
+            new(false, null, ProductRuntimeReadiness.Unavailable(message));
     }
 }
 
 public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntime, IDisposable
 {
     private static readonly Uri DefaultProductUri = new("http://127.0.0.1:5173/app.html");
-    private static readonly Uri BackendProbeUri = new("http://127.0.0.1:8080/");
+    private static readonly Uri BackendHealthUri = new("http://127.0.0.1:8080/actuator/health");
     private readonly HttpClient httpClient = new() { Timeout = TimeSpan.FromSeconds(2) };
     private readonly SemaphoreSlim gate = new(1, 1);
     private Process? ownedMapProcess;
@@ -158,22 +247,23 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
                         $"The configured Orientation endpoint {productUri} is not running. WGT will not infer or start additional backend processes for a custom provider endpoint.");
             }
 
-            var backendReady = await DesktopProviderRuntimeSupport.IsHttpServerRespondingAsync(httpClient, BackendProbeUri, cancellationToken);
+            var backendReady = await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, BackendHealthUri, cancellationToken);
             if (mapReady && backendReady)
                 return ProductRuntimeReadiness.Ready;
 
-            var root = DesktopProviderRuntimeSupport.ResolveRepositoryRoot("WGT_ORIENTATION_ROOT", "orientation", Path.Combine("backend", "pom.xml"));
+            var root = DesktopProviderRuntimeSupport.ResolveRepositoryRoot(
+                "WGT_ORIENTATION_ROOT",
+                "orientation",
+                Path.Combine("backend", "pom.xml"));
             if (root is null)
             {
                 return ProductRuntimeReadiness.Unavailable(
-                    "Orientation is not running and its repository could not be located. Set WGT_ORIENTATION_ROOT or keep the Orientation repository beside Wiiii Got This.");
+                    "Orientation is not running and its repository could not be located. Set WGT_ORIENTATION_ROOT or keep Orientation beside Wiiii Got This.");
             }
 
-            if (!Directory.Exists(Path.Combine(root, "map", "node_modules")))
-            {
-                return ProductRuntimeReadiness.Unavailable(
-                    "Orientation was found, but its map dependencies are missing. Install the provider's map dependencies and retry.");
-            }
+            var mapReadyToStart = await EnsureOrientationMapDependenciesAsync(root, cancellationToken);
+            if (!mapReadyToStart.IsReady)
+                return mapReadyToStart;
 
             if (!backendReady)
             {
@@ -211,28 +301,44 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
                     "npm run dev -- --host 127.0.0.1 --port 5173 --strictPort");
             }
 
-            mapReady = await DesktopProviderRuntimeSupport.WaitForSuccessfulHttpResponseAsync(
-                httpClient,
-                productUri,
-                ownedMapProcess,
-                TimeSpan.FromSeconds(35),
-                cancellationToken);
-            backendReady = await DesktopProviderRuntimeSupport.WaitForHttpServerAsync(
-                httpClient,
-                BackendProbeUri,
-                ownedBackendProcess,
-                TimeSpan.FromSeconds(45),
-                cancellationToken);
+            // Map and backend are independent provider processes. Waiting sequentially made a
+            // normal first start look like an endless spinner (35s + 45s). Bound the host wait
+            // to one concurrent readiness window instead.
+            var mapTask = mapReady
+                ? Task.FromResult(true)
+                : DesktopProviderRuntimeSupport.WaitForSuccessfulHttpResponseAsync(
+                    httpClient,
+                    productUri,
+                    ownedMapProcess,
+                    TimeSpan.FromSeconds(35),
+                    cancellationToken);
+            var backendTask = backendReady
+                ? Task.FromResult(true)
+                : DesktopProviderRuntimeSupport.WaitForSuccessfulHttpResponseAsync(
+                    httpClient,
+                    BackendHealthUri,
+                    ownedBackendProcess,
+                    TimeSpan.FromSeconds(45),
+                    cancellationToken);
 
+            await Task.WhenAll(mapTask, backendTask);
+            mapReady = await mapTask;
+            backendReady = await backendTask;
+
+            if (!mapReady && !backendReady)
+            {
+                return ProductRuntimeReadiness.Unavailable(
+                    "Orientation's map and Java backend both failed to become ready within the bounded startup window. Check Node/npm plus Java/Maven in the Orientation checkout and retry.");
+            }
             if (!mapReady)
             {
                 return ProductRuntimeReadiness.Unavailable(
-                    "WGT started Orientation, but its standalone map surface did not become reachable. Check Node/npm and the Orientation map runtime, then retry.");
+                    "Orientation's Java backend is healthy, but its browser map did not become reachable within 35 seconds. Check the Orientation map/Vite process and retry.");
             }
             if (!backendReady)
             {
                 return ProductRuntimeReadiness.Unavailable(
-                    "Orientation's map surface started, but its local Java backend did not become reachable. Check Java/Maven and the Orientation backend prerequisites, then retry.");
+                    "Orientation's browser map is ready, but `/actuator/health` did not become healthy within 45 seconds. Check Java 25/Maven and the Orientation backend output, then retry.");
             }
 
             return ProductRuntimeReadiness.Ready;
@@ -262,6 +368,38 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
         ownedBackendProcess?.Dispose();
         httpClient.Dispose();
         gate.Dispose();
+    }
+
+    private static async Task<ProductRuntimeReadiness> EnsureOrientationMapDependenciesAsync(
+        string root,
+        CancellationToken cancellationToken)
+    {
+        var mapRoot = Path.Combine(root, "map");
+        if (Directory.Exists(Path.Combine(mapRoot, "node_modules")))
+            return ProductRuntimeReadiness.Ready;
+
+        var npmAvailable = await DesktopProviderRuntimeSupport.CommandSucceedsAsync(
+            mapRoot,
+            TimeSpan.FromSeconds(8),
+            cancellationToken,
+            "npm",
+            "--version");
+        if (!npmAvailable)
+        {
+            return ProductRuntimeReadiness.Unavailable(
+                "Orientation was found, but its map dependencies are missing and npm is unavailable. Install Node/npm and run `npm ci` in `orientation/map`.");
+        }
+
+        var installed = await DesktopProviderRuntimeSupport.RunCommandAsync(
+            mapRoot,
+            TimeSpan.FromMinutes(3),
+            cancellationToken,
+            "npm",
+            "ci");
+        return installed
+            ? ProductRuntimeReadiness.Ready
+            : ProductRuntimeReadiness.Unavailable(
+                "WGT found Orientation but could not install its locked map dependencies. Run `npm ci` in `orientation/map` and inspect the provider error.");
     }
 }
 
@@ -322,6 +460,48 @@ internal static class DesktopProviderRuntimeSupport
             ?? throw new InvalidOperationException($"Failed to start {fileName}.");
     }
 
+    public static async Task<bool> CommandSucceedsAsync(
+        string workingDirectory,
+        TimeSpan timeout,
+        CancellationToken cancellationToken,
+        string command,
+        params string[] arguments) =>
+        await RunCommandAsync(workingDirectory, timeout, cancellationToken, command, arguments);
+
+    public static async Task<bool> RunCommandAsync(
+        string workingDirectory,
+        TimeSpan timeout,
+        CancellationToken cancellationToken,
+        string command,
+        params string[] arguments)
+    {
+        Process? process = null;
+        try
+        {
+            process = StartProcess(command, workingDirectory, arguments);
+            using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutSource.CancelAfter(timeout);
+            try
+            {
+                await process.WaitForExitAsync(timeoutSource.Token);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                StopOwnedProcess(process);
+                return false;
+            }
+            return process.ExitCode == 0;
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            return false;
+        }
+        finally
+        {
+            process?.Dispose();
+        }
+    }
+
     public static async Task<bool> IsSuccessfulHttpResponseAsync(
         HttpClient client,
         Uri uri,
@@ -342,41 +522,13 @@ internal static class DesktopProviderRuntimeSupport
         }
     }
 
-    public static async Task<bool> IsHttpServerRespondingAsync(
-        HttpClient client,
-        Uri uri,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-            return true;
-        }
-        catch (HttpRequestException)
-        {
-            return false;
-        }
-        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
-        {
-            return false;
-        }
-    }
-
     public static Task<bool> WaitForSuccessfulHttpResponseAsync(
         HttpClient client,
         Uri uri,
         Process? ownedProcess,
         TimeSpan timeout,
         CancellationToken cancellationToken) =>
-        WaitForEndpointAsync(client, uri, ownedProcess, timeout, requireSuccessStatus: true, cancellationToken);
-
-    public static Task<bool> WaitForHttpServerAsync(
-        HttpClient client,
-        Uri uri,
-        Process? ownedProcess,
-        TimeSpan timeout,
-        CancellationToken cancellationToken) =>
-        WaitForEndpointAsync(client, uri, ownedProcess, timeout, requireSuccessStatus: false, cancellationToken);
+        WaitForEndpointAsync(client, uri, ownedProcess, timeout, cancellationToken);
 
     public static void StopOwnedProcess(Process? process)
     {
@@ -404,7 +556,6 @@ internal static class DesktopProviderRuntimeSupport
         Uri uri,
         Process? ownedProcess,
         TimeSpan timeout,
-        bool requireSuccessStatus,
         CancellationToken cancellationToken)
     {
         var deadline = DateTimeOffset.UtcNow + timeout;
@@ -414,10 +565,7 @@ internal static class DesktopProviderRuntimeSupport
             if (ownedProcess is { HasExited: true })
                 return false;
 
-            var ready = requireSuccessStatus
-                ? await IsSuccessfulHttpResponseAsync(client, uri, cancellationToken)
-                : await IsHttpServerRespondingAsync(client, uri, cancellationToken);
-            if (ready)
+            if (await IsSuccessfulHttpResponseAsync(client, uri, cancellationToken))
                 return true;
 
             await Task.Delay(TimeSpan.FromMilliseconds(300), cancellationToken);
