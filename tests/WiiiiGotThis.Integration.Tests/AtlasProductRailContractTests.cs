@@ -11,6 +11,12 @@ public sealed class AtlasProductRailContractTests
             "src",
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.ProductSurface.cs"));
+        var styles = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "Styles",
+            "ProductSurfaceFinalStyles.axaml"));
 
         Assert.Contains("Return to WGT Atlas", source, StringComparison.Ordinal);
         Assert.Contains("WGT settings", source, StringComparison.Ordinal);
@@ -19,6 +25,17 @@ public sealed class AtlasProductRailContractTests
         Assert.Contains("VerticalScrollBarVisibility", source, StringComparison.Ordinal);
         Assert.Contains("ProductRailCapability", source, StringComparison.Ordinal);
         Assert.Contains("OnProductRailCapability", source, StringComparison.Ordinal);
+        Assert.Contains("returnButton.Classes.Add(\"wgt-product-rail-global\")", source, StringComparison.Ordinal);
+        Assert.Contains("settingsButton.Classes.Add(\"wgt-product-rail-global\")", source, StringComparison.Ordinal);
+        Assert.Contains("button.Classes.Add(\"wgt-product-rail-provider\")", source, StringComparison.Ordinal);
+        Assert.Contains("button.Classes.Add(\"wgt-product-rail-toggle\")", source, StringComparison.Ordinal);
+        Assert.Contains("rail.Classes.Add(serviceName.ToLowerInvariant())", source, StringComparison.Ordinal);
+        Assert.Contains("Button.wgt-product-rail-global", styles, StringComparison.Ordinal);
+        Assert.Contains("Button.wgt-product-rail-provider", styles, StringComparison.Ordinal);
+        Assert.Contains("Button.wgt-product-rail-toggle", styles, StringComparison.Ordinal);
+        Assert.Contains("Border.wgt-product-rail.vocation Button.wgt-product-rail-provider", styles, StringComparison.Ordinal);
+        Assert.Contains("Border.wgt-product-rail.illumination Button.wgt-product-rail-provider", styles, StringComparison.Ordinal);
+        Assert.Contains("Border.wgt-product-rail.orientation Button.wgt-product-rail-provider", styles, StringComparison.Ordinal);
         Assert.DoesNotContain("FULL PRODUCT", source, StringComparison.Ordinal);
     }
 
