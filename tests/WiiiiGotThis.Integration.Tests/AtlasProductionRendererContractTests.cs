@@ -3,14 +3,19 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasProductionRendererContractTests
 {
     [Fact]
-    public void Atlas_graph_is_drawn_by_one_custom_scene_control_instead_of_visible_graph_controls()
+    public void Atlas_is_drawn_by_the_semantic_landscape_control_instead_of_visible_graph_controls()
     {
         var root = FindRepositoryRoot();
         var renderer = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasSceneControl.cs"));
+            "AtlasLandscapeControl.cs"));
+        var topology = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "AtlasLandscape.cs"));
         var host = File.ReadAllText(Path.Combine(
             root,
             "src",
@@ -22,16 +27,26 @@ public sealed class AtlasProductionRendererContractTests
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.axaml.cs"));
 
-        Assert.Contains("public sealed class AtlasSceneControl : Control", renderer, StringComparison.Ordinal);
+        Assert.Contains("public sealed class AtlasLandscapeControl : Control", renderer, StringComparison.Ordinal);
+        Assert.Contains("AtlasLandscapeBuilder.Build", renderer, StringComparison.Ordinal);
         Assert.Contains("public override void Render(DrawingContext context)", renderer, StringComparison.Ordinal);
-        Assert.Contains("context.DrawGeometry", renderer, StringComparison.Ordinal);
-        Assert.Contains("context.DrawEllipse", renderer, StringComparison.Ordinal);
+        Assert.Contains("DrawRegions", renderer, StringComparison.Ordinal);
+        Assert.Contains("DrawRoutes", renderer, StringComparison.Ordinal);
+        Assert.Contains("DrawGates", renderer, StringComparison.Ordinal);
+        Assert.Contains("DrawCoreNexus", renderer, StringComparison.Ordinal);
         Assert.Contains("NodeInvoked", renderer, StringComparison.Ordinal);
         Assert.Contains("NodeActivated", renderer, StringComparison.Ordinal);
+
+        Assert.Contains("public sealed record AtlasLandscape", topology, StringComparison.Ordinal);
+        Assert.Contains("AtlasLandscapeRouteKind.CrossServiceDependency", topology, StringComparison.Ordinal);
+        Assert.Contains("AtlasLandscapeGateKind.DependencyEgress", topology, StringComparison.Ordinal);
+        Assert.Contains("AtlasLandscapeGateKind.DependencyIngress", topology, StringComparison.Ordinal);
 
         Assert.DoesNotContain("new Button", renderer, StringComparison.Ordinal);
         Assert.DoesNotContain("new Border", renderer, StringComparison.Ordinal);
         Assert.DoesNotContain("new Canvas", renderer, StringComparison.Ordinal);
+        Assert.Contains("private AtlasLandscapeControl? productionSceneRenderer", host, StringComparison.Ordinal);
+        Assert.Contains("productionSceneRenderer = new AtlasLandscapeControl", host, StringComparison.Ordinal);
         Assert.Contains("SceneCanvas.IsVisible = false", host, StringComparison.Ordinal);
         Assert.Contains("ControlHint.IsVisible = false", host, StringComparison.Ordinal);
         Assert.Contains("AtlasViewport.Children.Insert(0, productionSceneRenderer)", host, StringComparison.Ordinal);
@@ -45,14 +60,14 @@ public sealed class AtlasProductionRendererContractTests
     }
 
     [Fact]
-    public void Custom_scene_preserves_focus_theme_motion_and_direct_product_entry_contracts()
+    public void Landscape_scene_preserves_focus_theme_motion_and_direct_product_entry_contracts()
     {
         var root = FindRepositoryRoot();
         var renderer = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasSceneControl.cs"));
+            "AtlasLandscapeControl.cs"));
         var host = File.ReadAllText(Path.Combine(
             root,
             "src",
@@ -67,6 +82,7 @@ public sealed class AtlasProductionRendererContractTests
         Assert.Contains("RequestAnimationFrame", renderer, StringComparison.Ordinal);
         Assert.Contains("themeTransitionActive = !reducedMotion", renderer, StringComparison.Ordinal);
         Assert.Contains("Focus();", renderer, StringComparison.Ordinal);
+        Assert.Contains("zoom >= 1.02", renderer, StringComparison.Ordinal);
         Assert.DoesNotContain("AtlasViewport.Focus();", host, StringComparison.Ordinal);
         Assert.Contains("if (!node.IsEnabled)", host, StringComparison.Ordinal);
         Assert.Contains("await OpenSelectedProductSurfaceAsync()", host, StringComparison.Ordinal);
