@@ -8,6 +8,9 @@ public sealed class ProviderRuntimeStartupContractTests
         var source = RuntimeSource();
 
         Assert.Contains("http://127.0.0.1:8765/api/health", source, StringComparison.Ordinal);
+        Assert.Contains("Preparing Vocation Python environment", source, StringComparison.Ordinal);
+        Assert.Contains("Preparing Vocation interface", source, StringComparison.Ordinal);
+        Assert.Contains("Waiting for Vocation health", source, StringComparison.Ordinal);
         Assert.Contains("uv", source, StringComparison.Ordinal);
         Assert.Contains("sync", source, StringComparison.Ordinal);
         Assert.Contains("--locked", source, StringComparison.Ordinal);
@@ -23,6 +26,7 @@ public sealed class ProviderRuntimeStartupContractTests
         var source = RuntimeSource();
 
         Assert.Contains("http://127.0.0.1:8080/actuator/health", source, StringComparison.Ordinal);
+        Assert.Contains("Waiting for Orientation map + backend", source, StringComparison.Ordinal);
         Assert.Contains("Task.WhenAll(mapTask, backendTask)", source, StringComparison.Ordinal);
         Assert.Contains("TimeSpan.FromSeconds(35)", source, StringComparison.Ordinal);
         Assert.Contains("TimeSpan.FromSeconds(45)", source, StringComparison.Ordinal);
@@ -30,6 +34,17 @@ public sealed class ProviderRuntimeStartupContractTests
         Assert.Contains("ci", source, StringComparison.Ordinal);
         Assert.DoesNotContain("WaitForHttpServerAsync", source, StringComparison.Ordinal);
         Assert.DoesNotContain("BackendProbeUri = new(\"http://127.0.0.1:8080/\")", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Node_package_shims_are_started_through_cmd_on_windows()
+    {
+        var source = RuntimeSource();
+
+        Assert.Contains("OperatingSystem.IsWindows()", source, StringComparison.Ordinal);
+        Assert.Contains("string.Equals(command, \"npm\"", source, StringComparison.Ordinal);
+        Assert.Contains("string.Equals(command, \"pnpm\"", source, StringComparison.Ordinal);
+        Assert.Contains("StartProcess(\"cmd.exe\"", source, StringComparison.Ordinal);
     }
 
     private static string RuntimeSource()
