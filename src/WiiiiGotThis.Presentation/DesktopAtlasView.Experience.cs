@@ -170,6 +170,7 @@ public sealed partial class DesktopAtlasView
         button.CornerRadius = new CornerRadius(14);
         button.Padding = new Thickness(9, 7);
         button.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+        ToolTip.SetTip(button, $"{title} · {description}");
 
         var glyphBorder = new Border
         {
