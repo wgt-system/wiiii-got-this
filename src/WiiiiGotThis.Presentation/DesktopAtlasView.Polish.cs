@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -18,6 +19,11 @@ public sealed partial class DesktopAtlasView
     private ShellViewModel? polishShell;
     private bool polishEventsAttached;
     private bool inspectorPlacementQueued;
+    private bool inspectorHasPlacement;
+    private bool inspectorDragging;
+    private Point inspectorDragStart;
+    private double inspectorDragOriginX;
+    private double inspectorDragOriginY;
 
     private void OnAtlasPolishAttached(object? sender, VisualTreeAttachmentEventArgs e)
     {
@@ -123,8 +129,9 @@ public sealed partial class DesktopAtlasView
 
     private void OnAtlasCameraTransformChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
+        // Camera movement must never choose a new dossier side/position. The user owns the
+        // floating dossier position; only the tether follows the selected world object.
         UpdateProductionSceneCamera();
-        QueueInspectorPlacementRefinement();
         UpdateInspectorTether();
     }
 
@@ -154,60 +161,74 @@ public sealed partial class DesktopAtlasView
 
     private void RefineInspectorPlacement()
     {
-        if (shell?.SelectedAtlasNode is not { } node ||
-            !InspectorCard.IsVisible ||
-            AtlasViewport.Bounds.Width <= 0 ||
-            AtlasViewport.Bounds.Height <= 0)
-        {
+        if (!InspectorCard.IsVisible || AtlasViewport.Bounds.Width <= 0 || AtlasViewport.Bounds.Height <= 0)
             return;
-        }
 
-        var world = WorldPoint(node);
-        var nodeX = world.X * sceneScale.ScaleX + sceneTranslate.X;
-        var nodeY = world.Y * sceneScale.ScaleY + sceneTranslate.Y;
         var cardWidth = InspectorCard.Bounds.Width > 0 ? InspectorCard.Bounds.Width : 300d;
         var cardHeight = InspectorCard.Bounds.Height > 0
             ? Math.Min(InspectorCard.Bounds.Height, 560d)
             : 500d;
-        var nodeHalfWidth = node.Kind switch
-        {
-            AtlasNodeKind.Core => 94d,
-            AtlasNodeKind.Service => 74d,
-            _ => 80d
-        } * sceneScale.ScaleX;
-        const double gap = 18d;
-        const double edge = 14d;
-        const double topChromeClearance = 72d;
+        const double edge = 18d;
+        const double topChromeClearance = 92d;
 
-        var viewportCenter = AtlasViewport.Bounds.Width / 2;
-        var preferLeft = nodeX < viewportCenter - 50d;
-        var leftCandidate = nodeX - nodeHalfWidth - gap - cardWidth;
-        var rightCandidate = nodeX + nodeHalfWidth + gap;
-        double left;
-
-        if (preferLeft)
+        if (!inspectorHasPlacement)
         {
-            left = leftCandidate;
-            if (left < edge && rightCandidate + cardWidth <= AtlasViewport.Bounds.Width - edge)
-                left = rightCandidate;
-        }
-        else
-        {
-            left = rightCandidate;
-            if (left + cardWidth > AtlasViewport.Bounds.Width - edge && leftCandidate >= edge)
-                left = leftCandidate;
+            inspectorTranslate.X = Math.Max(edge, AtlasViewport.Bounds.Width - cardWidth - 34d);
+            inspectorTranslate.Y = Math.Min(
+                Math.Max(topChromeClearance, 138d),
+                Math.Max(topChromeClearance, AtlasViewport.Bounds.Height - cardHeight - edge));
+            inspectorHasPlacement = true;
+            return;
         }
 
-        left = Math.Clamp(left, edge, Math.Max(edge, AtlasViewport.Bounds.Width - cardWidth - edge));
-        var top = Math.Clamp(
-            nodeY - 96d,
+        inspectorTranslate.X = Math.Clamp(
+            inspectorTranslate.X,
+            edge,
+            Math.Max(edge, AtlasViewport.Bounds.Width - cardWidth - edge));
+        inspectorTranslate.Y = Math.Clamp(
+            inspectorTranslate.Y,
             topChromeClearance,
             Math.Max(topChromeClearance, AtlasViewport.Bounds.Height - cardHeight - edge));
+    }
 
-        if (Math.Abs(inspectorTranslate.X - left) > 0.5)
-            inspectorTranslate.X = left;
-        if (Math.Abs(inspectorTranslate.Y - top) > 0.5)
-            inspectorTranslate.Y = top;
+    private void OnInspectorHeaderPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        var point = e.GetCurrentPoint(InspectorCard);
+        if (!point.Properties.IsLeftButtonPressed || e.Source is Button)
+            return;
+
+        inspectorDragging = true;
+        inspectorDragStart = e.GetPosition(AtlasViewport);
+        inspectorDragOriginX = inspectorTranslate.X;
+        inspectorDragOriginY = inspectorTranslate.Y;
+        e.Pointer.Capture(InspectorCard);
+        e.Handled = true;
+    }
+
+    private void OnInspectorDragMoved(object? sender, PointerEventArgs e)
+    {
+        if (!inspectorDragging)
+            return;
+
+        var current = e.GetPosition(AtlasViewport);
+        var delta = current - inspectorDragStart;
+        inspectorTranslate.X = inspectorDragOriginX + delta.X;
+        inspectorTranslate.Y = inspectorDragOriginY + delta.Y;
+        RefineInspectorPlacement();
+        UpdateInspectorTether();
+        e.Handled = true;
+    }
+
+    private void OnInspectorDragReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (!inspectorDragging)
+            return;
+
+        inspectorDragging = false;
+        e.Pointer.Capture(null);
+        RefineInspectorPlacement();
+        UpdateInspectorTether();
+        e.Handled = true;
     }
 
     private void EnsureInspectorTether()
