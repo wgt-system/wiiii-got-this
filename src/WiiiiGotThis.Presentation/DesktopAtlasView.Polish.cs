@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using WiiiiGotThis.Application;
 using AtlasPath = Avalonia.Controls.Shapes.Path;
@@ -15,6 +16,7 @@ public sealed partial class DesktopAtlasView
     private AtlasPath? inspectorTether;
     private ShellViewModel? polishShell;
     private bool polishEventsAttached;
+    private bool inspectorPlacementQueued;
 
     private void OnAtlasPolishAttached(object? sender, VisualTreeAttachmentEventArgs e)
     {
@@ -31,6 +33,7 @@ public sealed partial class DesktopAtlasView
         AttachExperienceShell(DataContext as ShellViewModel);
         ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
         UpdateExperienceState();
+        QueueInspectorPlacementRefinement();
         UpdateInspectorTether();
     }
 
@@ -53,6 +56,7 @@ public sealed partial class DesktopAtlasView
         AttachExperienceShell(DataContext as ShellViewModel);
         ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
         UpdateExperienceState();
+        QueueInspectorPlacementRefinement();
         UpdateInspectorTether();
     }
 
@@ -74,6 +78,7 @@ public sealed partial class DesktopAtlasView
         if (e.PropertyName == nameof(ShellViewModel.SelectedAtlasNode))
         {
             UpdateSpatialDepthSelection();
+            QueueInspectorPlacementRefinement();
             UpdateInspectorTether();
         }
         else if (e.PropertyName == nameof(ShellViewModel.AtlasTheme) && polishShell is not null)
@@ -90,9 +95,72 @@ public sealed partial class DesktopAtlasView
         }
     }
 
-    private void OnAtlasCameraTransformChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => UpdateInspectorTether();
+    private void OnAtlasCameraTransformChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        QueueInspectorPlacementRefinement();
+        UpdateInspectorTether();
+    }
 
-    private void OnInspectorSizeChanged(object? sender, SizeChangedEventArgs e) => UpdateInspectorTether();
+    private void OnInspectorSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        QueueInspectorPlacementRefinement();
+        UpdateInspectorTether();
+    }
+
+    private void QueueInspectorPlacementRefinement()
+    {
+        if (inspectorPlacementQueued)
+            return;
+
+        inspectorPlacementQueued = true;
+        Dispatcher.UIThread.Post(
+            () =>
+            {
+                inspectorPlacementQueued = false;
+                RefineInspectorPlacement();
+                UpdateInspectorTether();
+            },
+            DispatcherPriority.Render);
+    }
+
+    private void RefineInspectorPlacement()
+    {
+        if (shell?.SelectedAtlasNode is not { } node ||
+            !InspectorCard.IsVisible ||
+            AtlasViewport.Bounds.Width <= 0 ||
+            AtlasViewport.Bounds.Height <= 0)
+        {
+            return;
+        }
+
+        var world = WorldPoint(node);
+        var nodeX = world.X * sceneScale.ScaleX + sceneTranslate.X;
+        var nodeY = world.Y * sceneScale.ScaleY + sceneTranslate.Y;
+        var cardWidth = InspectorCard.Bounds.Width > 0 ? InspectorCard.Bounds.Width : 372d;
+        var cardHeight = InspectorCard.Bounds.Height > 0
+            ? Math.Min(InspectorCard.Bounds.Height, 600d)
+            : 540d;
+        const double gap = 28d;
+        const double edge = 18d;
+        const double topChromeClearance = 78d;
+
+        var left = nodeX + gap;
+        if (left + cardWidth > AtlasViewport.Bounds.Width - edge)
+            left = nodeX - cardWidth - gap;
+        left = Math.Clamp(left, edge, Math.Max(edge, AtlasViewport.Bounds.Width - cardWidth - edge));
+
+        var top = Math.Clamp(
+            nodeY - 110d,
+            topChromeClearance,
+            Math.Max(topChromeClearance, AtlasViewport.Bounds.Height - cardHeight - edge));
+
+        var next = new Thickness(left, top, 0, 0);
+        if (Math.Abs(InspectorCard.Margin.Left - next.Left) > 0.5 ||
+            Math.Abs(InspectorCard.Margin.Top - next.Top) > 0.5)
+        {
+            InspectorCard.Margin = next;
+        }
+    }
 
     private void EnsureInspectorTether()
     {
@@ -140,9 +208,6 @@ public sealed partial class DesktopAtlasView
         var cardWidth = InspectorCard.Bounds.Width > 0 ? InspectorCard.Bounds.Width : 372d;
         var cardOnRight = left >= nodeX;
         var direction = cardOnRight ? 1d : -1d;
-
-        // Match the final renderer's horizontal hit geometry. The old capability
-        // radius (31px) made the tether visibly cross a 160px-wide capability port.
         var nodeRadius = node.Kind switch
         {
             AtlasNodeKind.Core => 94d,
