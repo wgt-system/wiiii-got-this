@@ -303,25 +303,51 @@ public sealed partial class DesktopAtlasView
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
         };
 
-        var serviceId = serviceName.ToLowerInvariant();
-        var capabilities = shell?.AtlasNodes
-            .Where(node =>
-                node.IsCapability
-                && string.Equals(node.ServiceIdentity?.Value, serviceId, StringComparison.Ordinal))
-            .OrderBy(node => node.Title, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(node => node.NodeId, StringComparer.Ordinal)
-            .ToArray() ?? [];
+        if (shell is null)
+            return stack;
 
-        foreach (var capability in capabilities)
+        var serviceId = serviceName.ToLowerInvariant();
+        var consumed = shell.AtlasConnections
+            .Where(connection =>
+                connection.IsCapabilityUse
+                && string.Equals(connection.Source.ServiceIdentity?.Value, serviceId, StringComparison.Ordinal))
+            .OrderBy(connection => connection.Target.Title, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(connection => connection.Target.NodeId, StringComparer.Ordinal)
+            .ToArray();
+
+        foreach (var connection in consumed)
         {
-            var glyph = capability.CapabilityIdentity?.Value switch
-            {
-                BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId => "⌖",
-                BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId => "⇄",
-                _ => "◇"
-            };
+            var capability = connection.Target;
+            var glyph = CapabilityGlyph(capability);
+            var tooltip = connection.IsUserConfigurable
+                ? $"{capability.Title} · {connection.StateText}"
+                : capability.Title;
             var button = BuildRailButton(
                 glyph,
+                tooltip,
+                $"ProductRailCapabilityUse{serviceName}{capability.CapabilityIdentity?.Value}",
+                connection.IsUserConfigurable ? OnProductRailCapabilityToggle : OnProductRailCapability);
+            button.Tag = connection.IsUserConfigurable ? connection : capability;
+            button.Opacity = connection.IsEnabled ? 1 : 0.42;
+            stack.Children.Add(button);
+        }
+
+        var consumedNodeIds = consumed
+            .Select(connection => connection.Target.NodeId)
+            .ToHashSet(StringComparer.Ordinal);
+        var ownedCapabilities = shell.AtlasNodes
+            .Where(node =>
+                node.IsCapability
+                && string.Equals(node.ServiceIdentity?.Value, serviceId, StringComparison.Ordinal)
+                && !consumedNodeIds.Contains(node.NodeId))
+            .OrderBy(node => node.Title, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(node => node.NodeId, StringComparer.Ordinal)
+            .ToArray();
+
+        foreach (var capability in ownedCapabilities)
+        {
+            var button = BuildRailButton(
+                CapabilityGlyph(capability),
                 capability.Title,
                 $"ProductRailCapability{serviceName}{capability.CapabilityIdentity?.Value}",
                 OnProductRailCapability);
@@ -329,7 +355,7 @@ public sealed partial class DesktopAtlasView
             stack.Children.Add(button);
         }
 
-        if (capabilities.Length == 0)
+        if (consumed.Length == 0 && ownedCapabilities.Length == 0)
         {
             var quietMark = new TextBlock
             {
@@ -338,12 +364,20 @@ public sealed partial class DesktopAtlasView
                 Opacity = 0.24,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
             };
-            ToolTip.SetTip(quietMark, "No WGT-level provider capabilities are exposed here yet");
+            ToolTip.SetTip(quietMark, "No WGT-level product capability controls are exposed here yet");
             stack.Children.Add(quietMark);
         }
 
         return stack;
     }
+
+    private static string CapabilityGlyph(AtlasNodePresentationViewModel capability) =>
+        capability.CapabilityIdentity?.Value switch
+        {
+            BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId => "⌖",
+            BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId => "⇄",
+            _ => "◇"
+        };
 
     private static Button BuildRailButton(
         string glyph,
@@ -381,13 +415,35 @@ public sealed partial class DesktopAtlasView
 
     private async void OnProductRailCapability(object? sender, RoutedEventArgs e)
     {
-        if (sender is not Button { Tag: AtlasNodePresentationViewModel capability } || shell is null)
+        if (shell is null)
+            return;
+
+        var capability = sender switch
+        {
+            Button { Tag: AtlasNodePresentationViewModel node } => node,
+            Button { Tag: AtlasConnectionPresentationViewModel connection } => connection.Target,
+            _ => null
+        };
+        if (capability is null)
             return;
 
         await HideActiveProductOverlayAsync();
         shell.SelectAtlasNodeCommand.Execute(capability);
         CenterOnSelected();
         AtlasViewport.Focus();
+        e.Handled = true;
+    }
+
+    private async void OnProductRailCapabilityToggle(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: AtlasConnectionPresentationViewModel connection } button || shell is null)
+            return;
+
+        var enabled = await shell.ToggleCapabilityConsumptionAsync(connection);
+        button.Opacity = enabled ? 1 : 0.42;
+        var tooltip = $"{connection.Target.Title} · {(enabled ? "On" : "Off")}";
+        ToolTip.SetTip(button, tooltip);
+        AutomationProperties.SetName(button, tooltip);
         e.Handled = true;
     }
 
