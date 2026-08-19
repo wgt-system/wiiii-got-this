@@ -20,6 +20,7 @@ public enum AtlasConnectionKind
 {
     Composition,
     CapabilityOwnership,
+    CapabilityConsumption,
     CapabilityDependency
 }
 
@@ -29,11 +30,18 @@ public sealed record AtlasProductService(
     string Description,
     AtlasProductRole ProductRole = AtlasProductRole.FirstClassProductProvider);
 
+/// <summary>
+/// Declares a user-meaningful capability consumption relationship for Atlas projection.
+/// The provider owns the capability; the consumer owns its domain-specific use of it.
+/// This is deliberately separate from narrow integration contracts that may transport data
+/// without becoming durable user-facing Atlas capabilities.
+/// </summary>
 public sealed record AtlasProductDependency(
-    ServiceIdentity SourceServiceIdentity,
-    CapabilityIdentity SourceCapabilityIdentity,
-    ServiceIdentity TargetServiceIdentity,
-    string Description);
+    ServiceIdentity ConsumerServiceIdentity,
+    CapabilityIdentity ProviderCapabilityIdentity,
+    ServiceIdentity ProviderServiceIdentity,
+    string Description,
+    string? CapabilityDisplayName = null);
 
 public sealed record AtlasNode(
     string NodeId,
@@ -63,6 +71,7 @@ public sealed record AtlasProjection(
 public sealed class BuildAtlasProjectionUseCase
 {
     public const string CoreNodeId = "wgt.core";
+    public const string OrientationGeospatialCapabilityId = "orientation.generic_geospatial";
     private const string ReferenceDeveloperServiceId = "reference-service";
 
     private static readonly IReadOnlyList<AtlasProductService> DefaultProductServices = Array.AsReadOnly<AtlasProductService>(
@@ -93,9 +102,10 @@ public sealed class BuildAtlasProjectionUseCase
     [
         new(
             new ServiceIdentity("vocation"),
-            new CapabilityIdentity("vocation.map_projection"),
+            new CapabilityIdentity(OrientationGeospatialCapabilityId),
             new ServiceIdentity("orientation"),
-            "Vocation owns opportunity and work-location meaning; Orientation supplies the generic geospatial rendering and interaction capability.")
+            "Vocation owns opportunity and work-location meaning while Orientation supplies generic geospatial rendering, exploration and interaction.",
+            "Generic geospatial")
     ]);
 
     private readonly StringComparer titleComparer = StringComparer.OrdinalIgnoreCase;
@@ -166,7 +176,7 @@ public sealed class BuildAtlasProjectionUseCase
                 AtlasNodeKind.Core,
                 "Wiiii Got This",
                 "System ready",
-                Description: "Your service and capability system.")
+                Description: "Your product and capability system.")
         };
         var connections = new List<AtlasConnection>();
 
@@ -189,8 +199,8 @@ public sealed class BuildAtlasProjectionUseCase
                 ProductRole: entry.Product?.ProductRole));
 
             // Product composition is not the same thing as service/runtime existence.
-            // Known shared infrastructure such as Conveyance stays discoverable in Atlas
-            // without being projected as a peer end-user product destination.
+            // Shared infrastructure such as Conveyance stays discoverable without being
+            // projected as a peer end-user product destination.
             if (entry.Product?.ProductRole != AtlasProductRole.SharedCapabilityProvider)
             {
                 connections.Add(new(
@@ -200,50 +210,18 @@ public sealed class BuildAtlasProjectionUseCase
                     serviceNodeId));
             }
 
-            if (!integrated)
+            // Known first-class products deliberately do not mirror every published adapter
+            // contract into Atlas. Those contracts remain available to WGT integration code,
+            // but Atlas capabilities are curated user-meaningful system semantics. This keeps
+            // Vocation's transitional Opportunity Overview / Map Projection contracts from
+            // becoming fake global destinations merely because they are published.
+            if (!integrated || entry.Product is not null)
                 continue;
 
-            foreach (var capability in capabilities
-                         .Where(capability => capability.ServiceIdentity == entry.Identity)
-                         .OrderBy(capability => capability.CapabilityTitle, titleComparer)
-                         .ThenBy(capability => capability.CapabilityIdentity.Value, StringComparer.Ordinal))
-            {
-                var capabilityNodeId = CapabilityNodeId(capability.ServiceIdentity, capability.CapabilityIdentity);
-                nodes.Add(new(
-                    capabilityNodeId,
-                    AtlasNodeKind.Capability,
-                    capability.CapabilityTitle,
-                    capability.Resolution.Availability.IsAvailable ? "Available" : "Unavailable",
-                    capability.ServiceIdentity,
-                    capability.CapabilityIdentity,
-                    integration!.IsEffectivelyEnabled,
-                    capability.Resolution.Availability.IsAvailable,
-                    capability.Resolution.Availability.IsAvailable ? null : capability.Resolution.Availability.Reason,
-                    ProductRole: entry.Product?.ProductRole));
-                connections.Add(new(
-                    $"capability:{capability.ServiceIdentity.Value}:{capability.CapabilityIdentity.Value}",
-                    AtlasConnectionKind.CapabilityOwnership,
-                    serviceNodeId,
-                    capabilityNodeId));
-            }
+            AddPublishedIntegrationCapabilities(nodes, connections, capabilities, integration!, entry.Identity, serviceNodeId);
         }
 
-        var existingNodeIds = nodes.Select(node => node.NodeId).ToHashSet(StringComparer.Ordinal);
-        foreach (var dependency in productDependencies)
-        {
-            var sourceNodeId = CapabilityNodeId(dependency.SourceServiceIdentity, dependency.SourceCapabilityIdentity);
-            var targetNodeId = ServiceNodeId(dependency.TargetServiceIdentity);
-            if (!existingNodeIds.Contains(sourceNodeId) || !existingNodeIds.Contains(targetNodeId))
-                continue;
-
-            connections.Add(new(
-                $"dependency:{dependency.SourceServiceIdentity.Value}:{dependency.SourceCapabilityIdentity.Value}:{dependency.TargetServiceIdentity.Value}",
-                AtlasConnectionKind.CapabilityDependency,
-                sourceNodeId,
-                targetNodeId,
-                dependency.Description));
-        }
-
+        AddDeclaredProductCapabilities(nodes, connections);
         return new AtlasProjection(nodes.AsReadOnly(), connections.AsReadOnly());
     }
 
@@ -258,6 +236,86 @@ public sealed class BuildAtlasProjectionUseCase
         ArgumentNullException.ThrowIfNull(serviceIdentity);
         ArgumentNullException.ThrowIfNull(capabilityIdentity);
         return $"capability:{serviceIdentity.Value}:{capabilityIdentity.Value}";
+    }
+
+    private static void AddPublishedIntegrationCapabilities(
+        List<AtlasNode> nodes,
+        List<AtlasConnection> connections,
+        IReadOnlyCollection<CapabilityCatalogEntry> capabilities,
+        ServiceIntegrationListItem integration,
+        ServiceIdentity serviceIdentity,
+        string serviceNodeId)
+    {
+        foreach (var capability in capabilities
+                     .Where(capability => capability.ServiceIdentity == serviceIdentity)
+                     .OrderBy(capability => capability.CapabilityTitle, StringComparer.OrdinalIgnoreCase)
+                     .ThenBy(capability => capability.CapabilityIdentity.Value, StringComparer.Ordinal))
+        {
+            var capabilityNodeId = CapabilityNodeId(capability.ServiceIdentity, capability.CapabilityIdentity);
+            nodes.Add(new(
+                capabilityNodeId,
+                AtlasNodeKind.Capability,
+                capability.CapabilityTitle,
+                capability.Resolution.Availability.IsAvailable ? "Available" : "Unavailable",
+                capability.ServiceIdentity,
+                capability.CapabilityIdentity,
+                integration.IsEffectivelyEnabled,
+                capability.Resolution.Availability.IsAvailable,
+                capability.Resolution.Availability.IsAvailable ? null : capability.Resolution.Availability.Reason));
+            connections.Add(new(
+                $"capability:{capability.ServiceIdentity.Value}:{capability.CapabilityIdentity.Value}",
+                AtlasConnectionKind.CapabilityOwnership,
+                serviceNodeId,
+                capabilityNodeId));
+        }
+    }
+
+    private void AddDeclaredProductCapabilities(List<AtlasNode> nodes, List<AtlasConnection> connections)
+    {
+        var serviceNodes = nodes
+            .Where(node => node.Kind == AtlasNodeKind.Service && node.ServiceIdentity is not null)
+            .ToDictionary(node => node.ServiceIdentity!, node => node);
+        var existingNodeIds = nodes.Select(node => node.NodeId).ToHashSet(StringComparer.Ordinal);
+
+        foreach (var dependency in productDependencies)
+        {
+            if (!serviceNodes.TryGetValue(dependency.ConsumerServiceIdentity, out var consumer)
+                || !serviceNodes.TryGetValue(dependency.ProviderServiceIdentity, out var provider))
+            {
+                continue;
+            }
+
+            var capabilityNodeId = CapabilityNodeId(dependency.ProviderServiceIdentity, dependency.ProviderCapabilityIdentity);
+            if (existingNodeIds.Add(capabilityNodeId))
+            {
+                nodes.Add(new(
+                    capabilityNodeId,
+                    AtlasNodeKind.Capability,
+                    dependency.CapabilityDisplayName ?? dependency.ProviderCapabilityIdentity.Value,
+                    provider.IsAvailable ? "Available" : "Unavailable",
+                    dependency.ProviderServiceIdentity,
+                    dependency.ProviderCapabilityIdentity,
+                    provider.IsEnabled,
+                    provider.IsAvailable,
+                    provider.AvailabilityReason,
+                    provider.IsIntegrated,
+                    Description: dependency.Description,
+                    ProductRole: provider.ProductRole));
+                connections.Add(new(
+                    $"ownership:{dependency.ProviderServiceIdentity.Value}:{dependency.ProviderCapabilityIdentity.Value}",
+                    AtlasConnectionKind.CapabilityOwnership,
+                    provider.NodeId,
+                    capabilityNodeId,
+                    $"{provider.Title} owns this generic capability."));
+            }
+
+            connections.Add(new(
+                $"consumption:{dependency.ConsumerServiceIdentity.Value}:{dependency.ProviderServiceIdentity.Value}:{dependency.ProviderCapabilityIdentity.Value}",
+                AtlasConnectionKind.CapabilityConsumption,
+                consumer.NodeId,
+                capabilityNodeId,
+                dependency.Description));
+        }
     }
 
     private static bool IsDeveloperIntegration(ServiceIdentity serviceIdentity) =>
