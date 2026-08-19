@@ -145,9 +145,6 @@ public sealed partial class DesktopAtlasView
         activationPreview.Classes.Add("wgt-activation-preview");
         AutomationProperties.SetName(activationPreview, "Before activation");
 
-        // Overview currently contains Core summary, known-only summary, integrated
-        // service actions and capability detail. Place the preview immediately before
-        // the integrated service action block so Enable & open cannot visually precede it.
         overviewStack.Children.Insert(Math.Min(2, overviewStack.Children.Count), activationPreview);
     }
 
@@ -203,7 +200,7 @@ public sealed partial class DesktopAtlasView
 
         var show = node.IsIntegratedService && !node.IsEnabled && node.CanOpenProductSurface && integration is not null;
         activationPreview.IsVisible = show;
-        if (!show)
+        if (!show || integration is null)
             return;
 
         var capabilityCount = finalVisualShell.SelectedIntegrationCapabilities.Count;
