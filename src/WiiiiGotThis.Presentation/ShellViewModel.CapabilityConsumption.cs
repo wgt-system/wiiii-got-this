@@ -26,17 +26,21 @@ public sealed partial class ShellViewModel
     {
         ArgumentNullException.ThrowIfNull(connection);
 
-        if (!connection.IsCapabilityUse
-            || !connection.IsUserConfigurable
+        var current = AtlasConnections.FirstOrDefault(candidate =>
+                string.Equals(candidate.Model.ConnectionId, connection.Model.ConnectionId, StringComparison.Ordinal))
+            ?? connection;
+
+        if (!current.IsCapabilityUse
+            || !current.IsUserConfigurable
             || writeCapabilityConsumption is null
-            || connection.Source.ServiceIdentity is not { } consumerService
-            || connection.Target.ServiceIdentity is not { } providerService
-            || connection.Target.CapabilityIdentity is not { } capability)
+            || current.Source.ServiceIdentity is not { } consumerService
+            || current.Target.ServiceIdentity is not { } providerService
+            || current.Target.CapabilityIdentity is not { } capability)
         {
-            return connection.IsEnabled;
+            return current.IsEnabled;
         }
 
-        var nextEnabled = !connection.IsEnabled;
+        var nextEnabled = !current.IsEnabled;
         var key = new AtlasCapabilityConsumptionKey(
             consumerService,
             providerService,
@@ -49,12 +53,12 @@ public sealed partial class ShellViewModel
         catch (IOException)
         {
             StatusText = "Capability setting could not be saved.";
-            return connection.IsEnabled;
+            return current.IsEnabled;
         }
         catch (UnauthorizedAccessException)
         {
             StatusText = "Capability setting could not be saved.";
-            return connection.IsEnabled;
+            return current.IsEnabled;
         }
 
         var updated = capabilityConsumptionPreferences
