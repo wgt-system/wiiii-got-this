@@ -117,15 +117,14 @@ public sealed partial class DesktopAtlasView
 
         var facts = new StackPanel
         {
-            Spacing = 6,
+            Spacing = 5,
             Children =
             {
-                BuildActivationFact("CAPABILITIES", activationCapabilitiesFact),
-                BuildActivationFact("EXPLICIT DEPENDENCIES", activationDependenciesFact),
+                BuildActivationScopeFact(activationCapabilitiesFact, activationDependenciesFact),
                 BuildActivationFact("DATA BOUNDARY", activationDataFact),
                 BuildActivationFact("HOST / NETWORK", activationHostFact),
                 BuildActivationFact("THIS DEVICE", activationDeviceFact),
-                BuildActivationFact("PERMISSIONS / CROSS-DEVICE", activationUnknownsFact)
+                BuildActivationFact("NOT PUBLISHED", activationUnknownsFact)
             }
         };
 
@@ -138,13 +137,6 @@ public sealed partial class DesktopAtlasView
         };
         heading.Classes.Add("wgt-caption");
 
-        var intro = new TextBlock
-        {
-            Text = "WGT can explain only the integration facts it actually knows before enabling this service here.",
-            TextWrapping = Avalonia.Media.TextWrapping.Wrap
-        };
-        intro.Classes.Add("wgt-secondary");
-
         activationPreview = new Border
         {
             Padding = new Avalonia.Thickness(10),
@@ -152,13 +144,31 @@ public sealed partial class DesktopAtlasView
             Child = new StackPanel
             {
                 Spacing = 7,
-                Children = { heading, intro, facts }
+                Children = { heading, facts }
             }
         };
         activationPreview.Classes.Add("wgt-activation-preview");
         AutomationProperties.SetName(activationPreview, "Before activation");
 
         overviewStack.Children.Insert(Math.Min(2, overviewStack.Children.Count), activationPreview);
+    }
+
+    private static Border BuildActivationScopeFact(TextBlock capabilities, TextBlock dependencies)
+    {
+        var label = new TextBlock { Text = "CAPABILITIES / LINKS" };
+        label.Classes.Add("wgt-caption");
+        var content = new StackPanel
+        {
+            Spacing = 1,
+            Children = { label, capabilities, dependencies }
+        };
+        var card = new Border
+        {
+            Padding = new Avalonia.Thickness(8, 6),
+            Child = content
+        };
+        card.Classes.Add("wgt-activation-fact");
+        return card;
     }
 
     private static Border BuildActivationFact(string labelText, TextBlock value)
@@ -222,27 +232,37 @@ public sealed partial class DesktopAtlasView
             activationCapabilitiesFact,
             capabilityCount switch
             {
-                0 => "No provider capability is currently resolved for this service on this client.",
-                1 => "WGT currently resolves 1 provider capability for this service.",
-                _ => $"WGT currently resolves {capabilityCount} provider capabilities for this service."
+                0 => "No capability currently resolved.",
+                1 => "1 provider capability currently resolved.",
+                _ => $"{capabilityCount} provider capabilities currently resolved."
             });
         SetFact(
             activationDependenciesFact,
             dependencyCount switch
             {
-                0 => "No explicit cross-service capability dependency is currently published to this Atlas.",
-                1 => "1 explicit cross-service capability dependency is currently visible in the Atlas.",
-                _ => $"{dependencyCount} explicit cross-service capability dependencies are currently visible in the Atlas."
+                0 => "No explicit cross-service link published.",
+                1 => "1 explicit cross-service link published.",
+                _ => $"{dependencyCount} explicit cross-service links published."
             });
-        SetFact(activationDataFact, DataBoundaryFact(node));
-        SetFact(activationHostFact, TransportBoundaryFact(node));
+        SetFact(
+            activationDataFact,
+            "WGT changes host-side integration state only; provider domain records remain provider-owned.");
+        SetFact(activationHostFact, ActivationHostSummary(node));
         SetFact(
             activationDeviceFact,
-            $"This action changes the effective integration state on {finalVisualShell.CurrentDeviceName}. {integration.DeviceBehaviorText}");
+            $"Affects {finalVisualShell.CurrentDeviceName}. {integration.DeviceBehaviorText}");
         SetFact(
             activationUnknownsFact,
-            "No additional permission requirement or cross-device guarantee is published to this WGT presentation. Provider-internal behavior remains provider-owned.");
+            "No additional permission requirement or cross-device guarantee is published to WGT.");
     }
+
+    private static string ActivationHostSummary(AtlasNodePresentationViewModel node) => node.ServiceIdentity?.Value switch
+    {
+        "vocation" => "Windows host: local loopback Vocation product endpoint.",
+        "orientation" => "Windows host: local loopback Orientation product endpoint.",
+        "illumination" => "Windows host: provider-owned in-process Product Surface.",
+        _ => "No concrete product-host guarantee is published to WGT."
+    };
 
     private int CountExplicitServiceDependencies(AtlasNodePresentationViewModel serviceNode)
     {
