@@ -118,13 +118,13 @@ public sealed class AtlasLandscapeTopologyTests
         new CapabilityIdentity(capabilityId));
 
     private static AtlasConnection Composition(AtlasNode core, AtlasNode service) => new(
-        $"composition:{service.ServiceIdentity!.Value.Value}",
+        $"composition:{service.ServiceIdentity!.Value}",
         AtlasConnectionKind.Composition,
         core.NodeId,
         service.NodeId);
 
     private static AtlasConnection Ownership(AtlasNode service, AtlasNode capability) => new(
-        $"ownership:{service.ServiceIdentity!.Value.Value}:{capability.CapabilityIdentity!.Value.Value}",
+        $"ownership:{service.ServiceIdentity!.Value}:{capability.CapabilityIdentity!.Value}",
         AtlasConnectionKind.CapabilityOwnership,
         service.NodeId,
         capability.NodeId);
