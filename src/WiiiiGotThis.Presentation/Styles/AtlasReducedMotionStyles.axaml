@@ -1,0 +1,57 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Button.wgt-motion-choice">
+    <Setter Property="Background" Value="#B70A1218" />
+    <Setter Property="BorderBrush" Value="#55304450" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="#FFE4EDF1" />
+  </Style>
+  <Style Selector="Button.wgt-motion-choice:pointerover">
+    <Setter Property="Background" Value="#DD101D25" />
+    <Setter Property="BorderBrush" Value="#80608B9E" />
+  </Style>
+  <Style Selector="Button.wgt-motion-choice.selected">
+    <Setter Property="Background" Value="#DD102A35" />
+    <Setter Property="BorderBrush" Value="#FF63D8F6" />
+  </Style>
+  <Style Selector="Border.wgt-motion-choice-mark">
+    <Setter Property="Background" Value="#501A303A" />
+    <Setter Property="BorderBrush" Value="#60466A79" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+
+  <!-- Reduced motion changes timing only. Selection, focus, availability and theme
+       remain visible through their static visual states. -->
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Border.wgt-atlas-node-shell">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Button.wgt-atlas-node">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Border.wgt-node-emblem">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Path.wgt-atlas-connection">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Border.wgt-atlas-inspector">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Path.wgt-atlas-inspector-tether">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Border.wgt-theme-ambient">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Button.wgt-theme-choice">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Button.wgt-motion-choice">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Grid.wgt-product-overlay">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.reduced-motion Button.wgt-product-return">
+    <Setter Property="Transitions" Value="{x:Null}" />
+  </Style>
+</Styles>
