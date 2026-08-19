@@ -16,6 +16,11 @@ public sealed class AtlasProductionRendererContractTests
             "src",
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.ProductionRenderer.cs"));
+        var atlasView = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "DesktopAtlasView.axaml.cs"));
 
         Assert.Contains("public sealed class AtlasSceneControl : Control", renderer, StringComparison.Ordinal);
         Assert.Contains("public override void Render(DrawingContext context)", renderer, StringComparison.Ordinal);
@@ -29,6 +34,13 @@ public sealed class AtlasProductionRendererContractTests
         Assert.DoesNotContain("new Canvas", renderer, StringComparison.Ordinal);
         Assert.Contains("SceneCanvas.IsVisible = false", host, StringComparison.Ordinal);
         Assert.Contains("AtlasViewport.Children.Insert(0, productionSceneRenderer)", host, StringComparison.Ordinal);
+
+        var productionGuard = atlasView.IndexOf("if (IsProductionSceneRendererActive)", StringComparison.Ordinal);
+        var legacyMaterialization = atlasView.IndexOf("AddGridLines();", StringComparison.Ordinal);
+        Assert.True(productionGuard >= 0, "Production renderer guard must exist before legacy scene materialization.");
+        Assert.True(legacyMaterialization > productionGuard, "Legacy control-tree materialization must remain behind the production renderer guard.");
+        Assert.Contains("AttachProductionRendererShell(currentShell);", atlasView, StringComparison.Ordinal);
+        Assert.Contains("UpdateProductionScene();", atlasView, StringComparison.Ordinal);
     }
 
     [Fact]
