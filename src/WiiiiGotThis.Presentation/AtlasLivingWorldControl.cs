@@ -9,11 +9,9 @@ namespace WiiiiGotThis.Presentation;
 
 /// <summary>
 /// Living-world interpretation of the Atlas semantic projection.
-///
-/// This is deliberately a presentation layer over the same Atlas nodes/connections used by
-/// the technical renderer. Product services become settlements, the WGT core becomes the
-/// containing city/hub, shared infrastructure can become facilities, and capabilities are
-/// progressively disclosed as local places. Nothing in this control owns provider semantics.
+/// Product providers become settlements, WGT becomes the containing central city,
+/// shared infrastructure becomes a facility, and provider capabilities are revealed
+/// as local places. This remains presentation-only and owns no provider semantics.
 /// </summary>
 public sealed class AtlasLivingWorldControl : Control
 {
@@ -46,9 +44,9 @@ public sealed class AtlasLivingWorldControl : Control
         Unavailable: Color.Parse("#D57777"),
         Shadow: Color.Parse("#010302"));
 
+    private readonly Dictionary<string, Point> worldPositions = new(StringComparer.Ordinal);
     private IReadOnlyList<AtlasNodePresentationViewModel> nodes = Array.Empty<AtlasNodePresentationViewModel>();
     private IReadOnlyList<AtlasConnectionPresentationViewModel> connections = Array.Empty<AtlasConnectionPresentationViewModel>();
-    private readonly Dictionary<string, Point> worldPositions = new(StringComparer.Ordinal);
     private string? selectedNodeId;
     private bool reducedMotion;
     private double zoom = 0.82d;
@@ -170,16 +168,12 @@ public sealed class AtlasLivingWorldControl : Control
         SetKnownServicePosition(services, "orientation", new Point(405, -28));
         SetKnownServicePosition(services, "conveyance", new Point(190, 360));
 
-        var alreadyPlaced = worldPositions.Values.ToList();
-        var unknownProducts = services
-            .Where(service => !worldPositions.ContainsKey(service.NodeId))
-            .ToArray();
-
-        foreach (var service in unknownProducts)
+        var occupied = worldPositions.Values.ToList();
+        foreach (var service in services.Where(service => !worldPositions.ContainsKey(service.NodeId)))
         {
-            var candidate = NextSettlementSlot(alreadyPlaced);
+            var candidate = NextSettlementSlot(occupied);
             worldPositions[service.NodeId] = candidate;
-            alreadyPlaced.Add(candidate);
+            occupied.Add(candidate);
         }
 
         foreach (var service in services)
@@ -194,15 +188,12 @@ public sealed class AtlasLivingWorldControl : Control
                 .ToArray();
 
             for (var index = 0; index < capabilities.Length; index++)
-            {
-                var position = CapabilityPosition(settlement, service, index, capabilities.Length);
-                worldPositions[capabilities[index].NodeId] = position;
-            }
+                worldPositions[capabilities[index].NodeId] = CapabilityPosition(settlement, service, index, capabilities.Length);
         }
     }
 
     private void SetKnownServicePosition(
-        IReadOnlyCollection<AtlasNodePresentationViewModel> services,
+        AtlasNodePresentationViewModel[] services,
         string serviceId,
         Point position)
     {
@@ -211,11 +202,10 @@ public sealed class AtlasLivingWorldControl : Control
             worldPositions[service.NodeId] = position;
     }
 
-    private Point NextSettlementSlot(IReadOnlyCollection<Point> occupied)
+    private static Point NextSettlementSlot(List<Point> occupied)
     {
-        // Direct product regions remain viable well into the low teens. We use two
-        // authored-feeling rings before product grouping is even considered. Grouping is a
-        // semantic navigation decision, not an automatic reaction to a small node count.
+        // Direct product regions remain viable into the low teens. Two rings are used
+        // before grouping is even considered; grouping is a semantic product decision.
         for (var ring = 0; ring < 2; ring++)
         {
             var radius = ring == 0 ? 500d : 650d;
@@ -250,9 +240,7 @@ public sealed class AtlasLivingWorldControl : Control
         var lateral = new Vector(-serviceDirection.Y, serviceDirection.X);
         var slots = Math.Max(1, count);
         var spread = Math.Min(110d, 30d * Math.Max(0, slots - 1));
-        var lateralOffset = slots == 1
-            ? 0
-            : -spread / 2 + spread * index / (slots - 1);
+        var lateralOffset = slots == 1 ? 0 : -spread / 2 + spread * index / (slots - 1);
         var forward = 84 + (index % 2) * 22;
 
         if (string.Equals(service.ServiceIdentity?.Value, "conveyance", StringComparison.Ordinal))
@@ -291,7 +279,7 @@ public sealed class AtlasLivingWorldControl : Control
             var selected = string.Equals(service.NodeId, selectedNodeId, StringComparison.Ordinal);
             var contextual = selectedNodeId is null || selected || focused.Contains(service.NodeId);
             var patch = CreateOrganicGroundPatch(center, service.ServiceIdentity?.Value);
-            var screenGeometry = CreateWorldGeometry(patch, smooth: true, isFilled: true);
+            var geometry = CreateWorldGeometry(patch, smooth: true, isFilled: true);
 
             using (context.PushOpacity(contextual ? 1 : 0.42))
             {
@@ -302,14 +290,15 @@ public sealed class AtlasLivingWorldControl : Control
                         new RelativePoint(0.18, 0.08, RelativeUnit.Relative),
                         new RelativePoint(0.82, 0.92, RelativeUnit.Relative)),
                     new Pen(new SolidColorBrush(WithAlpha(accent, selected ? (byte)74 : (byte)30)), selected ? 1.35 : 0.85),
-                    screenGeometry);
+                    geometry);
 
-                DrawContourInside(context, center, service.ServiceIdentity?.Value, accent, 0.74, 18);
-                DrawContourInside(context, center, service.ServiceIdentity?.Value, accent, 0.49, 12);
+                DrawContour(context, center, service.ServiceIdentity?.Value, accent, 0.74, 18);
+                DrawContour(context, center, service.ServiceIdentity?.Value, accent, 0.49, 12);
             }
         }
 
-        var coreGround = CreateWorldGeometry([
+        var coreGround = CreateWorldGeometry(
+        [
             new(-175, -106), new(-72, -148), new(66, -138), new(165, -82),
             new(188, 28), new(126, 125), new(12, 154), new(-116, 128), new(-194, 42)
         ], smooth: true, isFilled: true);
@@ -323,7 +312,7 @@ public sealed class AtlasLivingWorldControl : Control
             coreGround);
     }
 
-    private void DrawContourInside(
+    private void DrawContour(
         DrawingContext context,
         Point center,
         string? serviceId,
@@ -348,7 +337,7 @@ public sealed class AtlasLivingWorldControl : Control
             new Point(-132, 226), new Point(80, 252), new Point(305, 238),
             new Point(540, 205), new Point(760, 230)
         };
-        var geometry = CreateWorldGeometry(points, smooth: true, isFilled: false);
+        var geometry = CreateWorldGeometry(points, smooth: true, isFilled: false, close: false);
         context.DrawGeometry(null, new Pen(new SolidColorBrush(WithAlpha(Palette.Water, 170)), Math.Max(11, 18 * zoom)), geometry);
         context.DrawGeometry(null, new Pen(new SolidColorBrush(WithAlpha(Palette.WaterHighlight, 42)), Math.Max(1, 1.2 * zoom)), geometry);
     }
@@ -369,10 +358,11 @@ public sealed class AtlasLivingWorldControl : Control
 
             var selected = string.Equals(service.NodeId, selectedNodeId, StringComparison.Ordinal);
             var contextual = selectedNodeId is null || selected || focused.Contains(service.NodeId);
-            var startDirection = Normalize(new Vector(target.X, target.Y));
-            var start = startDirection * (products.Length >= 8 ? 135 : 88);
-            var end = target - startDirection * 84;
-            var bend = new Vector(-startDirection.Y, startDirection.X) * StableRoadBend(service.NodeId);
+            var direction = Normalize(new Vector(target.X, target.Y));
+            var startDistance = products.Length >= 8 ? 135d : 88d;
+            var start = new Point(direction.X * startDistance, direction.Y * startDistance);
+            var end = target - direction * 84;
+            var bend = new Vector(-direction.Y, direction.X) * StableRoadBend(service.NodeId);
             var control = MidPoint(start, end) + bend;
             DrawRoad(context, start, control, end, contextual, selected);
         }
@@ -437,12 +427,11 @@ public sealed class AtlasLivingWorldControl : Control
             var routeFocused = selectedNodeId is not null
                 && focused.Contains(connection.Source.NodeId)
                 && focused.Contains(connection.Target.NodeId);
-            var shouldShow = zoom >= 0.90 || routeFocused;
-            if (!shouldShow)
+            if (zoom < 0.90 && !routeFocused)
                 continue;
 
-            var sourceService = connection.Source.ServiceIdentity?.Value;
-            var sourceTown = nodes.FirstOrDefault(node => node.IsService && string.Equals(node.ServiceIdentity?.Value, sourceService, StringComparison.Ordinal));
+            var sourceTown = nodes.FirstOrDefault(node =>
+                node.IsService && node.ServiceIdentity == connection.Source.ServiceIdentity);
             var sourceTownPoint = sourceTown is not null && worldPositions.TryGetValue(sourceTown.NodeId, out var townPosition)
                 ? townPosition
                 : source;
@@ -457,7 +446,6 @@ public sealed class AtlasLivingWorldControl : Control
                 var pen = new Pen(new SolidColorBrush(WithAlpha(Palette.Orientation, routeFocused ? (byte)232 : (byte)132)), Math.Max(1.1, 1.5 * zoom));
                 context.DrawGeometry(null, pen, geometry);
                 DrawRouteArrow(context, control, target, pen);
-
                 if (routeFocused && !reducedMotion)
                     DrawRouteEnergy(context, source, control, target, Palette.Orientation);
             }
@@ -481,7 +469,6 @@ public sealed class AtlasLivingWorldControl : Control
             }
         }
 
-        // A few landscape anchors stop the world reading as isolated UI islands.
         DrawTreeCluster(context, new Point(-225, -210), 5);
         DrawTreeCluster(context, new Point(245, -205), 6);
         DrawTreeCluster(context, new Point(-250, 285), 4);
@@ -505,13 +492,10 @@ public sealed class AtlasLivingWorldControl : Control
         var point = ScreenPoint(worldPoint);
         var trunk = new Pen(new SolidColorBrush(Color.Parse("#604C35")), Math.Max(0.8, 1.2 * zoom));
         context.DrawLine(trunk, point, new Point(point.X, point.Y + size * 1.35 * zoom));
-
-        var dark = Color.Parse("#153D2A");
-        var light = Color.Parse("#2C6646");
         var shadow = new Point(point.X + 3 * zoom, point.Y + 5 * zoom);
         context.DrawEllipse(new SolidColorBrush(WithAlpha(Palette.Shadow, 76)), null, shadow, size * 0.95 * zoom, size * 0.58 * zoom);
-        context.DrawEllipse(new SolidColorBrush(WithAlpha(dark, 235)), null, new Point(point.X - 2 * zoom, point.Y), size * 0.78 * zoom, size * 0.92 * zoom);
-        context.DrawEllipse(new SolidColorBrush(WithAlpha(light, 216)), null, new Point(point.X + 3 * zoom, point.Y - 3 * zoom), size * 0.58 * zoom, size * 0.66 * zoom);
+        context.DrawEllipse(new SolidColorBrush(Color.Parse("#153D2A")), null, new Point(point.X - 2 * zoom, point.Y), size * 0.78 * zoom, size * 0.92 * zoom);
+        context.DrawEllipse(new SolidColorBrush(Color.Parse("#2C6646")), null, new Point(point.X + 3 * zoom, point.Y - 3 * zoom), size * 0.58 * zoom, size * 0.66 * zoom);
     }
 
     private void DrawProductSettlements(DrawingContext context, IReadOnlySet<string> focused)
@@ -613,9 +597,7 @@ public sealed class AtlasLivingWorldControl : Control
 
             var accent = capability.IsAvailable ? AccentFor(capability) : Palette.Unavailable;
             using (context.PushOpacity(selectedNodeId is null || contextual || selected ? 1 : 0.28))
-            {
                 DrawCapabilityBuilding(context, capability, position, accent, selected);
-            }
         }
     }
 
@@ -629,13 +611,12 @@ public sealed class AtlasLivingWorldControl : Control
         if (selected)
         {
             var point = ScreenPoint(position);
-            var pulse = SelectionPulse();
             context.DrawEllipse(
                 RadialGradient(WithAlpha(accent, 82), WithAlpha(accent, 0), 0.72),
                 null,
                 point,
-                43 * zoom * pulse,
-                32 * zoom * pulse);
+                43 * zoom * SelectionPulse(),
+                32 * zoom * SelectionPulse());
         }
 
         DrawBuilding(context, position, 27, selected ? 37 : 31, 9, accent, 0.88, capability.IsAvailable, 3);
@@ -651,14 +632,13 @@ public sealed class AtlasLivingWorldControl : Control
 
     private void DrawConveyanceFacility(DrawingContext context, IReadOnlySet<string> focused)
     {
-        var service = nodes.FirstOrDefault(node => node.IsService && string.Equals(node.ServiceIdentity?.Value, "conveyance", StringComparison.Ordinal));
+        var service = nodes.FirstOrDefault(node => node.IsSharedCapabilityProvider);
         if (service is null || !worldPositions.TryGetValue(service.NodeId, out var center))
             return;
 
         var selected = string.Equals(service.NodeId, selectedNodeId, StringComparison.Ordinal);
         var contextual = selectedNodeId is null || selected || focused.Contains(service.NodeId);
-        var accent = Palette.Conveyance;
-
+        var accent = AccentFor(service);
         using (context.PushOpacity(contextual ? 1 : 0.34))
         {
             DrawIndustrialGround(context, center, accent, selected);
@@ -679,11 +659,10 @@ public sealed class AtlasLivingWorldControl : Control
             center + new Vector(-132, -82), center + new Vector(92, -96), center + new Vector(142, -38),
             center + new Vector(132, 77), center + new Vector(24, 103), center + new Vector(-118, 76)
         };
-        var geometry = CreateWorldGeometry(points, smooth: false, isFilled: true);
         context.DrawGeometry(
             new SolidColorBrush(WithAlpha(Mix(Palette.GroundDeep, accent, 0.13), 236)),
             new Pen(new SolidColorBrush(WithAlpha(accent, selected ? (byte)88 : (byte)34)), 1),
-            geometry);
+            CreateWorldGeometry(points, smooth: false, isFilled: true));
 
         var roadPen = new Pen(new SolidColorBrush(WithAlpha(Palette.RoadEdge, 76)), Math.Max(1, 1.3 * zoom));
         context.DrawLine(roadPen, ScreenPoint(center + new Vector(-118, 3)), ScreenPoint(center + new Vector(126, 3)));
@@ -702,7 +681,6 @@ public sealed class AtlasLivingWorldControl : Control
         {
             DrawCityStreetGrid(context);
             DrawSettlementLight(context, default, Palette.Core, selected, true, 210, 156);
-
             DrawBuilding(context, new Point(-92, -57), 43, 48, 15, Palette.Core, 0.52, true, 5);
             DrawBuilding(context, new Point(-42, -82), 38, 66, 14, Palette.Core, 0.60, true, 6);
             DrawBuilding(context, new Point(20, -91), 45, 80, 16, Palette.Core, 0.72, true, 7);
@@ -711,7 +689,6 @@ public sealed class AtlasLivingWorldControl : Control
             DrawBuilding(context, new Point(97, 8), 45, 45, 15, Palette.Core, 0.50, true, 4);
             DrawBuilding(context, new Point(-73, 68), 42, 44, 14, Palette.Core, 0.48, true, 4);
             DrawBuilding(context, new Point(72, 69), 43, 46, 14, Palette.Core, 0.52, true, 4);
-
             DrawCoreTower(context, selected);
             DrawStreetLamp(context, new Point(-43, 17), Palette.Core);
             DrawStreetLamp(context, new Point(46, 18), Palette.Core);
@@ -747,13 +724,12 @@ public sealed class AtlasLivingWorldControl : Control
         if (selected)
         {
             var point = ScreenPoint(center);
-            var pulse = SelectionPulse();
             context.DrawEllipse(
                 RadialGradient(WithAlpha(Palette.Core, 108), WithAlpha(Palette.Core, 0), 0.72),
                 null,
                 point,
-                72 * zoom * pulse,
-                58 * zoom * pulse);
+                72 * zoom * SelectionPulse(),
+                58 * zoom * SelectionPulse());
         }
 
         DrawBuilding(context, center, 54, 112, 19, Palette.Core, 0.94, true, 9);
@@ -785,7 +761,7 @@ public sealed class AtlasLivingWorldControl : Control
         bool selected)
     {
         var labelPoint = ScreenPoint(center + new Vector(0, 118));
-        DrawCenteredText(context, "CONVEYANCE", labelPoint, Math.Clamp(10.5 * zoom, 8.8, 12.8), Palette.Text);
+        DrawCenteredText(context, service.Title.ToUpperInvariant(), labelPoint, Math.Clamp(10.5 * zoom, 8.8, 12.8), Palette.Text);
         DrawCenteredText(
             context,
             "RELAY YARD · " + service.CompactStateText,
@@ -834,31 +810,35 @@ public sealed class AtlasLivingWorldControl : Control
         var roofLift = d * 0.46;
         var roofShift = d * 0.62;
 
-        var shadow = Polygon([
-            new(left + 5 * zoom, basePoint.Y + 5 * zoom),
-            new(right + 12 * zoom, basePoint.Y + 5 * zoom),
-            new(right + 21 * zoom, basePoint.Y + 12 * zoom),
-            new(left + 12 * zoom, basePoint.Y + 12 * zoom)
-        ]);
-        context.DrawGeometry(new SolidColorBrush(WithAlpha(Palette.Shadow, 118)), null, shadow);
+        context.DrawGeometry(
+            new SolidColorBrush(WithAlpha(Palette.Shadow, 118)),
+            null,
+            Polygon([
+                new(left + 5 * zoom, basePoint.Y + 5 * zoom),
+                new(right + 12 * zoom, basePoint.Y + 5 * zoom),
+                new(right + 21 * zoom, basePoint.Y + 12 * zoom),
+                new(left + 12 * zoom, basePoint.Y + 12 * zoom)
+            ]));
 
         var body = Mix(Color.Parse("#173127"), accent, accentMix * 0.22);
-        var front = Polygon([
-            new(left, topY), new(right, topY), new(right, basePoint.Y), new(left, basePoint.Y)
-        ]);
-        context.DrawGeometry(new SolidColorBrush(WithAlpha(body, 248)), new Pen(new SolidColorBrush(WithAlpha(accent, 82)), 0.8), front);
-
-        var side = Polygon([
-            new(right, topY), new(right + roofShift, topY - roofLift),
-            new(right + roofShift, basePoint.Y - roofLift), new(right, basePoint.Y)
-        ]);
-        context.DrawGeometry(new SolidColorBrush(WithAlpha(Mix(body, Palette.Shadow, 0.28), 248)), null, side);
-
-        var roof = Polygon([
-            new(left, topY), new(left + roofShift, topY - roofLift),
-            new(right + roofShift, topY - roofLift), new(right, topY)
-        ]);
-        context.DrawGeometry(new SolidColorBrush(WithAlpha(Mix(body, accent, 0.28), 252)), new Pen(new SolidColorBrush(WithAlpha(accent, 92)), 0.75), roof);
+        context.DrawGeometry(
+            new SolidColorBrush(WithAlpha(body, 248)),
+            new Pen(new SolidColorBrush(WithAlpha(accent, 82)), 0.8),
+            Polygon([new(left, topY), new(right, topY), new(right, basePoint.Y), new(left, basePoint.Y)]));
+        context.DrawGeometry(
+            new SolidColorBrush(WithAlpha(Mix(body, Palette.Shadow, 0.28), 248)),
+            null,
+            Polygon([
+                new(right, topY), new(right + roofShift, topY - roofLift),
+                new(right + roofShift, basePoint.Y - roofLift), new(right, basePoint.Y)
+            ]));
+        context.DrawGeometry(
+            new SolidColorBrush(WithAlpha(Mix(body, accent, 0.28), 252)),
+            new Pen(new SolidColorBrush(WithAlpha(accent, 92)), 0.75),
+            Polygon([
+                new(left, topY), new(left + roofShift, topY - roofLift),
+                new(right + roofShift, topY - roofLift), new(right, topY)
+            ]));
 
         if (zoom < DetailRevealZoom)
             return;
@@ -872,19 +852,14 @@ public sealed class AtlasLivingWorldControl : Control
             for (var col = 0; col < cols; col++)
             {
                 var x = left + (col + 1) * w / (cols + 1);
-                var rect = new Rect(x - 1.8 * zoom, y - 1.1 * zoom, 3.6 * zoom, 2.2 * zoom);
-                context.FillRectangle(new SolidColorBrush(WithAlpha(windowColor, powered ? (byte)205 : (byte)72)), rect);
+                context.FillRectangle(
+                    new SolidColorBrush(WithAlpha(windowColor, powered ? (byte)205 : (byte)72)),
+                    new Rect(x - 1.8 * zoom, y - 1.1 * zoom, 3.6 * zoom, 2.2 * zoom));
             }
         }
     }
 
-    private void DrawWarehouse(
-        DrawingContext context,
-        Point baseWorld,
-        double width,
-        double height,
-        Color accent,
-        bool powered)
+    private void DrawWarehouse(DrawingContext context, Point baseWorld, double width, double height, Color accent, bool powered)
     {
         DrawBuilding(context, baseWorld, width, height, 12, accent, 0.36, powered, 1);
         if (zoom < DetailRevealZoom)
@@ -900,13 +875,7 @@ public sealed class AtlasLivingWorldControl : Control
         context.DrawRectangle(null, new Pen(new SolidColorBrush(WithAlpha(accent, 82)), 0.8), door);
     }
 
-    private void DrawSilo(
-        DrawingContext context,
-        Point baseWorld,
-        double radius,
-        double height,
-        Color accent,
-        bool powered)
+    private void DrawSilo(DrawingContext context, Point baseWorld, double radius, double height, Color accent, bool powered)
     {
         var point = ScreenPoint(baseWorld);
         var r = radius * zoom;
@@ -927,16 +896,16 @@ public sealed class AtlasLivingWorldControl : Control
         context.DrawLine(pen, new Point(point.X, point.Y - 52 * zoom), new Point(point.X + 12 * zoom, point.Y));
         context.DrawLine(pen, new Point(point.X - 9 * zoom, point.Y - 18 * zoom), new Point(point.X + 9 * zoom, point.Y - 18 * zoom));
         context.DrawLine(pen, new Point(point.X - 6 * zoom, point.Y - 34 * zoom), new Point(point.X + 6 * zoom, point.Y - 34 * zoom));
-        if (powered)
-        {
-            context.DrawEllipse(
-                RadialGradient(WithAlpha(accent, 82), WithAlpha(accent, 0), 0.72),
-                null,
-                new Point(point.X, point.Y - 54 * zoom),
-                18 * zoom,
-                18 * zoom);
-            context.DrawEllipse(new SolidColorBrush(WithAlpha(accent, 240)), null, new Point(point.X, point.Y - 54 * zoom), 2 * zoom, 2 * zoom);
-        }
+        if (!powered)
+            return;
+
+        context.DrawEllipse(
+            RadialGradient(WithAlpha(accent, 82), WithAlpha(accent, 0), 0.72),
+            null,
+            new Point(point.X, point.Y - 54 * zoom),
+            18 * zoom,
+            18 * zoom);
+        context.DrawEllipse(new SolidColorBrush(WithAlpha(accent, 240)), null, new Point(point.X, point.Y - 54 * zoom), 2 * zoom, 2 * zoom);
     }
 
     private void DrawBeacon(DrawingContext context, Point worldPoint, Color accent, bool powered)
@@ -944,11 +913,12 @@ public sealed class AtlasLivingWorldControl : Control
         var point = ScreenPoint(worldPoint);
         var pen = new Pen(new SolidColorBrush(WithAlpha(accent, powered ? (byte)190 : (byte)76)), Math.Max(0.8, 1 * zoom));
         context.DrawLine(pen, point, new Point(point.X, point.Y - 13 * zoom));
-        if (powered)
-        {
-            context.DrawEllipse(RadialGradient(WithAlpha(accent, 78), WithAlpha(accent, 0), 0.72), null, new Point(point.X, point.Y - 15 * zoom), 9 * zoom, 9 * zoom);
-            context.DrawEllipse(new SolidColorBrush(WithAlpha(accent, 235)), null, new Point(point.X, point.Y - 15 * zoom), 1.5 * zoom, 1.5 * zoom);
-        }
+        if (!powered)
+            return;
+
+        var light = new Point(point.X, point.Y - 15 * zoom);
+        context.DrawEllipse(RadialGradient(WithAlpha(accent, 78), WithAlpha(accent, 0), 0.72), null, light, 9 * zoom, 9 * zoom);
+        context.DrawEllipse(new SolidColorBrush(WithAlpha(accent, 235)), null, light, 1.5 * zoom, 1.5 * zoom);
     }
 
     private void DrawWayfinder(DrawingContext context, Point worldPoint, Color accent, bool powered)
@@ -968,11 +938,18 @@ public sealed class AtlasLivingWorldControl : Control
             return;
 
         var point = ScreenPoint(worldPoint);
-        var pen = new Pen(new SolidColorBrush(WithAlpha(Palette.Muted, 118)), Math.Max(0.6, 0.8 * zoom));
-        context.DrawLine(pen, point, new Point(point.X, point.Y - 11 * zoom));
-        var lightPoint = new Point(point.X, point.Y - 12 * zoom);
-        context.DrawEllipse(RadialGradient(WithAlpha(Mix(Palette.WarmLight, accent, 0.18), 58), WithAlpha(Palette.WarmLight, 0), 0.72), null, lightPoint, 12 * zoom, 12 * zoom);
-        context.DrawEllipse(new SolidColorBrush(WithAlpha(Palette.WarmLight, 220)), null, lightPoint, 1.2 * zoom, 1.2 * zoom);
+        context.DrawLine(
+            new Pen(new SolidColorBrush(WithAlpha(Palette.Muted, 118)), Math.Max(0.6, 0.8 * zoom)),
+            point,
+            new Point(point.X, point.Y - 11 * zoom));
+        var light = new Point(point.X, point.Y - 12 * zoom);
+        context.DrawEllipse(
+            RadialGradient(WithAlpha(Mix(Palette.WarmLight, accent, 0.18), 58), WithAlpha(Palette.WarmLight, 0), 0.72),
+            null,
+            light,
+            12 * zoom,
+            12 * zoom);
+        context.DrawEllipse(new SolidColorBrush(WithAlpha(Palette.WarmLight, 220)), null, light, 1.2 * zoom, 1.2 * zoom);
     }
 
     private void DrawAtmosphere(DrawingContext context)
@@ -980,14 +957,17 @@ public sealed class AtlasLivingWorldControl : Control
         if (reducedMotion)
             return;
 
-        // Sparse, slow ambient motes read as atmosphere rather than a reward effect.
         var phase = DateTime.UtcNow.TimeOfDay.TotalSeconds * 0.018;
         for (var index = 0; index < 9; index++)
         {
             var x = (index * 173 + phase * 31) % Math.Max(1, Bounds.Width + 120) - 60;
             var y = (index * 97 + Math.Sin(phase + index) * 24 + Bounds.Height * 0.18) % Math.Max(1, Bounds.Height);
-            var alpha = (byte)(18 + index % 3 * 8);
-            context.DrawEllipse(new SolidColorBrush(WithAlpha(Palette.CoolLight, alpha)), null, new Point(x, y), 1.1, 1.1);
+            context.DrawEllipse(
+                new SolidColorBrush(WithAlpha(Palette.CoolLight, (byte)(18 + index % 3 * 8))),
+                null,
+                new Point(x, y),
+                1.1,
+                1.1);
         }
     }
 
@@ -1006,16 +986,12 @@ public sealed class AtlasLivingWorldControl : Control
     }
 
     private IEnumerable<AtlasNodePresentationViewModel> ProductServices() =>
-        nodes.Where(node => node.IsService && !string.Equals(node.ServiceIdentity?.Value, "conveyance", StringComparison.Ordinal));
+        nodes.Where(node => node.IsPrimaryProductProvider);
 
     private AtlasNodePresentationViewModel? HitTestNode(Point screenPoint)
     {
         var focused = AtlasPresentationFocus.Build(connections, selectedNodeId);
-        var ordered = nodes
-            .OrderByDescending(node => node.IsCapability ? 3 : node.IsCore ? 2 : 1)
-            .ToArray();
-
-        foreach (var node in ordered)
+        foreach (var node in nodes.OrderByDescending(node => node.IsCapability ? 3 : node.IsCore ? 2 : 1))
         {
             if (!worldPositions.TryGetValue(node.NodeId, out var worldPoint))
                 continue;
@@ -1031,7 +1007,7 @@ public sealed class AtlasLivingWorldControl : Control
             var radius = node.Kind switch
             {
                 AtlasNodeKind.Core => Math.Max(42, 72 * zoom),
-                AtlasNodeKind.Service when string.Equals(node.ServiceIdentity?.Value, "conveyance", StringComparison.Ordinal) => Math.Max(40, 86 * zoom),
+                AtlasNodeKind.Service when node.IsSharedCapabilityProvider => Math.Max(40, 86 * zoom),
                 AtlasNodeKind.Service => Math.Max(38, 76 * zoom),
                 AtlasNodeKind.Capability => Math.Max(14, 24 * zoom),
                 _ => Math.Max(12, 18 * zoom)
@@ -1043,7 +1019,7 @@ public sealed class AtlasLivingWorldControl : Control
         return null;
     }
 
-    private Color AccentFor(AtlasNodePresentationViewModel node)
+    private static Color AccentFor(AtlasNodePresentationViewModel node)
     {
         if (node.IsCore)
             return Palette.Core;
@@ -1057,7 +1033,7 @@ public sealed class AtlasLivingWorldControl : Control
         };
     }
 
-    private IReadOnlyList<Point> CreateOrganicGroundPatch(Point center, string? serviceId)
+    private static Point[] CreateOrganicGroundPatch(Point center, string? serviceId)
     {
         var seed = StableHash(serviceId ?? "generic");
         var rx = string.Equals(serviceId, "vocation", StringComparison.Ordinal) ? 180d : 160d;
@@ -1074,11 +1050,7 @@ public sealed class AtlasLivingWorldControl : Control
         return points;
     }
 
-    private StreamGeometry CreateWorldGeometry(
-        IReadOnlyList<Point> worldPoints,
-        bool smooth,
-        bool isFilled,
-        bool close = true)
+    private StreamGeometry CreateWorldGeometry(Point[] worldPoints, bool smooth, bool isFilled, bool close = true)
     {
         var points = worldPoints.Select(ScreenPoint).ToArray();
         var geometry = new StreamGeometry();
@@ -1129,14 +1101,14 @@ public sealed class AtlasLivingWorldControl : Control
         return geometry;
     }
 
-    private static StreamGeometry Polygon(IReadOnlyList<Point> points)
+    private static StreamGeometry Polygon(Point[] points)
     {
         var geometry = new StreamGeometry();
         using var geometryContext = geometry.Open();
-        if (points.Count == 0)
+        if (points.Length == 0)
             return geometry;
         geometryContext.BeginFigure(points[0], isFilled: true);
-        for (var index = 1; index < points.Count; index++)
+        for (var index = 1; index < points.Length; index++)
             geometryContext.LineTo(points[index], isStroked: true);
         geometryContext.EndFigure(isClosed: true);
         return geometry;
