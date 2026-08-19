@@ -3,49 +3,49 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasWorldEnvironmentalDetailContractTests
 {
     [Fact]
-    public void World_adds_authored_environmental_structure_beyond_settlement_blobs()
+    public void World_v2_contains_authored_environmental_structure_beyond_settlement_blobs()
     {
         var root = FindRepositoryRoot();
-        var overlay = File.ReadAllText(Path.Combine(
+        var world = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldEnvironmentalDetailOverlay.cs"));
+            "AtlasWorldV2Control.cs"));
         var host = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.ProductionRenderer.cs"));
 
-        Assert.Contains("DrawVocationFarmland", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawVocationOrchard", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawIlluminationTerraces", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawIlluminationGarden", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawWgtGreenBelt", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawOrientationContours", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawOrientationTrail", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawTributary", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawConveyanceRail", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawAuthoredTreeMasses", overlay, StringComparison.Ordinal);
-        Assert.Contains("new AtlasWorldEnvironmentalDetailOverlay", host, StringComparison.Ordinal);
-        Assert.Contains("livingWorldEnvironmentalOverlay.IsVisible = isLivingWorld", host, StringComparison.Ordinal);
+        Assert.Contains("DrawContiguousTerrain", world, StringComparison.Ordinal);
+        Assert.Contains("DrawRegionalLandUse", world, StringComparison.Ordinal);
+        Assert.Contains("DrawWater", world, StringComparison.Ordinal);
+        Assert.Contains("DrawRoadNetwork", world, StringComparison.Ordinal);
+        Assert.Contains("DrawRailNetwork", world, StringComparison.Ordinal);
+        Assert.Contains("DrawVegetation", world, StringComparison.Ordinal);
+        Assert.Contains("vocationFields", world, StringComparison.Ordinal);
+        Assert.Contains("illuminationGarden", world, StringComparison.Ordinal);
+        Assert.Contains("orientationRidge", world, StringComparison.Ordinal);
+        Assert.Contains("wgtGreenbelt", world, StringComparison.Ordinal);
+        Assert.Contains("tributary", world, StringComparison.Ordinal);
+        Assert.DoesNotContain("new AtlasWorldEnvironmentalDetailOverlay", host, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void World_environmental_geometry_uses_concrete_point_arrays_on_the_hot_render_path()
+    public void World_v2_environmental_geometry_uses_concrete_point_arrays_on_the_hot_render_path()
     {
         var root = FindRepositoryRoot();
-        var overlay = File.ReadAllText(Path.Combine(
+        var world = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldEnvironmentalDetailOverlay.cs"));
+            "AtlasWorldV2Control.cs"));
 
-        Assert.Contains("DrawField(DrawingContext context, Point[] points", overlay, StringComparison.Ordinal);
-        Assert.Contains("PolygonWorld(Point[] points)", overlay, StringComparison.Ordinal);
-        Assert.Contains("SmoothWorldPath(Point[] points)", overlay, StringComparison.Ordinal);
-        Assert.Contains("BoundsOf(Point[] points)", overlay, StringComparison.Ordinal);
-        Assert.DoesNotContain("IReadOnlyList<Point> points", overlay, StringComparison.Ordinal);
+        Assert.Contains("Point[] trees", world, StringComparison.Ordinal);
+        Assert.Contains("ClosedWorldShape(Point[] worldPoints", world, StringComparison.Ordinal);
+        Assert.Contains("OpenWorldRoute(Point[] worldPoints)", world, StringComparison.Ordinal);
+        Assert.Contains("DrawRoad(DrawingContext context, Point[] points", world, StringComparison.Ordinal);
+        Assert.DoesNotContain("IReadOnlyList<Point> points", world, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
