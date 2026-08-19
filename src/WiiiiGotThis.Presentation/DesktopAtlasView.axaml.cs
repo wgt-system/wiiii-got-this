@@ -370,26 +370,7 @@ public sealed partial class DesktopAtlasView : UserControl
         PositionInspector();
     }
 
-    private void PositionInspector()
-    {
-        if (shell?.SelectedAtlasNode is not { } node || AtlasViewport.Bounds.Width <= 0)
-            return;
-
-        var world = WorldPoint(node);
-        var x = world.X * sceneScale.ScaleX + sceneTranslate.X;
-        var y = world.Y * sceneScale.ScaleY + sceneTranslate.Y;
-        const double cardWidth = 404;
-        const double estimatedHeight = 560;
-        const double gap = 34;
-
-        var left = x + gap;
-        if (left + cardWidth > AtlasViewport.Bounds.Width - 20)
-            left = x - cardWidth - gap;
-        left = Math.Clamp(left, 20, Math.Max(20, AtlasViewport.Bounds.Width - cardWidth - 20));
-
-        var top = Math.Clamp(y - 128, 94, Math.Max(94, AtlasViewport.Bounds.Height - estimatedHeight - 20));
-        InspectorCard.Margin = new Thickness(left, top, 0, 0);
-    }
+    private void PositionInspector() => QueueInspectorPlacementRefinement();
 
     private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {

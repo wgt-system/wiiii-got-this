@@ -12,6 +12,7 @@ namespace WiiiiGotThis.Presentation;
 
 public sealed partial class DesktopAtlasView
 {
+    private readonly TranslateTransform inspectorTranslate = new();
     private Canvas? inspectorTetherLayer;
     private AtlasPath? inspectorTether;
     private ShellViewModel? polishShell;
@@ -71,6 +72,7 @@ public sealed partial class DesktopAtlasView
         InspectorCard.Width = 300;
         InspectorCard.MaxHeight = 560;
         InspectorCard.Padding = new Thickness(16);
+        InspectorCard.RenderTransform = inspectorTranslate;
         EnsureAtlasNavigationChrome();
     }
 
@@ -195,12 +197,10 @@ public sealed partial class DesktopAtlasView
             topChromeClearance,
             Math.Max(topChromeClearance, AtlasViewport.Bounds.Height - cardHeight - edge));
 
-        var next = new Thickness(left, top, 0, 0);
-        if (Math.Abs(InspectorCard.Margin.Left - next.Left) > 0.5 ||
-            Math.Abs(InspectorCard.Margin.Top - next.Top) > 0.5)
-        {
-            InspectorCard.Margin = next;
-        }
+        if (Math.Abs(inspectorTranslate.X - left) > 0.5)
+            inspectorTranslate.X = left;
+        if (Math.Abs(inspectorTranslate.Y - top) > 0.5)
+            inspectorTranslate.Y = top;
     }
 
     private void EnsureInspectorTether()
@@ -242,8 +242,8 @@ public sealed partial class DesktopAtlasView
         var world = WorldPoint(node);
         var nodeX = world.X * sceneScale.ScaleX + sceneTranslate.X;
         var nodeY = world.Y * sceneScale.ScaleY + sceneTranslate.Y;
-        var left = InspectorCard.Margin.Left;
-        var top = InspectorCard.Margin.Top;
+        var left = inspectorTranslate.X;
+        var top = inspectorTranslate.Y;
         var cardWidth = InspectorCard.Bounds.Width > 0 ? InspectorCard.Bounds.Width : 300d;
         var cardOnRight = left >= nodeX;
         var direction = cardOnRight ? 1d : -1d;
