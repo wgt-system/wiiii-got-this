@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -22,11 +23,17 @@ public sealed partial class DesktopAtlasView
             return;
 
         if (experienceShell is not null)
+        {
             experienceShell.AtlasNodes.CollectionChanged -= OnExperienceAtlasNodesChanged;
+            experienceShell.PropertyChanged -= OnExperienceShellPropertyChanged;
+        }
 
         experienceShell = next;
         if (experienceShell is not null)
+        {
             experienceShell.AtlasNodes.CollectionChanged += OnExperienceAtlasNodesChanged;
+            experienceShell.PropertyChanged += OnExperienceShellPropertyChanged;
+        }
 
         EnsureThemeChooserExperience();
         QueueSpatialDepthRebuild();
@@ -34,6 +41,28 @@ public sealed partial class DesktopAtlasView
     }
 
     private void OnExperienceAtlasNodesChanged(object? sender, NotifyCollectionChangedEventArgs e) => QueueSpatialDepthRebuild();
+
+    private void OnExperienceShellPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (experienceShell is null)
+            return;
+
+        if (e.PropertyName == nameof(ShellViewModel.AtlasSettingsExpanded))
+        {
+            if (experienceShell.AtlasSettingsExpanded && !string.IsNullOrWhiteSpace(experienceShell.AtlasSearchText))
+                experienceShell.AtlasSearchText = string.Empty;
+            UpdateExperienceState();
+            return;
+        }
+
+        if (e.PropertyName == nameof(ShellViewModel.AtlasSearchText) &&
+            !string.IsNullOrWhiteSpace(experienceShell.AtlasSearchText) &&
+            experienceShell.AtlasSettingsExpanded &&
+            experienceShell.ToggleAtlasSettingsCommand.CanExecute(null))
+        {
+            experienceShell.ToggleAtlasSettingsCommand.Execute(null);
+        }
+    }
 
     private void QueueSpatialDepthRebuild()
     {
@@ -103,14 +132,14 @@ public sealed partial class DesktopAtlasView
         if (ThemeMenuButton.Parent is Canvas settingsCanvas)
         {
             settingsCanvas.Width = 356;
-            settingsCanvas.Height = 356;
+            settingsCanvas.Height = 382;
         }
 
         ThemeChoices.Width = 238;
         ThemeChoices.Orientation = Avalonia.Layout.Orientation.Vertical;
         ThemeChoices.Spacing = 7;
         Canvas.SetRight(ThemeChoices, 52);
-        Canvas.SetTop(ThemeChoices, 0);
+        Canvas.SetTop(ThemeChoices, 72);
 
         themeChooserHeaderText = new TextBlock
         {
