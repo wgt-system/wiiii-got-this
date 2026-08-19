@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using WiiiiGotThis.Application;
 
 namespace WiiiiGotThis.Presentation;
 
@@ -44,12 +45,7 @@ public sealed partial class DesktopAtlasView
 
     private void ConfigureFinalChrome()
     {
-        // Persistent control instructions read as debug chrome in the first physical
-        // smoke. The interaction remains available; hints belong in contextual help.
         ControlHint.IsVisible = false;
-
-        // Settings opens Appearance directly. A second floating theme orb created an
-        // unnecessary hierarchy and looked like a detached control cluster.
         ThemeMenuButton.IsVisible = false;
 
         if (AtlasSearch.Parent is Grid searchGrid &&
@@ -168,7 +164,7 @@ public sealed partial class DesktopAtlasView
         }
     }
 
-    private static Control BuildProductNode(AtlasNodePresentationViewModel node)
+    private static StackPanel BuildProductNode(AtlasNodePresentationViewModel node)
     {
         var emblemSize = node.IsCore ? 116d : 78d;
         var glyph = new TextBlock
@@ -288,7 +284,7 @@ public sealed partial class DesktopAtlasView
         };
     }
 
-    private static Control BuildCapabilityPort(AtlasNodePresentationViewModel node)
+    private static Grid BuildCapabilityPort(AtlasNodePresentationViewModel node)
     {
         var port = new Border
         {
