@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using WiiiiGotThis.Application;
+using SigilPath = Avalonia.Controls.Shapes.Path;
 
 namespace WiiiiGotThis.Presentation;
 
@@ -215,20 +216,21 @@ public sealed partial class DesktopAtlasView
     private static StackPanel BuildProductNode(AtlasNodePresentationViewModel node)
     {
         var emblemSize = node.IsCore ? 116d : 78d;
-        var glyph = new TextBlock
-        {
-            Text = node.IsCore ? "WGT" : ServiceGlyph(node.Title),
-            FontSize = node.IsCore ? 24 : 25,
-            FontWeight = FontWeight.Bold,
-            LetterSpacing = node.IsCore ? 1.4 : 0.4,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-        };
-        glyph.Classes.Add("wgt-node-glyph");
-
         Control emblemContent;
+
         if (node.IsCore)
         {
+            var glyph = new TextBlock
+            {
+                Text = "WGT",
+                FontSize = 24,
+                FontWeight = FontWeight.Bold,
+                LetterSpacing = 1.4,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            glyph.Classes.Add("wgt-node-glyph");
+
             var coreLabel = new TextBlock
             {
                 Text = "CORE",
@@ -249,7 +251,7 @@ public sealed partial class DesktopAtlasView
         }
         else
         {
-            emblemContent = glyph;
+            emblemContent = BuildServiceSigil(node.Title);
         }
 
         var inner = new Border
@@ -346,6 +348,109 @@ public sealed partial class DesktopAtlasView
         };
     }
 
+    private static Grid BuildServiceSigil(string title)
+    {
+        var path = new SigilPath
+        {
+            Width = 42,
+            Height = 42,
+            Stretch = Stretch.Uniform,
+            StrokeThickness = 2.2,
+            Data = BuildServiceSigilGeometry(title),
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            IsHitTestVisible = false
+        };
+        path.Classes.Add("wgt-service-sigil");
+        path.Classes.Add($"sigil-{title.ToLowerInvariant()}");
+
+        return new Grid
+        {
+            Width = 44,
+            Height = 44,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            Children = { path }
+        };
+    }
+
+    private static StreamGeometry BuildServiceSigilGeometry(string title)
+    {
+        var geometry = new StreamGeometry();
+        using var context = geometry.Open();
+
+        switch (title)
+        {
+            case "Vocation":
+                context.BeginFigure(new Point(7, 32), isFilled: false);
+                context.LineTo(new Point(15, 24));
+                context.LineTo(new Point(22, 28));
+                context.LineTo(new Point(35, 14));
+                context.EndFigure(isClosed: false);
+                context.BeginFigure(new Point(27, 14), isFilled: false);
+                context.LineTo(new Point(35, 14));
+                context.LineTo(new Point(35, 22));
+                context.EndFigure(isClosed: false);
+                break;
+
+            case "Illumination":
+                context.BeginFigure(new Point(22, 5), isFilled: false);
+                context.LineTo(new Point(25, 17));
+                context.LineTo(new Point(37, 22));
+                context.LineTo(new Point(25, 27));
+                context.LineTo(new Point(22, 39));
+                context.LineTo(new Point(19, 27));
+                context.LineTo(new Point(7, 22));
+                context.LineTo(new Point(19, 17));
+                context.LineTo(new Point(22, 5));
+                context.EndFigure(isClosed: false);
+                break;
+
+            case "Orientation":
+                context.BeginFigure(new Point(22, 5), isFilled: false);
+                context.LineTo(new Point(22, 12));
+                context.EndFigure(isClosed: false);
+                context.BeginFigure(new Point(22, 32), isFilled: false);
+                context.LineTo(new Point(22, 39));
+                context.EndFigure(isClosed: false);
+                context.BeginFigure(new Point(5, 22), isFilled: false);
+                context.LineTo(new Point(12, 22));
+                context.EndFigure(isClosed: false);
+                context.BeginFigure(new Point(32, 22), isFilled: false);
+                context.LineTo(new Point(39, 22));
+                context.EndFigure(isClosed: false);
+                context.BeginFigure(new Point(22, 12), isFilled: false);
+                context.LineTo(new Point(32, 22));
+                context.LineTo(new Point(22, 32));
+                context.LineTo(new Point(12, 22));
+                context.LineTo(new Point(22, 12));
+                context.EndFigure(isClosed: false);
+                break;
+
+            case "Conveyance":
+                context.BeginFigure(new Point(8, 16), isFilled: false);
+                context.LineTo(new Point(34, 16));
+                context.LineTo(new Point(29, 11));
+                context.EndFigure(isClosed: false);
+                context.BeginFigure(new Point(36, 28), isFilled: false);
+                context.LineTo(new Point(10, 28));
+                context.LineTo(new Point(15, 33));
+                context.EndFigure(isClosed: false);
+                break;
+
+            default:
+                context.BeginFigure(new Point(8, 22), isFilled: false);
+                context.LineTo(new Point(36, 22));
+                context.EndFigure(isClosed: false);
+                context.BeginFigure(new Point(22, 8), isFilled: false);
+                context.LineTo(new Point(22, 36));
+                context.EndFigure(isClosed: false);
+                break;
+        }
+
+        return geometry;
+    }
+
     private static Grid BuildCapabilityPort(AtlasNodePresentationViewModel node)
     {
         var port = new Border
@@ -404,14 +509,4 @@ public sealed partial class DesktopAtlasView
             dot.Classes.Add("unavailable");
         return dot;
     }
-
-    private static string ServiceGlyph(string title) => title switch
-    {
-        "Vocation" => "↗",
-        "Illumination" => "✦",
-        "Orientation" => "⌖",
-        "Conveyance" => "⇄",
-        _ when title.Length >= 1 => title[..1].ToUpperInvariant(),
-        _ => "·"
-    };
 }

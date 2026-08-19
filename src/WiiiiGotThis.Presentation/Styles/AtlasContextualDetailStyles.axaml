@@ -97,11 +97,27 @@
     <Setter Property="CornerRadius" Value="10" />
   </Style>
 
-  <!-- Service sigils are symbolic rather than repository-name initials. -->
-  <Style Selector="TextBlock.wgt-node-glyph">
-    <Setter Property="FontWeight" Value="SemiBold" />
+  <!-- Provider identities are real vector sigils, not font glyph placeholders. -->
+  <Style Selector="Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FFE8F4F8" />
+    <Setter Property="StrokeThickness" Value="2.2" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="StrokeJoin" Value="Round" />
+    <Setter Property="Fill" Value="Transparent" />
   </Style>
-  <Style Selector="Button.wgt-atlas-node.service:pointerover TextBlock.wgt-node-glyph">
-    <Setter Property="Foreground" Value="#FFFFFFFF" />
+  <Style Selector="Button.wgt-atlas-node.theme-technical Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF6EDAF7" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-elegant Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FFE0D0BC" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-machine Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF78FFC2" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-world Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF91DFB8" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service:pointerover Path.wgt-service-sigil">
+    <Setter Property="StrokeThickness" Value="2.7" />
   </Style>
 </Styles>

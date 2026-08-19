@@ -27,7 +27,7 @@ public sealed class AtlasContextualCapabilityVisualTests
     }
 
     [Fact]
-    public void Service_emblems_use_symbolic_sigils_instead_of_repository_initials()
+    public void Service_emblems_use_provider_specific_vector_sigils_instead_of_font_placeholders()
     {
         var root = FindRepositoryRoot();
         var renderer = File.ReadAllText(Path.Combine(
@@ -35,12 +35,22 @@ public sealed class AtlasContextualCapabilityVisualTests
             "src",
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.FinalRenderer.cs"));
+        var styles = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "Styles",
+            "AtlasContextualDetailStyles.axaml"));
 
-        Assert.Contains("\"Vocation\" => \"↗\"", renderer, StringComparison.Ordinal);
-        Assert.Contains("\"Illumination\" => \"✦\"", renderer, StringComparison.Ordinal);
-        Assert.Contains("\"Orientation\" => \"⌖\"", renderer, StringComparison.Ordinal);
-        Assert.Contains("\"Conveyance\" => \"⇄\"", renderer, StringComparison.Ordinal);
-        Assert.DoesNotContain("\"Vocation\" => \"VO\"", renderer, StringComparison.Ordinal);
+        Assert.Contains("BuildServiceSigil", renderer, StringComparison.Ordinal);
+        Assert.Contains("BuildServiceSigilGeometry", renderer, StringComparison.Ordinal);
+        Assert.Contains("case \"Vocation\"", renderer, StringComparison.Ordinal);
+        Assert.Contains("case \"Illumination\"", renderer, StringComparison.Ordinal);
+        Assert.Contains("case \"Orientation\"", renderer, StringComparison.Ordinal);
+        Assert.Contains("case \"Conveyance\"", renderer, StringComparison.Ordinal);
+        Assert.Contains("Path.wgt-service-sigil", styles, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"Vocation\" => \"↗\"", renderer, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"Illumination\" => \"✦\"", renderer, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
