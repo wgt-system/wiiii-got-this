@@ -22,6 +22,8 @@ internal static class Program
         var integrationStore = new SqliteServiceIntegrationStore(connectionFactory);
         var publicationStore = new SqliteIntegrationPublicationStore(connectionFactory);
         var appearanceStore = new JsonAtlasAppearancePreferenceStore(Path.Combine(dataDirectory, "appearance.json"));
+        var capabilityConsumptionStore = new JsonAtlasCapabilityConsumptionPreferenceStore(
+            Path.Combine(dataDirectory, "capability-consumption.json"));
         var vocationHttpClient = new HttpClient();
         var vocationSource = new VocationHttpOpportunityOverviewSource(vocationHttpClient);
         var vocationMapSource = new VocationHttpMapProjectionSource(vocationHttpClient);
@@ -54,6 +56,13 @@ internal static class Program
             readVocationMapProjection,
             new GetAtlasAppearancePreferenceUseCase(appearanceStore),
             new SetAtlasAppearancePreferenceUseCase(appearanceStore));
+
+        var readCapabilityConsumption = new GetAtlasCapabilityConsumptionPreferencesUseCase(capabilityConsumptionStore);
+        var writeCapabilityConsumption = new SetAtlasCapabilityConsumptionPreferenceUseCase(capabilityConsumptionStore);
+        shell.ConfigureCapabilityConsumptionPreferences(
+            readCapabilityConsumption.GetAsync().AsTask().GetAwaiter().GetResult(),
+            writeCapabilityConsumption);
+
         var illuminationProductSurface = new IlluminationDesktopProductSurfaceSource();
         using var vocationProductRuntime = new VocationDesktopProductRuntime();
         using var orientationProductRuntime = new OrientationDesktopProductRuntime();
