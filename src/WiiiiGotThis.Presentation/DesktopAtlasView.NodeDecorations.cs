@@ -9,6 +9,8 @@ public sealed partial class DesktopAtlasView
 
     private void RebuildThemeNodeDecorations()
     {
+        RebuildFinalConnectionGeometry();
+
         if (themeNodeDecorationLayer is not null)
             SceneCanvas.Children.Remove(themeNodeDecorationLayer);
 
