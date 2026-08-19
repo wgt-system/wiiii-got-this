@@ -47,14 +47,7 @@ public sealed class VocationProductView : Grid
         {
             Width = 64,
             Height = 64,
-            Child = new TextBlock
-            {
-                Text = "VO",
-                FontSize = 18,
-                FontWeight = FontWeight.Bold,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            }
+            Child = ServiceSigilFactory.Create("Vocation", 42)
         };
         mark.Classes.Add("wgt-provider-status-mark");
         mark.Classes.Add("vocation");
