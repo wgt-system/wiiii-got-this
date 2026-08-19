@@ -15,26 +15,26 @@ public sealed class AtlasInspectorPolishTests
                 new AtlasNode("service:vocation", AtlasNodeKind.Service, "Vocation", "Composed", new ServiceIdentity("vocation")),
                 new AtlasNode("service:orientation", AtlasNodeKind.Service, "Orientation", "Composed", new ServiceIdentity("orientation")),
                 new AtlasNode(
-                    "capability:vocation:vocation.map_projection",
+                    "capability:orientation:orientation.generic_geospatial",
                     AtlasNodeKind.Capability,
-                    "Map Projection",
+                    "Generic geospatial",
                     "Available",
-                    new ServiceIdentity("vocation"),
-                    new CapabilityIdentity("vocation.map_projection"))
+                    new ServiceIdentity("orientation"),
+                    new CapabilityIdentity("orientation.generic_geospatial"))
             ],
             [
                 new AtlasConnection("composition:vocation", AtlasConnectionKind.Composition, "wgt.core", "service:vocation"),
                 new AtlasConnection("composition:orientation", AtlasConnectionKind.Composition, "wgt.core", "service:orientation"),
                 new AtlasConnection(
-                    "ownership:vocation:map",
+                    "ownership:orientation:geospatial",
                     AtlasConnectionKind.CapabilityOwnership,
-                    "service:vocation",
-                    "capability:vocation:vocation.map_projection"),
-                new AtlasConnection(
-                    "dependency:vocation:map:orientation",
-                    AtlasConnectionKind.CapabilityDependency,
-                    "capability:vocation:vocation.map_projection",
                     "service:orientation",
+                    "capability:orientation:orientation.generic_geospatial"),
+                new AtlasConnection(
+                    "dependency:vocation:orientation:geospatial",
+                    AtlasConnectionKind.CapabilityDependency,
+                    "service:vocation",
+                    "capability:orientation:orientation.generic_geospatial",
                     "Vocation supplies work-location meaning while Orientation supplies generic geospatial capability.")
             ]);
 
@@ -42,25 +42,25 @@ public sealed class AtlasInspectorPolishTests
         var core = layout.Nodes.Single(node => node.NodeId == "wgt.core");
         var vocation = layout.Nodes.Single(node => node.NodeId == "service:vocation");
         var orientation = layout.Nodes.Single(node => node.NodeId == "service:orientation");
-        var map = layout.Nodes.Single(node => node.NodeId == "capability:vocation:vocation.map_projection");
+        var geospatial = layout.Nodes.Single(node => node.NodeId == "capability:orientation:orientation.generic_geospatial");
 
         Assert.Equal("2 products", core.ScopeSummaryText);
-        Assert.Equal("1 capability", vocation.ScopeSummaryText);
-        Assert.Equal("0 capabilities", orientation.ScopeSummaryText);
-        Assert.Equal("Published capability", map.ScopeSummaryText);
+        Assert.Equal("0 capabilities", vocation.ScopeSummaryText);
+        Assert.Equal("1 capability", orientation.ScopeSummaryText);
+        Assert.Equal("System capability", geospatial.ScopeSummaryText);
 
-        var outgoing = Assert.Single(map.Relationships);
+        var outgoing = Assert.Single(vocation.Relationships);
         Assert.Equal("Uses", outgoing.Direction);
-        Assert.Equal("Orientation", outgoing.RelatedNodeTitle);
-        Assert.Equal("service:orientation", outgoing.RelatedNodeId);
-        Assert.Equal("1 cross-service link", map.RelationshipSummaryText);
+        Assert.Equal("Generic geospatial", outgoing.RelatedNodeTitle);
+        Assert.Equal("capability:orientation:orientation.generic_geospatial", outgoing.RelatedNodeId);
+        Assert.Equal("1 cross-service link", vocation.RelationshipSummaryText);
 
-        var incoming = Assert.Single(orientation.Relationships);
+        var incoming = Assert.Single(geospatial.Relationships);
         Assert.Equal("Used by", incoming.Direction);
-        Assert.Equal("capability:vocation:vocation.map_projection", incoming.RelatedNodeId);
-        Assert.False(orientation.HasNoRelationships);
-        Assert.True(vocation.HasNoRelationships);
-        Assert.Equal("No cross-service links", vocation.RelationshipSummaryText);
+        Assert.Equal("service:vocation", incoming.RelatedNodeId);
+        Assert.False(geospatial.HasNoRelationships);
+        Assert.True(orientation.HasNoRelationships);
+        Assert.Equal("No cross-service links", orientation.RelationshipSummaryText);
     }
 
     [Fact]
