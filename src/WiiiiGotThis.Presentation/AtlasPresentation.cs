@@ -104,6 +104,10 @@ public sealed class AtlasConnectionPresentationViewModel(
     public AtlasConnectionKind Kind => Model.Kind;
     public AtlasNodePresentationViewModel Source { get; } = source;
     public AtlasNodePresentationViewModel Target { get; } = target;
+    public bool IsEnabled => Model.IsEnabled;
+    public bool IsUserConfigurable => Model.IsUserConfigurable;
+    public bool IsCapabilityUse => Kind is AtlasConnectionKind.CapabilityConsumption or AtlasConnectionKind.CapabilityDependency;
+    public string StateText => IsEnabled ? "On" : "Off";
 }
 
 public sealed record AtlasPresentationLayout(
@@ -136,8 +140,7 @@ public static class AtlasPresentationFocus
         if (string.Equals(selectedNodeId, BuildAtlasProjectionUseCase.CoreNodeId, StringComparison.Ordinal))
             return focused;
 
-        foreach (var connection in connections.Where(item =>
-                     item.Kind is AtlasConnectionKind.CapabilityConsumption or AtlasConnectionKind.CapabilityDependency))
+        foreach (var connection in connections.Where(item => item.IsCapabilityUse))
         {
             if (focused.Contains(connection.Source.NodeId) || focused.Contains(connection.Target.NodeId))
             {
@@ -238,17 +241,16 @@ public static class AtlasPresentationLayoutBuilder
             .Select(connection => new AtlasConnectionPresentationViewModel(connection, byId[connection.SourceNodeId], byId[connection.TargetNodeId]))
             .ToArray();
 
-        foreach (var connection in connections.Where(connection =>
-                     connection.Kind is AtlasConnectionKind.CapabilityConsumption or AtlasConnectionKind.CapabilityDependency))
+        foreach (var connection in connections.Where(connection => connection.IsCapabilityUse))
         {
             var description = connection.Model.Description ?? "This product uses another WGT capability.";
             connection.Source.AddRelationship(new(
-                "Uses",
+                connection.IsEnabled ? "Uses" : "Can use",
                 connection.Target.Title,
                 connection.Target.NodeId,
                 description));
             connection.Target.AddRelationship(new(
-                "Used by",
+                connection.IsEnabled ? "Used by" : "Available to",
                 connection.Source.Title,
                 connection.Source.NodeId,
                 description));
