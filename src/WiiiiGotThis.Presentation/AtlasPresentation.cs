@@ -181,13 +181,13 @@ public static class AtlasPresentationLayoutBuilder
             .ToArray();
         corePresentation.ChildNodeCount = services.Length;
 
-        const double serviceRadius = 350;
         for (var index = 0; index < services.Length; index++)
         {
-            var angle = ServiceAngle(index, services.Length);
-            var serviceX = Math.Cos(angle) * serviceRadius;
-            var serviceY = Math.Sin(angle) * serviceRadius;
             var service = services[index];
+            var placement = ServicePlacement(service, index, services.Length);
+            var serviceX = placement.X;
+            var serviceY = placement.Y;
+            var serviceAngle = placement.Angle;
 
             var capabilities = projection.Nodes
                 .Where(node => node.Kind == AtlasNodeKind.Capability && node.ServiceIdentity == service.ServiceIdentity)
@@ -201,14 +201,16 @@ public static class AtlasPresentationLayoutBuilder
             };
             byId.Add(service.NodeId, servicePresentation);
 
-            const double capabilityRadius = 152;
-            const double spread = Math.PI * 0.5;
+            // Capability ports stay close enough to read as part of their provider
+            // cluster instead of detached cards floating in empty space.
+            const double capabilityRadius = 132;
+            const double spread = Math.PI * 0.42;
             for (var capabilityIndex = 0; capabilityIndex < capabilities.Length; capabilityIndex++)
             {
                 var offset = capabilities.Length == 1
                     ? 0
                     : -spread / 2 + spread * capabilityIndex / (capabilities.Length - 1);
-                var capabilityAngle = angle + offset;
+                var capabilityAngle = serviceAngle + offset;
                 var capability = capabilities[capabilityIndex];
                 byId.Add(capability.NodeId, new AtlasNodePresentationViewModel(
                     capability,
@@ -252,10 +254,27 @@ public static class AtlasPresentationLayoutBuilder
             : PrimaryServiceOrder.Count + 100;
     }
 
-    private static double ServiceAngle(int index, int count)
+    private static (double X, double Y, double Angle) ServicePlacement(AtlasNode service, int index, int count)
     {
-        if (count <= 1)
-            return -Math.PI / 2;
-        return -Math.PI / 2 + 2 * Math.PI * index / count;
+        return service.ServiceIdentity?.Value switch
+        {
+            // The Atlas is a wide desktop surface. The primary four services form an
+            // elliptical cross so the composition breathes horizontally without
+            // pushing Illumination/Conveyance into the title/search and bottom edge.
+            "illumination" => (0, -285, -Math.PI / 2),
+            "orientation" => (365, 0, 0),
+            "conveyance" => (0, 285, Math.PI / 2),
+            "vocation" => (-365, 0, Math.PI),
+            _ => FallbackServicePlacement(index, count)
+        };
+    }
+
+    private static (double X, double Y, double Angle) FallbackServicePlacement(int index, int count)
+    {
+        var angle = count <= 1
+            ? -Math.PI / 2
+            : -Math.PI / 2 + 2 * Math.PI * index / count;
+        const double radius = 330;
+        return (Math.Cos(angle) * radius, Math.Sin(angle) * radius, angle);
     }
 }
