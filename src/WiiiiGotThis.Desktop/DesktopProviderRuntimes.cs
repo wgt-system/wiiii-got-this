@@ -3,7 +3,7 @@ using WiiiiGotThis.Presentation;
 
 namespace WiiiiGotThis.Desktop;
 
-public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDisposable
+public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IProductRuntimeStatusSource, IDisposable
 {
     private static readonly Uri DefaultProductUri = new("http://127.0.0.1:8765/");
     private static readonly Uri DefaultHealthUri = new("http://127.0.0.1:8765/api/health");
@@ -11,6 +11,8 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
     private readonly SemaphoreSlim gate = new(1, 1);
     private Process? ownedProcess;
     private bool disposed;
+
+    public event Action<string>? StageChanged;
 
     public async Task<ProductRuntimeReadiness> EnsureReadyAsync(Uri productUri, CancellationToken cancellationToken = default)
     {
@@ -20,10 +22,14 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
         await gate.WaitAsync(cancellationToken);
         try
         {
+            ReportStage("Checking Vocation runtime…");
             var isDefaultEndpoint = DesktopProviderRuntimeSupport.IsSameEndpoint(productUri, DefaultProductUri);
             if (!isDefaultEndpoint)
             {
-                return await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, productUri, cancellationToken)
+                var customReady = await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, productUri, cancellationToken);
+                if (customReady)
+                    ReportStage("Vocation endpoint ready.");
+                return customReady
                     ? ProductRuntimeReadiness.Ready
                     : ProductRuntimeReadiness.Unavailable(
                         $"The configured Vocation endpoint {productUri} is not running. WGT will not start provider processes for a custom endpoint.");
@@ -33,7 +39,10 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
             var productReady = healthReady
                 && await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, productUri, cancellationToken);
             if (productReady)
+            {
+                ReportStage("Vocation ready.");
                 return ProductRuntimeReadiness.Ready;
+            }
 
             if (ownedProcess is { HasExited: true })
             {
@@ -41,6 +50,7 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
                 ownedProcess = null;
             }
 
+            ReportStage("Locating Vocation checkout…");
             var root = DesktopProviderRuntimeSupport.ResolveRepositoryRoot("WGT_VOCATION_ROOT", "vocation", "pyproject.toml");
             if (root is null)
             {
@@ -48,14 +58,17 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
                     "Vocation is not running and its repository could not be located. Set WGT_VOCATION_ROOT or keep the Vocation repository beside Wiiii Got This.");
             }
 
+            ReportStage("Preparing Vocation Python environment…");
             var environment = await EnsureVocationEnvironmentAsync(root, cancellationToken);
             if (!environment.IsReady)
                 return environment.Readiness;
 
+            ReportStage("Preparing Vocation interface…");
             var frontend = await EnsureVocationFrontendAsync(root, cancellationToken);
             if (!frontend.IsReady)
                 return frontend;
 
+            ReportStage("Starting Vocation provider…");
             ownedProcess ??= DesktopProviderRuntimeSupport.StartProcess(
                 environment.PythonPath!,
                 root,
@@ -67,6 +80,7 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
                 "--port",
                 "8765");
 
+            ReportStage("Waiting for Vocation health…");
             healthReady = await DesktopProviderRuntimeSupport.WaitForSuccessfulHttpResponseAsync(
                 httpClient,
                 DefaultHealthUri,
@@ -79,16 +93,21 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
                     "WGT started Vocation, but `/api/health` did not become ready within 35 seconds. Check the Vocation Python/migration output and retry.");
             }
 
+            ReportStage("Checking Vocation product surface…");
             productReady = await DesktopProviderRuntimeSupport.WaitForSuccessfulHttpResponseAsync(
                 httpClient,
                 productUri,
                 ownedProcess,
                 TimeSpan.FromSeconds(8),
                 cancellationToken);
-            return productReady
-                ? ProductRuntimeReadiness.Ready
-                : ProductRuntimeReadiness.Unavailable(
-                    "Vocation's backend is healthy, but its provider-owned web surface is not being served. Rebuild `frontend/dist` and retry.");
+            if (productReady)
+            {
+                ReportStage("Vocation ready.");
+                return ProductRuntimeReadiness.Ready;
+            }
+
+            return ProductRuntimeReadiness.Unavailable(
+                "Vocation's backend is healthy, but its provider-owned web surface is not being served. Rebuild `frontend/dist` and retry.");
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -114,6 +133,8 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
         httpClient.Dispose();
         gate.Dispose();
     }
+
+    private void ReportStage(string stage) => StageChanged?.Invoke(stage);
 
     private static async Task<VocationEnvironmentResult> EnsureVocationEnvironmentAsync(
         string root,
@@ -219,7 +240,7 @@ public sealed class VocationDesktopProductRuntime : IVocationProductRuntime, IDi
     }
 }
 
-public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntime, IDisposable
+public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntime, IProductRuntimeStatusSource, IDisposable
 {
     private static readonly Uri DefaultProductUri = new("http://127.0.0.1:5173/app.html");
     private static readonly Uri BackendHealthUri = new("http://127.0.0.1:8080/actuator/health");
@@ -229,6 +250,8 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
     private Process? ownedBackendProcess;
     private bool disposed;
 
+    public event Action<string>? StageChanged;
+
     public async Task<ProductRuntimeReadiness> EnsureReadyAsync(Uri productUri, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -237,10 +260,13 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
         await gate.WaitAsync(cancellationToken);
         try
         {
+            ReportStage("Checking Orientation runtime…");
             var mapReady = await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, productUri, cancellationToken);
             var isDefaultEndpoint = DesktopProviderRuntimeSupport.IsSameEndpoint(productUri, DefaultProductUri);
             if (!isDefaultEndpoint)
             {
+                if (mapReady)
+                    ReportStage("Orientation endpoint ready.");
                 return mapReady
                     ? ProductRuntimeReadiness.Ready
                     : ProductRuntimeReadiness.Unavailable(
@@ -249,8 +275,12 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
 
             var backendReady = await DesktopProviderRuntimeSupport.IsSuccessfulHttpResponseAsync(httpClient, BackendHealthUri, cancellationToken);
             if (mapReady && backendReady)
+            {
+                ReportStage("Orientation ready.");
                 return ProductRuntimeReadiness.Ready;
+            }
 
+            ReportStage("Locating Orientation checkout…");
             var root = DesktopProviderRuntimeSupport.ResolveRepositoryRoot(
                 "WGT_ORIENTATION_ROOT",
                 "orientation",
@@ -261,12 +291,14 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
                     "Orientation is not running and its repository could not be located. Set WGT_ORIENTATION_ROOT or keep Orientation beside Wiiii Got This.");
             }
 
+            ReportStage("Preparing Orientation map dependencies…");
             var mapReadyToStart = await EnsureOrientationMapDependenciesAsync(root, cancellationToken);
             if (!mapReadyToStart.IsReady)
                 return mapReadyToStart;
 
             if (!backendReady)
             {
+                ReportStage("Starting Orientation Java backend…");
                 if (ownedBackendProcess is { HasExited: true })
                 {
                     ownedBackendProcess.Dispose();
@@ -287,6 +319,7 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
 
             if (!mapReady)
             {
+                ReportStage("Starting Orientation map surface…");
                 if (ownedMapProcess is { HasExited: true })
                 {
                     ownedMapProcess.Dispose();
@@ -301,9 +334,7 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
                     "npm run dev -- --host 127.0.0.1 --port 5173 --strictPort");
             }
 
-            // Map and backend are independent provider processes. Waiting sequentially made a
-            // normal first start look like an endless spinner (35s + 45s). Bound the host wait
-            // to one concurrent readiness window instead.
+            ReportStage("Waiting for Orientation map + backend…");
             var mapTask = mapReady
                 ? Task.FromResult(true)
                 : DesktopProviderRuntimeSupport.WaitForSuccessfulHttpResponseAsync(
@@ -341,6 +372,7 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
                     "Orientation's browser map is ready, but `/actuator/health` did not become healthy within 45 seconds. Check Java 25/Maven and the Orientation backend output, then retry.");
             }
 
+            ReportStage("Orientation ready.");
             return ProductRuntimeReadiness.Ready;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -369,6 +401,8 @@ public sealed class OrientationDesktopProductRuntime : IOrientationProductRuntim
         httpClient.Dispose();
         gate.Dispose();
     }
+
+    private void ReportStage(string stage) => StageChanged?.Invoke(stage);
 
     private static async Task<ProductRuntimeReadiness> EnsureOrientationMapDependenciesAsync(
         string root,
