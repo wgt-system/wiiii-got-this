@@ -76,4 +76,34 @@ public sealed class AtlasInspectorPolishTests
         Assert.True(core.HasNoRelationships);
         Assert.Equal("No cross-service links", core.RelationshipSummaryText);
     }
+
+    [Fact]
+    public void Inspector_tether_is_not_driven_from_LayoutUpdated()
+    {
+        var root = FindRepositoryRoot();
+        var sourcePath = Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "DesktopAtlasView.Polish.cs");
+        var source = File.ReadAllText(sourcePath);
+
+        Assert.DoesNotContain("InspectorCard.LayoutUpdated +=", source, StringComparison.Ordinal);
+        Assert.Contains("InspectorCard.SizeChanged +=", source, StringComparison.Ordinal);
+        Assert.Contains("inspectorTetherLayer = new Canvas", source, StringComparison.Ordinal);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "WiiiiGotThis.sln")))
+                return directory.FullName;
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate the Wiiii Got This repository root from the test output directory.");
+    }
 }
