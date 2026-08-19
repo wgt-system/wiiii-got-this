@@ -270,7 +270,7 @@ public sealed partial class DesktopAtlasView
             return;
         }
 
-        var world = WorldPoint(node);
+        var world = ActiveRendererWorldPoint(node);
         var nodeX = world.X * sceneScale.ScaleX + sceneTranslate.X;
         var nodeY = world.Y * sceneScale.ScaleY + sceneTranslate.Y;
         var left = inspectorTranslate.X;
@@ -305,6 +305,26 @@ public sealed partial class DesktopAtlasView
         tether.IsVisible = true;
     }
 
+    private Point ActiveRendererWorldPoint(AtlasNodePresentationViewModel node)
+    {
+        if (shell?.AtlasTheme == AtlasThemePreference.World
+            && worldV2Renderer is not null
+            && worldV2Renderer.TryGetWorldPosition(node.NodeId, out var authored))
+        {
+            return new Point(WorldCenterX + authored.X, WorldCenterY + authored.Y);
+        }
+
+        return WorldPoint(node);
+    }
+
+    private void CenterOnActiveRendererNode(AtlasNodePresentationViewModel node)
+    {
+        var world = ActiveRendererWorldPoint(node);
+        sceneTranslate.X = AtlasViewport.Bounds.Width / 2 - world.X * sceneScale.ScaleX;
+        sceneTranslate.Y = AtlasViewport.Bounds.Height / 2 - world.Y * sceneScale.ScaleY;
+        PositionInspector();
+    }
+
     private void OnRelationshipSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (sender is not ListBox { SelectedItem: AtlasRelationshipPresentationViewModel relationship } list || shell is null)
@@ -317,7 +337,7 @@ public sealed partial class DesktopAtlasView
             return;
 
         shell.SelectAtlasNodeCommand.Execute(target);
-        CenterOnSelected();
+        CenterOnActiveRendererNode(target);
         AtlasViewport.Focus();
     }
 }
