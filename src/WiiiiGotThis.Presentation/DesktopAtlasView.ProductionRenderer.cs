@@ -7,7 +7,7 @@ namespace WiiiiGotThis.Presentation;
 
 public sealed partial class DesktopAtlasView
 {
-    private AtlasSceneControl? productionSceneRenderer;
+    private AtlasLandscapeControl? productionSceneRenderer;
     private ShellViewModel? productionRendererShell;
 
     private bool IsProductionSceneRendererActive => productionSceneRenderer is not null;
@@ -17,7 +17,7 @@ public sealed partial class DesktopAtlasView
         if (productionSceneRenderer is not null)
             return;
 
-        productionSceneRenderer = new AtlasSceneControl
+        productionSceneRenderer = new AtlasLandscapeControl
         {
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
@@ -26,8 +26,8 @@ public sealed partial class DesktopAtlasView
         productionSceneRenderer.NodeInvoked += OnProductionSceneNodeInvoked;
         productionSceneRenderer.NodeActivated += OnProductionSceneNodeActivated;
 
-        // The legacy Canvas stays as migration scaffolding for now, but it is no
-        // longer part of the visible or hit-testable Atlas scene.
+        // The legacy Canvas and the first custom graph/region experiment stay only as
+        // migration evidence. The visible production candidate is the semantic landscape.
         SceneCanvas.IsVisible = false;
         SceneCanvas.IsHitTestVisible = false;
         SceneCanvas.Children.Clear();
