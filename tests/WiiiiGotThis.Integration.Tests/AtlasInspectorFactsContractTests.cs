@@ -42,6 +42,53 @@ public sealed class AtlasInspectorFactsContractTests
     }
 
     [Fact]
+    public void Disabled_product_services_show_WGT_known_effects_before_activation()
+    {
+        var root = FindRepositoryRoot();
+        var facts = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "DesktopAtlasView.InspectorFacts.cs"));
+        var experience = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "DesktopAtlasView.Experience.cs"));
+        var styles = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "Styles",
+            "AtlasContextualDetailStyles.axaml"));
+
+        Assert.Contains("BEFORE ACTIVATION", facts, StringComparison.Ordinal);
+        Assert.Contains("CAPABILITIES", facts, StringComparison.Ordinal);
+        Assert.Contains("EXPLICIT DEPENDENCIES", facts, StringComparison.Ordinal);
+        Assert.Contains("PERMISSIONS / CROSS-DEVICE", facts, StringComparison.Ordinal);
+        Assert.Contains("node.IsIntegratedService && !node.IsEnabled", facts, StringComparison.Ordinal);
+        Assert.Contains("Select {node.Title} to review activation before opening", experience, StringComparison.Ordinal);
+        Assert.Contains("if (!node.IsEnabled)", experience, StringComparison.Ordinal);
+        Assert.Contains("wgt-activation-preview", styles, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Activation_preview_counts_only_explicit_capability_dependencies()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "DesktopAtlasView.InspectorFacts.cs"));
+
+        Assert.Contains("connection.Kind == AtlasConnectionKind.CapabilityDependency", source, StringComparison.Ordinal);
+        Assert.Contains("ownedNodeIds.Contains(connection.Source.NodeId)", source, StringComparison.Ordinal);
+        Assert.Contains("ownedNodeIds.Contains(connection.Target.NodeId)", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("infer", source, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Inspector_facts_refresh_on_selection_integration_and_device_changes()
     {
         var root = FindRepositoryRoot();
