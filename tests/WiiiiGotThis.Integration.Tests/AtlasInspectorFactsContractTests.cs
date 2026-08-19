@@ -35,7 +35,7 @@ public sealed class AtlasInspectorFactsContractTests
             "DesktopAtlasView.InspectorFacts.cs"));
 
         Assert.Contains("RenameInspectorTab(overview, \"Node\", \"Overview and actions\")", source, StringComparison.Ordinal);
-        Assert.Contains("RenameInspectorTab(capabilities, \"Caps\", \"Published capabilities\")", source, StringComparison.Ordinal);
+        Assert.Contains("RenameInspectorTab(capabilities, \"Caps\", \"System capabilities\")", source, StringComparison.Ordinal);
         Assert.Contains("RenameInspectorTab(dependencies, \"Links\"", source, StringComparison.Ordinal);
         Assert.Contains("RenameInspectorTab(system, \"Diag\", \"System and diagnostics\")", source, StringComparison.Ordinal);
         Assert.Contains("AutomationProperties.SetName(tab, tooltip)", source, StringComparison.Ordinal);
@@ -56,6 +56,8 @@ public sealed class AtlasInspectorFactsContractTests
         Assert.Contains("configured local loopback product endpoint", source, StringComparison.Ordinal);
         Assert.Contains("hosted in-process through its provider-owned Product Surface", source, StringComparison.Ordinal);
         Assert.Contains("does not impose a universal plugin transport", source, StringComparison.Ordinal);
+        Assert.Contains("generic geospatial behavior", source, StringComparison.Ordinal);
+        Assert.Contains("shared opaque cross-device delivery infrastructure", source, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -72,12 +74,6 @@ public sealed class AtlasInspectorFactsContractTests
             "src",
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.Experience.cs"));
-        var styles = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "WiiiiGotThis.Presentation",
-            "Styles",
-            "AtlasContextualDetailStyles.axaml"));
 
         Assert.Contains("BEFORE ACTIVATION", facts, StringComparison.Ordinal);
         Assert.Contains("CAPABILITIES / LINKS", facts, StringComparison.Ordinal);
@@ -88,11 +84,12 @@ public sealed class AtlasInspectorFactsContractTests
         Assert.Contains("node.IsIntegratedService && !node.IsEnabled", facts, StringComparison.Ordinal);
         Assert.Contains("Select {node.Title} to review activation before opening", experience, StringComparison.Ordinal);
         Assert.Contains("if (!node.IsEnabled)", experience, StringComparison.Ordinal);
-        Assert.Contains("wgt-activation-preview", styles, StringComparison.Ordinal);
+        Assert.DoesNotContain("wgt-activation-fact", facts, StringComparison.Ordinal);
+        Assert.DoesNotContain("wgt-inspector-fact", facts, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Activation_preview_counts_only_explicit_capability_dependencies()
+    public void Activation_preview_counts_only_explicit_cross_product_capability_relationships()
     {
         var root = FindRepositoryRoot();
         var source = File.ReadAllText(Path.Combine(
@@ -101,10 +98,10 @@ public sealed class AtlasInspectorFactsContractTests
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.InspectorFacts.cs"));
 
-        Assert.Contains("connection.Kind == AtlasConnectionKind.CapabilityDependency", source, StringComparison.Ordinal);
+        Assert.Contains("connection.Kind is AtlasConnectionKind.CapabilityDependency or AtlasConnectionKind.CapabilityConsumption", source, StringComparison.Ordinal);
         Assert.Contains("ownedNodeIds.Contains(connection.Source.NodeId)", source, StringComparison.Ordinal);
         Assert.Contains("ownedNodeIds.Contains(connection.Target.NodeId)", source, StringComparison.Ordinal);
-        Assert.Contains("No additional permission requirement or cross-device guarantee is published to WGT.", source, StringComparison.Ordinal);
+        Assert.Contains("No additional permission requirement or cross-device guarantee is inferred", source, StringComparison.Ordinal);
     }
 
     [Fact]
