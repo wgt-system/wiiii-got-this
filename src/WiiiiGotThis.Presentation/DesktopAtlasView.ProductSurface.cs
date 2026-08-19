@@ -204,15 +204,7 @@ public sealed partial class DesktopAtlasView
         {
             Width = 42,
             Height = 42,
-            Child = new TextBlock
-            {
-                Text = ServiceGlyph(serviceName),
-                FontSize = 11,
-                FontWeight = FontWeight.Bold,
-                LetterSpacing = 0.8,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            }
+            Child = ServiceSigilFactory.Create(serviceName, 28)
         };
         serviceMark.Classes.Add("wgt-product-service-mark");
         serviceMark.Classes.Add(serviceName.ToLowerInvariant());
@@ -359,14 +351,7 @@ public sealed partial class DesktopAtlasView
         {
             Width = 64,
             Height = 64,
-            Child = new TextBlock
-            {
-                Text = "IL",
-                FontSize = 18,
-                FontWeight = FontWeight.Bold,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            }
+            Child = ServiceSigilFactory.Create("Illumination", 42)
         };
         mark.Classes.Add("wgt-provider-status-mark");
         mark.Classes.Add("illumination");
