@@ -27,6 +27,9 @@ public sealed class AtlasWorldEnvironmentalDetailOverlay : Control
     private static readonly Color RailLight = Color.Parse("#7A8D84");
     private static readonly Color Contour = Color.Parse("#3F6756");
     private static readonly Color Soil = Color.Parse("#473D2D");
+    private static readonly Color Orchard = Color.Parse("#315136");
+    private static readonly Color Footpath = Color.Parse("#7E745A");
+    private static readonly Color Garden = Color.Parse("#28493A");
 
     private double zoom = 0.82d;
     private double translateX;
@@ -51,11 +54,15 @@ public sealed class AtlasWorldEnvironmentalDetailOverlay : Control
         base.Render(context);
 
         DrawVocationFarmland(context);
+        DrawVocationOrchard(context);
         DrawIlluminationTerraces(context);
+        DrawIlluminationGarden(context);
         DrawWgtGreenBelt(context);
         DrawOrientationContours(context);
+        DrawOrientationTrail(context);
         DrawTributary(context);
         DrawConveyanceRail(context);
+        DrawAuthoredTreeMasses(context);
         DrawMinorLandscapeBoundaries(context);
     }
 
@@ -73,6 +80,31 @@ public sealed class AtlasWorldEnvironmentalDetailOverlay : Control
         };
         DrawField(context, fieldA, 0.70);
         DrawField(context, fieldB, 0.52);
+    }
+
+    private void DrawVocationOrchard(DrawingContext context)
+    {
+        if (zoom < 0.54)
+            return;
+
+        var treeBrush = new SolidColorBrush(WithAlpha(Orchard, 126));
+        var trunkPen = new Pen(new SolidColorBrush(WithAlpha(Soil, 92)), Math.Max(0.5, 0.65 * zoom));
+        var origin = new Point(-742, 182);
+        for (var row = 0; row < 4; row++)
+        {
+            for (var column = 0; column < 5; column++)
+            {
+                var stagger = row % 2 == 0 ? 0d : 7d;
+                var world = new Point(origin.X + column * 27 + stagger, origin.Y + row * 23);
+                var screen = ScreenPoint(world);
+                var crown = Math.Max(2.1, 4.4 * zoom);
+                context.DrawLine(
+                    trunkPen,
+                    ScreenPoint(world + new Vector(0, 3.5)),
+                    ScreenPoint(world + new Vector(0, 7.5)));
+                context.DrawEllipse(treeBrush, null, screen, crown, crown * 0.82);
+            }
+        }
     }
 
     private void DrawIlluminationTerraces(DrawingContext context)
@@ -94,6 +126,40 @@ public sealed class AtlasWorldEnvironmentalDetailOverlay : Control
         }
     }
 
+    private void DrawIlluminationGarden(DrawingContext context)
+    {
+        var garden = new[]
+        {
+            new Point(-374, -420), new Point(-312, -454), new Point(-240, -438),
+            new Point(-210, -382), new Point(-256, -342), new Point(-332, -350),
+            new Point(-388, -382)
+        };
+        context.DrawGeometry(
+            new SolidColorBrush(WithAlpha(Garden, 88)),
+            new Pen(new SolidColorBrush(WithAlpha(FieldEdge, 36)), Math.Max(0.5, 0.68 * zoom)),
+            PolygonWorld(garden));
+
+        if (zoom < 0.62)
+            return;
+
+        var pathPen = new Pen(new SolidColorBrush(WithAlpha(Footpath, 72)), Math.Max(0.85, 1.15 * zoom));
+        context.DrawGeometry(
+            null,
+            pathPen,
+            SmoothWorldPath(
+            [
+                new Point(-365, -395), new Point(-326, -414), new Point(-286, -401),
+                new Point(-253, -371), new Point(-276, -354)
+            ]));
+        context.DrawGeometry(
+            null,
+            pathPen,
+            SmoothWorldPath(
+            [
+                new Point(-328, -445), new Point(-319, -411), new Point(-331, -376), new Point(-356, -358)
+            ]));
+    }
+
     private void DrawWgtGreenBelt(DrawingContext context)
     {
         var park = new[]
@@ -109,6 +175,19 @@ public sealed class AtlasWorldEnvironmentalDetailOverlay : Control
         var pathPen = new Pen(new SolidColorBrush(WithAlpha(FieldEdge, 42)), Math.Max(1.1, 1.6 * zoom));
         context.DrawLine(pathPen, ScreenPoint(new Point(-154, 185)), ScreenPoint(new Point(-31, 171)));
         context.DrawLine(pathPen, ScreenPoint(new Point(-102, 135)), ScreenPoint(new Point(-92, 215)));
+
+        if (zoom < 0.72)
+            return;
+
+        var promenadePen = new Pen(new SolidColorBrush(WithAlpha(Footpath, 58)), Math.Max(0.8, 1.05 * zoom));
+        context.DrawGeometry(
+            null,
+            promenadePen,
+            SmoothWorldPath(
+            [
+                new Point(-28, 86), new Point(18, 112), new Point(42, 151),
+                new Point(36, 202), new Point(8, 235)
+            ]));
     }
 
     private void DrawOrientationContours(DrawingContext context)
@@ -123,6 +202,28 @@ public sealed class AtlasWorldEnvironmentalDetailOverlay : Control
 
         foreach (var contour in contours)
             context.DrawGeometry(null, pen, SmoothWorldPath(contour));
+    }
+
+    private void DrawOrientationTrail(DrawingContext context)
+    {
+        if (zoom < 0.58)
+            return;
+
+        var trail = new[]
+        {
+            new Point(462, -276), new Point(514, -240), new Point(568, -254),
+            new Point(622, -226), new Point(676, -237), new Point(726, -199)
+        };
+        var pen = new Pen(new SolidColorBrush(WithAlpha(Footpath, 76)), Math.Max(0.65, 0.95 * zoom));
+        context.DrawGeometry(null, pen, SmoothWorldPath(trail));
+
+        var markerBrush = new SolidColorBrush(WithAlpha(StreamLight, 86));
+        for (var index = 1; index < trail.Length - 1; index += 2)
+        {
+            var marker = ScreenPoint(trail[index]);
+            var radius = Math.Max(1.3, 2.2 * zoom);
+            context.DrawEllipse(markerBrush, null, marker, radius, radius);
+        }
     }
 
     private void DrawTributary(DrawingContext context)
@@ -169,6 +270,31 @@ public sealed class AtlasWorldEnvironmentalDetailOverlay : Control
         }
     }
 
+    private void DrawAuthoredTreeMasses(DrawingContext context)
+    {
+        if (zoom < 0.48)
+            return;
+
+        var clusters = new[]
+        {
+            new[] { new Point(-405, 70), new Point(-375, 92), new Point(-348, 70), new Point(-324, 104), new Point(-292, 91) },
+            new[] { new Point(222, -92), new Point(250, -118), new Point(279, -94), new Point(305, -126), new Point(335, -104) },
+            new[] { new Point(398, 126), new Point(426, 108), new Point(452, 132), new Point(482, 113) },
+            new[] { new Point(-70, -338), new Point(-42, -362), new Point(-8, -349), new Point(18, -380) }
+        };
+
+        var brush = new SolidColorBrush(WithAlpha(Grass, 148));
+        foreach (var cluster in clusters)
+        {
+            for (var index = 0; index < cluster.Length; index++)
+            {
+                var point = ScreenPoint(cluster[index]);
+                var radius = Math.Max(1.8, (3.5 + index % 2) * zoom);
+                context.DrawEllipse(brush, null, point, radius, radius * 0.86);
+            }
+        }
+    }
+
     private void DrawMinorLandscapeBoundaries(DrawingContext context)
     {
         var pen = new Pen(new SolidColorBrush(WithAlpha(FieldEdge, 28)), Math.Max(0.5, 0.7 * zoom));
@@ -182,7 +308,7 @@ public sealed class AtlasWorldEnvironmentalDetailOverlay : Control
             context.DrawGeometry(null, pen, SmoothWorldPath(boundary));
     }
 
-    private void DrawField(DrawingContext context, IReadOnlyList<Point> points, double warmMix)
+    private void DrawField(DrawingContext context, Point[] points, double warmMix)
     {
         var fill = Mix(Grass, Field, warmMix);
         var geometry = PolygonWorld(points);
@@ -207,30 +333,30 @@ public sealed class AtlasWorldEnvironmentalDetailOverlay : Control
         }
     }
 
-    private StreamGeometry PolygonWorld(IReadOnlyList<Point> points)
+    private StreamGeometry PolygonWorld(Point[] points)
     {
         var geometry = new StreamGeometry();
         using var gc = geometry.Open();
         gc.BeginFigure(ScreenPoint(points[0]), isFilled: true);
-        for (var index = 1; index < points.Count; index++)
+        for (var index = 1; index < points.Length; index++)
             gc.LineTo(ScreenPoint(points[index]), isStroked: true);
         gc.EndFigure(isClosed: true);
         return geometry;
     }
 
-    private StreamGeometry SmoothWorldPath(IReadOnlyList<Point> points)
+    private StreamGeometry SmoothWorldPath(Point[] points)
     {
         var geometry = new StreamGeometry();
         using var gc = geometry.Open();
-        if (points.Count == 0)
+        if (points.Length == 0)
             return geometry;
         gc.BeginFigure(ScreenPoint(points[0]), isFilled: false);
-        if (points.Count == 1)
+        if (points.Length == 1)
         {
             gc.EndFigure(isClosed: false);
             return geometry;
         }
-        for (var index = 1; index < points.Count - 1; index++)
+        for (var index = 1; index < points.Length - 1; index++)
         {
             var current = ScreenPoint(points[index]);
             var next = ScreenPoint(points[index + 1]);
@@ -277,7 +403,7 @@ public sealed class AtlasWorldEnvironmentalDetailOverlay : Control
     private static Point MidPoint(Point first, Point second) =>
         new((first.X + second.X) / 2, (first.Y + second.Y) / 2);
 
-    private static Rect BoundsOf(IReadOnlyList<Point> points)
+    private static Rect BoundsOf(Point[] points)
     {
         var minX = points.Min(point => point.X);
         var maxX = points.Max(point => point.X);
