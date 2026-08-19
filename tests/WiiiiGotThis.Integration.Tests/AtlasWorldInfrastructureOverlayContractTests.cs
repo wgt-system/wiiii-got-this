@@ -6,40 +6,44 @@ public sealed class AtlasWorldInfrastructureOverlayContractTests
     public void World_projects_shared_capability_consumption_as_a_local_facility_and_backbone()
     {
         var root = FindRepositoryRoot();
-        var overlay = File.ReadAllText(Path.Combine(
+        var world = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldInfrastructureOverlay.cs"));
+            "AtlasWorldV2Control.cs"));
         var host = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.ProductionRenderer.cs"));
 
-        Assert.Contains("provider?.IsSharedCapabilityProvider != true", overlay, StringComparison.Ordinal);
-        Assert.Contains("LocalFacilityPosition", overlay, StringComparison.Ordinal);
-        Assert.Contains("SharedBackbonePosition", overlay, StringComparison.Ordinal);
-        Assert.Contains("SYNC RELAY", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawLocalFacility", overlay, StringComparison.Ordinal);
-        Assert.Contains("DrawInfrastructureRoute", overlay, StringComparison.Ordinal);
-        Assert.Contains("new AtlasWorldInfrastructureOverlay", host, StringComparison.Ordinal);
-        Assert.Contains("livingWorldInfrastructureOverlay.IsVisible = isLivingWorld", host, StringComparison.Ordinal);
+        Assert.Contains("DrawConveyanceConsumption", world, StringComparison.Ordinal);
+        Assert.Contains("connection.IsEnabled", world, StringComparison.Ordinal);
+        Assert.Contains("connection.IsCapabilityUse", world, StringComparison.Ordinal);
+        Assert.Contains("BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId", world, StringComparison.Ordinal);
+        Assert.Contains("var facility = vocationCenter + new Vector(132, 64)", world, StringComparison.Ordinal);
+        Assert.Contains("DrawIndustrialGround(context, facility", world, StringComparison.Ordinal);
+        Assert.Contains("DrawWarehouse(context, facility", world, StringComparison.Ordinal);
+        Assert.Contains("DrawRelayMast(context, facility", world, StringComparison.Ordinal);
+        Assert.Contains("worldV2Renderer = new AtlasWorldV2Control", host, StringComparison.Ordinal);
+        Assert.DoesNotContain("new AtlasWorldInfrastructureOverlay", host, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Local_facility_is_presentation_only_and_does_not_claim_provider_ownership()
+    public void Local_facility_is_a_projection_of_one_enabled_consumption_not_an_extra_provider()
     {
         var root = FindRepositoryRoot();
-        var overlay = File.ReadAllText(Path.Combine(
+        var world = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldInfrastructureOverlay.cs"));
+            "AtlasWorldV2Control.cs"));
 
-        Assert.Contains("does not move capability ownership into the consuming product", overlay, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("this is the product's attachment", overlay, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("not another copy of the provider/runtime", overlay, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("string.Equals(connection.Source.ServiceIdentity?.Value, \"vocation\"", world, StringComparison.Ordinal);
+        Assert.Contains("string.Equals(connection.Target.CapabilityIdentity?.Value, BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId", world, StringComparison.Ordinal);
+        Assert.Contains("TryService(\"conveyance\"", world, StringComparison.Ordinal);
+        Assert.DoesNotContain("new ServiceIdentity", world, StringComparison.Ordinal);
+        Assert.DoesNotContain("new CapabilityIdentity", world, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
