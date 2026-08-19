@@ -8,14 +8,15 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasLandscapeTopologyTests
 {
     [Fact]
-    public void First_class_services_form_districts_around_a_clear_core_nexus()
+    public void First_class_products_form_districts_around_a_clear_core_nexus()
     {
         var layout = BuildRepresentativeLayout();
 
         var landscape = AtlasLandscapeBuilder.Build(layout.Nodes, layout.Connections);
 
-        Assert.Equal(4, landscape.Regions.Count);
+        Assert.Equal(3, landscape.Regions.Count);
         Assert.DoesNotContain(landscape.Regions, region => region.NodeId == BuildAtlasProjectionUseCase.CoreNodeId);
+        Assert.DoesNotContain(landscape.Regions, region => region.ServiceId == "conveyance");
         Assert.Equal(new Point(0, 0), landscape.Nexus);
 
         Assert.All(landscape.Regions, region =>
@@ -27,8 +28,21 @@ public sealed class AtlasLandscapeTopologyTests
                 Assert.True(Distance(point, landscape.Nexus) > 105, $"{region.ServiceId} contour must not cover the WGT nexus."));
         });
 
-        Assert.Equal(4, landscape.Routes.Count(route => route.Kind == AtlasLandscapeRouteKind.CompositionCorridor));
-        Assert.Equal(4, landscape.Gates.Count(gate => gate.Kind == AtlasLandscapeGateKind.NexusAccess));
+        Assert.Equal(3, landscape.Routes.Count(route => route.Kind == AtlasLandscapeRouteKind.CompositionCorridor));
+        Assert.Equal(3, landscape.Gates.Count(gate => gate.Kind == AtlasLandscapeGateKind.NexusAccess));
+    }
+
+    [Fact]
+    public void Shared_capability_provider_remains_a_landmark_without_becoming_a_product_district()
+    {
+        var layout = BuildRepresentativeLayout();
+        var landscape = AtlasLandscapeBuilder.Build(layout.Nodes, layout.Connections);
+
+        Assert.Contains("service:conveyance", landscape.Landmarks.Keys);
+        Assert.DoesNotContain(landscape.Regions, region => region.ServiceId == "conveyance");
+        Assert.DoesNotContain(landscape.Routes, route =>
+            route.Kind == AtlasLandscapeRouteKind.CompositionCorridor
+            && route.TargetNodeId == "service:conveyance");
     }
 
     [Fact]
@@ -77,10 +91,10 @@ public sealed class AtlasLandscapeTopologyTests
     private static AtlasPresentationLayout BuildRepresentativeLayout()
     {
         var core = new AtlasNode("wgt.core", AtlasNodeKind.Core, "WGT", "System ready");
-        var vocation = Service("vocation", "Vocation");
-        var illumination = Service("illumination", "Illumination");
-        var orientation = Service("orientation", "Orientation");
-        var conveyance = Service("conveyance", "Conveyance");
+        var vocation = Service("vocation", "Vocation", AtlasProductRole.FirstClassProductProvider);
+        var illumination = Service("illumination", "Illumination", AtlasProductRole.FirstClassProductProvider);
+        var orientation = Service("orientation", "Orientation", AtlasProductRole.DualRoleProvider);
+        var conveyance = Service("conveyance", "Conveyance", AtlasProductRole.SharedCapabilityProvider);
         var opportunity = Capability("vocation", "vocation.opportunity_overview", "Opportunity Overview");
         var mapProjection = Capability("vocation", "vocation.map_projection", "Map Projection");
 
@@ -90,7 +104,6 @@ public sealed class AtlasLandscapeTopologyTests
                 Composition(core, vocation),
                 Composition(core, illumination),
                 Composition(core, orientation),
-                Composition(core, conveyance),
                 Ownership(vocation, opportunity),
                 Ownership(vocation, mapProjection),
                 new AtlasConnection(
@@ -104,12 +117,13 @@ public sealed class AtlasLandscapeTopologyTests
         return AtlasPresentationLayoutBuilder.Build(projection);
     }
 
-    private static AtlasNode Service(string id, string title) => new(
+    private static AtlasNode Service(string id, string title, AtlasProductRole role) => new(
         $"service:{id}",
         AtlasNodeKind.Service,
         title,
         "Composed",
-        new ServiceIdentity(id));
+        new ServiceIdentity(id),
+        ProductRole: role);
 
     private static AtlasNode Capability(string serviceId, string capabilityId, string title) => new(
         $"capability:{serviceId}:{capabilityId}",
