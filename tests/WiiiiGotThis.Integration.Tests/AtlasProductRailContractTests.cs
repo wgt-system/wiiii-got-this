@@ -23,7 +23,7 @@ public sealed class AtlasProductRailContractTests
     }
 
     [Fact]
-    public void Provider_rail_uses_curated_Atlas_capabilities_instead_of_raw_integration_publications()
+    public void Provider_rail_uses_curated_Atlas_relationships_instead_of_raw_integration_publications()
     {
         var root = FindRepositoryRoot();
         var source = File.ReadAllText(Path.Combine(
@@ -32,7 +32,10 @@ public sealed class AtlasProductRailContractTests
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.ProductSurface.cs"));
 
-        Assert.Contains("shell?.AtlasNodes", source, StringComparison.Ordinal);
+        Assert.Contains("shell.AtlasConnections", source, StringComparison.Ordinal);
+        Assert.Contains("connection.IsCapabilityUse", source, StringComparison.Ordinal);
+        Assert.Contains("connection.Source.ServiceIdentity", source, StringComparison.Ordinal);
+        Assert.Contains("shell.AtlasNodes", source, StringComparison.Ordinal);
         Assert.Contains("node.IsCapability", source, StringComparison.Ordinal);
         Assert.Contains("BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId", source, StringComparison.Ordinal);
         Assert.Contains("BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId", source, StringComparison.Ordinal);
@@ -40,7 +43,31 @@ public sealed class AtlasProductRailContractTests
     }
 
     [Fact]
-    public void Rail_actions_return_to_Atlas_context_before_selecting_WGT_controls()
+    public void Configurable_product_capability_use_can_be_toggled_without_leaving_the_product_surface()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "DesktopAtlasView.ProductSurface.cs"));
+        var shell = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "ShellViewModel.CapabilityConsumption.cs"));
+
+        Assert.Contains("connection.IsUserConfigurable ? OnProductRailCapabilityToggle", source, StringComparison.Ordinal);
+        Assert.Contains("connection.StateText", source, StringComparison.Ordinal);
+        Assert.Contains("button.Opacity = connection.IsEnabled ? 1 : 0.42", source, StringComparison.Ordinal);
+        Assert.Contains("shell.ToggleCapabilityConsumptionAsync(connection)", source, StringComparison.Ordinal);
+        Assert.Contains("button.Opacity = enabled ? 1 : 0.42", source, StringComparison.Ordinal);
+        Assert.Contains("writeCapabilityConsumption.SetAsync", shell, StringComparison.Ordinal);
+        Assert.Contains("buildAtlasProjection.SetConsumptionPreferences(updated)", shell, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Navigation_rail_actions_return_to_Atlas_context_before_selecting_WGT_controls()
     {
         var root = FindRepositoryRoot();
         var source = File.ReadAllText(Path.Combine(
