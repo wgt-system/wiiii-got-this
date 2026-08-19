@@ -10,18 +10,21 @@ public sealed partial class DesktopAtlasView
 {
     private AtlasLandscapeControl? productionSceneRenderer;
     private AtlasLivingWorldControl? livingWorldRenderer;
+    private AtlasWorldEnvironmentalDetailOverlay? livingWorldEnvironmentalOverlay;
     private AtlasWorldInfrastructureOverlay? livingWorldInfrastructureOverlay;
     private ShellViewModel? productionRendererShell;
 
     private bool IsProductionSceneRendererActive =>
         productionSceneRenderer is not null
         || livingWorldRenderer is not null
+        || livingWorldEnvironmentalOverlay is not null
         || livingWorldInfrastructureOverlay is not null;
 
     private void EnsureProductionSceneRenderer()
     {
         if (productionSceneRenderer is not null
             && livingWorldRenderer is not null
+            && livingWorldEnvironmentalOverlay is not null
             && livingWorldInfrastructureOverlay is not null)
         {
             return;
@@ -46,6 +49,14 @@ public sealed partial class DesktopAtlasView
         livingWorldRenderer.NodeInvoked += OnProductionSceneNodeInvoked;
         livingWorldRenderer.NodeActivated += OnProductionSceneNodeActivated;
 
+        livingWorldEnvironmentalOverlay = new AtlasWorldEnvironmentalDetailOverlay
+        {
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+            IsHitTestVisible = false,
+            IsVisible = false
+        };
+
         livingWorldInfrastructureOverlay = new AtlasWorldInfrastructureOverlay
         {
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
@@ -67,7 +78,8 @@ public sealed partial class DesktopAtlasView
 
         AtlasViewport.Children.Insert(0, productionSceneRenderer);
         AtlasViewport.Children.Insert(1, livingWorldRenderer);
-        AtlasViewport.Children.Insert(2, livingWorldInfrastructureOverlay);
+        AtlasViewport.Children.Insert(2, livingWorldEnvironmentalOverlay);
+        AtlasViewport.Children.Insert(3, livingWorldInfrastructureOverlay);
         UpdateProductionScene();
         UpdateProductionSceneCamera();
     }
@@ -114,6 +126,7 @@ public sealed partial class DesktopAtlasView
     {
         if (productionSceneRenderer is null
             || livingWorldRenderer is null
+            || livingWorldEnvironmentalOverlay is null
             || livingWorldInfrastructureOverlay is null
             || productionRendererShell is null)
         {
@@ -125,6 +138,7 @@ public sealed partial class DesktopAtlasView
         productionSceneRenderer.IsHitTestVisible = !isLivingWorld;
         livingWorldRenderer.IsVisible = isLivingWorld;
         livingWorldRenderer.IsHitTestVisible = isLivingWorld;
+        livingWorldEnvironmentalOverlay.IsVisible = isLivingWorld;
         livingWorldInfrastructureOverlay.IsVisible = isLivingWorld;
 
         productionSceneRenderer.SetScene(
@@ -154,6 +168,10 @@ public sealed partial class DesktopAtlasView
             sceneTranslate.X,
             sceneTranslate.Y);
         livingWorldRenderer?.SetCamera(
+            sceneScale.ScaleX,
+            sceneTranslate.X,
+            sceneTranslate.Y);
+        livingWorldEnvironmentalOverlay?.SetCamera(
             sceneScale.ScaleX,
             sceneTranslate.X,
             sceneTranslate.Y);
