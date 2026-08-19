@@ -2,6 +2,10 @@ using WiiiiGotThis.Domain;
 
 namespace WiiiiGotThis.Application;
 
+/// <summary>
+/// Identifies one product-to-provider capability-use relationship. Preference state is WGT
+/// host configuration only; it does not transfer capability or domain ownership.
+/// </summary>
 public sealed record AtlasCapabilityConsumptionKey(
     ServiceIdentity ConsumerServiceIdentity,
     ServiceIdentity ProviderServiceIdentity,
