@@ -5,8 +5,7 @@ namespace WiiiiGotThis.Presentation;
 public sealed partial class ShellViewModel
 {
     private SetAtlasCapabilityConsumptionPreferenceUseCase? writeCapabilityConsumption;
-    private IReadOnlyList<AtlasCapabilityConsumptionPreference> capabilityConsumptionPreferences =
-        Array.Empty<AtlasCapabilityConsumptionPreference>();
+    private AtlasCapabilityConsumptionPreference[] capabilityConsumptionPreferences = [];
 
     public void ConfigureCapabilityConsumptionPreferences(
         IReadOnlyList<AtlasCapabilityConsumptionPreference> preferences,
