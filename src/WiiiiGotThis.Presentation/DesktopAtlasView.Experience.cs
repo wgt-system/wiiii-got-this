@@ -35,6 +35,7 @@ public sealed partial class DesktopAtlasView
             experienceShell.PropertyChanged += OnExperienceShellPropertyChanged;
         }
 
+        EnsureFinalVisualExperience();
         EnsureThemeChooserExperience();
         QueueSpatialDepthRebuild();
         UpdateExperienceState();
@@ -52,6 +53,14 @@ public sealed partial class DesktopAtlasView
             if (experienceShell.AtlasSettingsExpanded && !string.IsNullOrWhiteSpace(experienceShell.AtlasSearchText))
                 experienceShell.AtlasSearchText = string.Empty;
             UpdateExperienceState();
+            return;
+        }
+
+        if (e.PropertyName == nameof(ShellViewModel.AtlasTheme))
+        {
+            UpdateExperienceState();
+            if (experienceShell.AtlasSettingsExpanded && experienceShell.ToggleAtlasSettingsCommand.CanExecute(null))
+                experienceShell.ToggleAtlasSettingsCommand.Execute(null);
             return;
         }
 
@@ -77,6 +86,8 @@ public sealed partial class DesktopAtlasView
                 if (experienceShell is null)
                     return;
 
+                EnsureFinalVisualExperience();
+                UpgradeFinalNodeVisuals();
                 RebuildSpatialDepthField();
                 WireDirectProductEntry();
             },
@@ -129,60 +140,65 @@ public sealed partial class DesktopAtlasView
             return;
 
         themeChooserPrepared = true;
+        ThemeMenuButton.IsVisible = false;
+
         if (ThemeMenuButton.Parent is Canvas settingsCanvas)
         {
-            settingsCanvas.Width = 356;
-            settingsCanvas.Height = 382;
+            settingsCanvas.Width = 232;
+            settingsCanvas.Height = 286;
         }
 
-        ThemeChoices.Width = 238;
+        ThemeChoices.Width = 216;
         ThemeChoices.Orientation = Avalonia.Layout.Orientation.Vertical;
-        ThemeChoices.Spacing = 7;
-        Canvas.SetRight(ThemeChoices, 52);
-        Canvas.SetTop(ThemeChoices, 72);
+        ThemeChoices.Spacing = 3;
+        Canvas.SetRight(ThemeChoices, 0);
+        Canvas.SetTop(ThemeChoices, 54);
 
         themeChooserHeaderText = new TextBlock
         {
-            FontSize = 10,
+            Text = "APPEARANCE",
+            FontSize = 9,
             FontWeight = FontWeight.SemiBold,
-            Opacity = 0.72,
+            LetterSpacing = 1.4,
+            Opacity = 0.58,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
         };
         var header = new Border
         {
-            Height = 38,
-            Padding = new Thickness(12, 0),
+            Height = 28,
+            Padding = new Thickness(10, 0),
             Child = themeChooserHeaderText
         };
         header.Classes.Add("wgt-theme-chooser-header");
         ThemeChoices.Children.Insert(0, header);
 
-        ConfigureThemeChoice(TechnicalThemeButton, "T", "Technical", "System map · precise instrumentation");
-        ConfigureThemeChoice(ElegantThemeButton, "E", "Elegant", "Quiet depth · reduced visual noise");
-        ConfigureThemeChoice(MachineThemeButton, "M", "Machine", "Engineered frame · circuit emphasis");
-        ConfigureThemeChoice(WorldThemeButton, "W", "World", "Spatial terrain · orbital depth cues");
+        ConfigureThemeChoice(TechnicalThemeButton, "T", "Technical", "instrument panel");
+        ConfigureThemeChoice(ElegantThemeButton, "E", "Elegant", "quiet material");
+        ConfigureThemeChoice(MachineThemeButton, "M", "Machine", "engineered grid");
+        ConfigureThemeChoice(WorldThemeButton, "W", "World", "spatial terrain");
     }
 
     private static void ConfigureThemeChoice(Button button, string glyph, string title, string description)
     {
-        button.Width = 238;
-        button.Height = 58;
-        button.CornerRadius = new CornerRadius(14);
-        button.Padding = new Thickness(9, 7);
+        button.Width = 216;
+        button.Height = 44;
+        button.CornerRadius = new CornerRadius(10);
+        button.Padding = new Thickness(8, 5);
         button.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Stretch;
+        button.Classes.Add($"preview-{title.ToLowerInvariant()}");
         ToolTip.SetTip(button, $"{title} · {description}");
 
         var glyphBorder = new Border
         {
-            Width = 34,
-            Height = 34,
-            CornerRadius = new CornerRadius(17),
+            Width = 28,
+            Height = 28,
+            CornerRadius = new CornerRadius(8),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             Child = new TextBlock
             {
                 Text = glyph,
-                FontSize = 12,
-                FontWeight = FontWeight.SemiBold,
+                FontSize = 10,
+                FontWeight = FontWeight.Bold,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
             }
@@ -191,21 +207,21 @@ public sealed partial class DesktopAtlasView
 
         var text = new StackPanel
         {
-            Spacing = 1,
+            Spacing = 0,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             Children =
             {
                 new TextBlock
                 {
                     Text = title,
-                    FontSize = 12,
+                    FontSize = 11,
                     FontWeight = FontWeight.SemiBold
                 },
                 new TextBlock
                 {
                     Text = description,
-                    FontSize = 9,
-                    Opacity = 0.62,
+                    FontSize = 8,
+                    Opacity = 0.5,
                     TextTrimming = TextTrimming.CharacterEllipsis
                 }
             }
@@ -214,7 +230,7 @@ public sealed partial class DesktopAtlasView
         var content = new Grid
         {
             ColumnDefinitions = new ColumnDefinitions("Auto,*"),
-            ColumnSpacing = 10,
+            ColumnSpacing = 9,
             Children = { glyphBorder, text }
         };
         Grid.SetColumn(text, 1);
@@ -228,7 +244,9 @@ public sealed partial class DesktopAtlasView
 
         var theme = experienceShell?.AtlasTheme ?? visualTheme;
         if (themeChooserHeaderText is not null)
-            themeChooserHeaderText.Text = $"APPEARANCE · {theme.ToString().ToUpperInvariant()}";
+            themeChooserHeaderText.Text = $"APPEARANCE  ·  {theme.ToString().ToUpperInvariant()}";
+
+        ThemeChoices.IsVisible = experienceShell?.AtlasSettingsExpanded == true;
         ToolTip.SetTip(ThemeMenuButton, $"Theme · {theme}");
         UpdateSpatialDepthSelection();
     }
@@ -255,10 +273,11 @@ public sealed partial class DesktopAtlasView
 
         foreach (var node in currentShell.AtlasNodes.Where(node => node.IsCore || node.IsService))
         {
-            var outerDiameter = node.IsCore ? 310d : 226d;
-            var innerDiameter = node.IsCore ? 246d : 184d;
-            AddDepthRing(node, outerDiameter, "outer");
-            AddDepthRing(node, innerDiameter, "inner");
+            // Depth is now a focus effect, not permanent decoration. One restrained
+            // field per product node is enough; the first smoke proved that nested
+            // rings made the Atlas look like editor guides.
+            var diameter = node.IsCore ? 250d : 178d;
+            AddDepthRing(node, diameter, "focus-field");
         }
 
         var insertIndex = 0;

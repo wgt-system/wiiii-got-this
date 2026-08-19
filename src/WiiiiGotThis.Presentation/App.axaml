@@ -6,5 +6,6 @@
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasPolishStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasSearchStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasExperienceStyles.axaml" />
+    <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasFinalStyles.axaml" />
   </Application.Styles>
 </Application>
