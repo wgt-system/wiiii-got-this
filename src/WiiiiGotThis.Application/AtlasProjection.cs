@@ -301,7 +301,7 @@ public sealed class BuildAtlasProjectionUseCase
     private void AddDeclaredProductCapabilities(
         List<AtlasNode> nodes,
         List<AtlasConnection> connections,
-        IReadOnlyDictionary<AtlasCapabilityConsumptionKey, bool> preferences)
+        Dictionary<AtlasCapabilityConsumptionKey, bool> preferences)
     {
         var serviceNodes = nodes
             .Where(node => node.Kind == AtlasNodeKind.Service && node.ServiceIdentity is not null)
