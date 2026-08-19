@@ -31,17 +31,14 @@
     <Setter Property="FontSize" Value="15" />
     <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="CornerRadius" Value="12" />
-    <Setter Property="BoxShadow" Value="0 4 12 0 #22000000" />
   </Style>
   <Style Selector="Button.wgt-product-rail-action:pointerover">
     <Setter Property="Background" Value="#B51B2B33" />
     <Setter Property="BorderBrush" Value="#C06C9AAF" />
     <Setter Property="Foreground" Value="#FFFFFFFF" />
-    <Setter Property="BoxShadow" Value="0 5 16 0 #38000000" />
   </Style>
   <Style Selector="Button.wgt-product-rail-action:pressed">
     <Setter Property="Background" Value="#D5192B32" />
-    <Setter Property="BoxShadow" Value="0 2 8 0 #28000000" />
   </Style>
   <Style Selector="Button.wgt-product-rail-action:focus-visible">
     <Setter Property="BorderBrush" Value="#FF93D7E8" />
@@ -65,7 +62,6 @@
     <Setter Property="Background" Value="#65101A17" />
     <Setter Property="BorderBrush" Value="#70496759" />
     <Setter Property="Foreground" Value="#FFDDEBE3" />
-    <Setter Property="BoxShadow" Value="0 2 9 0 #18000000" />
   </Style>
   <Style Selector="Button.wgt-product-rail-toggle">
     <Setter Property="BorderThickness" Value="1.35" />
@@ -169,7 +165,6 @@
     <Setter Property="BorderBrush" Value="#826F6269" />
     <Setter Property="Foreground" Value="#FFE9DFD6" />
     <Setter Property="CornerRadius" Value="19" />
-    <Setter Property="BoxShadow" Value="0 3 12 0 #20000000" />
   </Style>
   <Style Selector="Grid.wgt-atlas-root.theme-elegant Button.wgt-product-rail-action:pointerover">
     <Setter Property="Background" Value="#A92A2228" />
@@ -202,7 +197,6 @@
     <Setter Property="BorderBrush" Value="#A33A9A69" />
     <Setter Property="Foreground" Value="#FFD9FFE9" />
     <Setter Property="CornerRadius" Value="4" />
-    <Setter Property="BoxShadow" Value="0 0 12 0 #183CF29C" />
   </Style>
   <Style Selector="Grid.wgt-atlas-root.theme-machine Button.wgt-product-rail-action:pointerover">
     <Setter Property="Background" Value="#BD0A2116" />
@@ -237,7 +231,6 @@
     <Setter Property="BorderBrush" Value="#A34F8665" />
     <Setter Property="Foreground" Value="#FFE1F4E8" />
     <Setter Property="CornerRadius" Value="12" />
-    <Setter Property="BoxShadow" Value="0 4 14 0 #24000000" />
   </Style>
   <Style Selector="Grid.wgt-atlas-root.theme-world Button.wgt-product-rail-action:pointerover">
     <Setter Property="Background" Value="#B7183225" />
