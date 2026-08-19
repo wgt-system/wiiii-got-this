@@ -9,6 +9,13 @@ public enum AtlasNodeKind
     Capability
 }
 
+public enum AtlasProductRole
+{
+    FirstClassProductProvider,
+    SharedCapabilityProvider,
+    DualRoleProvider
+}
+
 public enum AtlasConnectionKind
 {
     Composition,
@@ -19,7 +26,8 @@ public enum AtlasConnectionKind
 public sealed record AtlasProductService(
     ServiceIdentity ServiceIdentity,
     string DisplayName,
-    string Description);
+    string Description,
+    AtlasProductRole ProductRole = AtlasProductRole.FirstClassProductProvider);
 
 public sealed record AtlasProductDependency(
     ServiceIdentity SourceServiceIdentity,
@@ -38,7 +46,8 @@ public sealed record AtlasNode(
     bool IsAvailable = true,
     AvailabilityReason? AvailabilityReason = null,
     bool IsIntegrated = true,
-    string? Description = null);
+    string? Description = null,
+    AtlasProductRole? ProductRole = null);
 
 public sealed record AtlasConnection(
     string ConnectionId,
@@ -58,10 +67,26 @@ public sealed class BuildAtlasProjectionUseCase
 
     private static readonly IReadOnlyList<AtlasProductService> DefaultProductServices = Array.AsReadOnly<AtlasProductService>(
     [
-        new(new ServiceIdentity("vocation"), "Vocation", "Personal job-market, research and application work."),
-        new(new ServiceIdentity("illumination"), "Illumination", "Learning, review, study and learning insight."),
-        new(new ServiceIdentity("orientation"), "Orientation", "Spatial discovery, exploration, navigation and mobility."),
-        new(new ServiceIdentity("conveyance"), "Conveyance", "Durable opaque delivery between devices without taking ownership of provider data.")
+        new(
+            new ServiceIdentity("vocation"),
+            "Vocation",
+            "Personal job-market, research and application work.",
+            AtlasProductRole.FirstClassProductProvider),
+        new(
+            new ServiceIdentity("illumination"),
+            "Illumination",
+            "Learning, review, study and learning insight.",
+            AtlasProductRole.FirstClassProductProvider),
+        new(
+            new ServiceIdentity("orientation"),
+            "Orientation",
+            "Spatial discovery, exploration, navigation and mobility.",
+            AtlasProductRole.DualRoleProvider),
+        new(
+            new ServiceIdentity("conveyance"),
+            "Conveyance",
+            "Durable opaque delivery between devices without taking ownership of provider data.",
+            AtlasProductRole.SharedCapabilityProvider)
     ]);
 
     private static readonly IReadOnlyList<AtlasProductDependency> DefaultProductDependencies = Array.AsReadOnly<AtlasProductDependency>(
@@ -160,12 +185,20 @@ public sealed class BuildAtlasProjectionUseCase
                 IsEnabled: integrated && integration!.IsEffectivelyEnabled,
                 IsAvailable: serviceAvailable,
                 IsIntegrated: integrated,
-                Description: entry.Product?.Description));
-            connections.Add(new(
-                $"composition:{entry.Identity.Value}",
-                AtlasConnectionKind.Composition,
-                CoreNodeId,
-                serviceNodeId));
+                Description: entry.Product?.Description,
+                ProductRole: entry.Product?.ProductRole));
+
+            // Product composition is not the same thing as service/runtime existence.
+            // Known shared infrastructure such as Conveyance stays discoverable in Atlas
+            // without being projected as a peer end-user product destination.
+            if (entry.Product?.ProductRole != AtlasProductRole.SharedCapabilityProvider)
+            {
+                connections.Add(new(
+                    $"composition:{entry.Identity.Value}",
+                    AtlasConnectionKind.Composition,
+                    CoreNodeId,
+                    serviceNodeId));
+            }
 
             if (!integrated)
                 continue;
@@ -185,7 +218,8 @@ public sealed class BuildAtlasProjectionUseCase
                     capability.CapabilityIdentity,
                     integration!.IsEffectivelyEnabled,
                     capability.Resolution.Availability.IsAvailable,
-                    capability.Resolution.Availability.IsAvailable ? null : capability.Resolution.Availability.Reason));
+                    capability.Resolution.Availability.IsAvailable ? null : capability.Resolution.Availability.Reason,
+                    ProductRole: entry.Product?.ProductRole));
                 connections.Add(new(
                     $"capability:{capability.ServiceIdentity.Value}:{capability.CapabilityIdentity.Value}",
                     AtlasConnectionKind.CapabilityOwnership,
