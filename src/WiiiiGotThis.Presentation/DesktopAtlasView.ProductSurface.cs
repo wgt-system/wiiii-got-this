@@ -420,7 +420,11 @@ public sealed partial class DesktopAtlasView
         if (activeOverlay is not null)
         {
             activeOverlay.Opacity = 0;
-            await Task.Delay(ProductSurfaceTransitionMilliseconds);
+            var delay = shell?.IsAtlasReducedMotion == true
+                ? 0
+                : ProductSurfaceTransitionMilliseconds;
+            if (delay > 0)
+                await Task.Delay(delay);
             activeOverlay.IsVisible = false;
             activeOverlay.Opacity = 1;
         }
