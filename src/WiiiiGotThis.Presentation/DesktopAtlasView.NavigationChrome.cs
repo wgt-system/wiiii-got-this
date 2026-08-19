@@ -61,13 +61,15 @@ public sealed partial class DesktopAtlasView
             Content = icon
         };
         atlasCenterButton.Classes.Add("wgt-atlas-center-control");
-        ToolTip.SetTip(atlasCenterButton, "Center WGT Atlas");
-        AutomationProperties.SetName(atlasCenterButton, "Center WGT Atlas");
+        ToolTip.SetTip(atlasCenterButton, "Fit WGT Atlas");
+        AutomationProperties.SetName(atlasCenterButton, "Fit WGT Atlas");
         AutomationProperties.SetAutomationId(atlasCenterButton, "AtlasCenterWgt");
         atlasCenterButton.Click += OnCenterAtlas;
         Canvas.SetRight(atlasCenterButton, 50);
         Canvas.SetTop(atlasCenterButton, 3);
         settingsCanvas.Children.Add(atlasCenterButton);
+
+        QueueInitialOverviewFit();
     }
 
     private static Border CenterTick(double width, double height, double left, double top)
@@ -90,7 +92,10 @@ public sealed partial class DesktopAtlasView
             shell.ToggleAtlasSettingsCommand.Execute(null);
         ThemeChoices.IsVisible = false;
         shell?.SelectAtlasNodeCommand.Execute(null);
-        ResetCamera();
+
+        if (!FitOverviewCamera())
+            ResetCamera();
+
         AtlasViewport.Focus();
         e.Handled = true;
     }
