@@ -25,6 +25,23 @@ public sealed class AtlasInspectorFactsContractTests
     }
 
     [Fact]
+    public void Compact_dossier_uses_short_tab_headers_without_losing_full_accessible_names()
+    {
+        var root = FindRepositoryRoot();
+        var source = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "DesktopAtlasView.InspectorFacts.cs"));
+
+        Assert.Contains("RenameInspectorTab(overview, \"Node\", \"Overview and actions\")", source, StringComparison.Ordinal);
+        Assert.Contains("RenameInspectorTab(capabilities, \"Caps\", \"Published capabilities\")", source, StringComparison.Ordinal);
+        Assert.Contains("RenameInspectorTab(dependencies, \"Links\"", source, StringComparison.Ordinal);
+        Assert.Contains("RenameInspectorTab(system, \"Diag\", \"System and diagnostics\")", source, StringComparison.Ordinal);
+        Assert.Contains("AutomationProperties.SetName(tab, tooltip)", source, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Inspector_facts_preserve_provider_ownership_and_concrete_host_boundaries()
     {
         var root = FindRepositoryRoot();
