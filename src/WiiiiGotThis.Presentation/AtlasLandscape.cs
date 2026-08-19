@@ -71,7 +71,7 @@ public static class AtlasLandscapeBuilder
 
         var nodeById = nodes.ToDictionary(node => node.NodeId, StringComparer.Ordinal);
         var regions = nodes
-            .Where(node => node.IsService)
+            .Where(node => node.IsService && !node.IsSharedCapabilityProvider)
             .Select(node => RegionFor(node, nodes))
             .ToArray();
         var regionByNodeId = regions.ToDictionary(region => region.NodeId, StringComparer.Ordinal);
