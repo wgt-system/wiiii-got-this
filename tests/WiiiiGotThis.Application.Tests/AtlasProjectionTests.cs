@@ -24,7 +24,7 @@ public sealed class AtlasProjectionTests
     }
 
     [Fact]
-    public void Build_includes_known_products_shared_infrastructure_and_the_declared_Orientation_capability()
+    public void Build_includes_known_products_shared_infrastructure_and_declared_system_capabilities()
     {
         var projection = new BuildAtlasProjectionUseCase().Build([], []);
 
@@ -34,7 +34,8 @@ public sealed class AtlasProjectionTests
             "service:illumination",
             "service:orientation",
             "service:vocation",
-            "capability:orientation:orientation.generic_geospatial"], projection.Nodes.Select(node => node.NodeId));
+            "capability:orientation:orientation.generic_geospatial",
+            "capability:conveyance:conveyance.durable_delivery"], projection.Nodes.Select(node => node.NodeId));
 
         Assert.All(projection.Nodes.Where(node => node.Kind == AtlasNodeKind.Service), node =>
         {
@@ -43,11 +44,15 @@ public sealed class AtlasProjectionTests
             Assert.Equal("Not composed on this client yet", node.Subtitle);
         });
 
-        var geospatial = Assert.Single(projection.Nodes, node => node.Kind == AtlasNodeKind.Capability);
+        var geospatial = Assert.Single(projection.Nodes, node => node.CapabilityIdentity?.Value == BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId);
         Assert.Equal("orientation", geospatial.ServiceIdentity?.Value);
-        Assert.Equal(BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId, geospatial.CapabilityIdentity?.Value);
         Assert.Equal("Generic geospatial", geospatial.Title);
         Assert.False(geospatial.IsAvailable);
+
+        var delivery = Assert.Single(projection.Nodes, node => node.CapabilityIdentity?.Value == BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId);
+        Assert.Equal("conveyance", delivery.ServiceIdentity?.Value);
+        Assert.Equal("Cross-device delivery", delivery.Title);
+        Assert.False(delivery.IsAvailable);
 
         Assert.Equal(AtlasProductRole.FirstClassProductProvider, projection.Nodes.Single(node => node.NodeId == "service:vocation").ProductRole);
         Assert.Equal(AtlasProductRole.FirstClassProductProvider, projection.Nodes.Single(node => node.NodeId == "service:illumination").ProductRole);
@@ -60,12 +65,13 @@ public sealed class AtlasProjectionTests
     {
         var projection = new BuildAtlasProjectionUseCase().Build([], []);
         var conveyance = Assert.Single(projection.Nodes, node => node.NodeId == "service:conveyance");
+        var delivery = Assert.Single(projection.Nodes, node => node.CapabilityIdentity?.Value == BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId);
 
         Assert.Equal("Conveyance", conveyance.Title);
         Assert.Equal(AtlasProductRole.SharedCapabilityProvider, conveyance.ProductRole);
         Assert.False(conveyance.IsIntegrated);
         Assert.False(conveyance.IsAvailable);
-        Assert.DoesNotContain(projection.Nodes, node => node.Kind == AtlasNodeKind.Capability && node.ServiceIdentity?.Value == "conveyance");
+        Assert.Equal(conveyance.ServiceIdentity, delivery.ServiceIdentity);
         Assert.DoesNotContain(projection.Connections, edge =>
             edge.Kind == AtlasConnectionKind.Composition
             && edge.TargetNodeId == conveyance.NodeId);
@@ -117,21 +123,22 @@ public sealed class AtlasProjectionTests
         Assert.DoesNotContain(projection.Nodes, node => node.CapabilityIdentity?.Value == "vocation.opportunity_overview");
         Assert.DoesNotContain(projection.Nodes, node => node.CapabilityIdentity?.Value == "vocation.map_projection");
         Assert.Contains(projection.Nodes, node => node.CapabilityIdentity?.Value == BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId);
+        Assert.Contains(projection.Nodes, node => node.CapabilityIdentity?.Value == BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId);
     }
 
     [Fact]
-    public void Build_models_Vocation_as_consumer_of_Orientation_owned_generic_geospatial_capability()
+    public void Build_models_Vocation_as_consumer_of_Orientation_and_Conveyance_owned_capabilities()
     {
         var projection = new BuildAtlasProjectionUseCase().Build([Integration("vocation", "Vocation")], []);
         var geospatial = Assert.Single(projection.Nodes, node => node.CapabilityIdentity?.Value == BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId);
-        var ownership = Assert.Single(projection.Connections, edge => edge.Kind == AtlasConnectionKind.CapabilityOwnership);
-        var dependency = Assert.Single(projection.Connections, edge => edge.Kind == AtlasConnectionKind.CapabilityDependency);
+        var delivery = Assert.Single(projection.Nodes, node => node.CapabilityIdentity?.Value == BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId);
+        var ownership = projection.Connections.Where(edge => edge.Kind == AtlasConnectionKind.CapabilityOwnership).ToArray();
+        var dependencies = projection.Connections.Where(edge => edge.Kind == AtlasConnectionKind.CapabilityDependency).ToArray();
 
-        Assert.Equal("service:orientation", ownership.SourceNodeId);
-        Assert.Equal(geospatial.NodeId, ownership.TargetNodeId);
-        Assert.Equal("service:vocation", dependency.SourceNodeId);
-        Assert.Equal(geospatial.NodeId, dependency.TargetNodeId);
-        Assert.Contains("Orientation", dependency.Description, StringComparison.Ordinal);
+        Assert.Contains(ownership, edge => edge.SourceNodeId == "service:orientation" && edge.TargetNodeId == geospatial.NodeId);
+        Assert.Contains(ownership, edge => edge.SourceNodeId == "service:conveyance" && edge.TargetNodeId == delivery.NodeId);
+        Assert.Contains(dependencies, edge => edge.SourceNodeId == "service:vocation" && edge.TargetNodeId == geospatial.NodeId && edge.Description!.Contains("Orientation", StringComparison.Ordinal));
+        Assert.Contains(dependencies, edge => edge.SourceNodeId == "service:vocation" && edge.TargetNodeId == delivery.NodeId && edge.Description!.Contains("Conveyance", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -148,7 +155,8 @@ public sealed class AtlasProjectionTests
             "service:illumination",
             "service:orientation",
             "service:vocation",
-            "capability:orientation:orientation.generic_geospatial"], projection.Nodes.Select(node => node.NodeId));
+            "capability:orientation:orientation.generic_geospatial",
+            "capability:conveyance:conveyance.durable_delivery"], projection.Nodes.Select(node => node.NodeId));
     }
 
     [Fact]
