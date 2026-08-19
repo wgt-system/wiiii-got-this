@@ -1,0 +1,110 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Theme identity is structural: each renderer receives its own local node language. -->
+  <Style Selector="Border.wgt-node-decoration">
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+        <BrushTransition Property="Background" Duration="0:0:0.16" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.16" />
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.18" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="Border.wgt-node-decoration.technical-tick.theme-technical">
+    <Setter Property="Opacity" Value="0.54" />
+    <Setter Property="Background" Value="#FF50C9ED" />
+  </Style>
+
+  <Style Selector="Border.wgt-node-decoration.elegant-halo.theme-elegant">
+    <Setter Property="Opacity" Value="0.78" />
+    <Setter Property="Background" Value="#071E181D" />
+    <Setter Property="BorderBrush" Value="#294E4148" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BoxShadow" Value="0 0 48 8 #1C9A8171" />
+  </Style>
+
+  <Style Selector="Border.wgt-node-decoration.machine-socket.theme-machine">
+    <Setter Property="Opacity" Value="0.68" />
+    <Setter Property="Background" Value="#FF5AF0A7" />
+    <Setter Property="BoxShadow" Value="0 0 10 1 #2D5AF0A7" />
+  </Style>
+
+  <Style Selector="Border.wgt-node-decoration.world-landmark.theme-world">
+    <Setter Property="Opacity" Value="0.76" />
+    <Setter Property="Background" Value="#FF0D251A" />
+    <Setter Property="BorderBrush" Value="#664C9A70" />
+    <Setter Property="BoxShadow" Value="0 7 24 0 #52000000, 0 0 34 2 #164E9D72" />
+  </Style>
+  <Style Selector="Border.wgt-node-decoration.world-node-beacon.theme-world">
+    <Setter Property="Opacity" Value="0.92" />
+    <Setter Property="Background" Value="#FF8BE0B4" />
+    <Setter Property="BoxShadow" Value="0 0 16 2 #558BE0B4" />
+  </Style>
+
+  <!-- Focus still wins over theme decoration. -->
+  <Style Selector="Border.wgt-node-decoration.dimmed">
+    <Setter Property="Opacity" Value="0.055" />
+  </Style>
+  <Style Selector="Border.wgt-node-decoration.contextual.theme-technical">
+    <Setter Property="Opacity" Value="0.74" />
+  </Style>
+  <Style Selector="Border.wgt-node-decoration.contextual.theme-elegant">
+    <Setter Property="Opacity" Value="0.9" />
+  </Style>
+  <Style Selector="Border.wgt-node-decoration.contextual.theme-machine">
+    <Setter Property="Opacity" Value="0.86" />
+  </Style>
+  <Style Selector="Border.wgt-node-decoration.contextual.theme-world">
+    <Setter Property="Opacity" Value="0.9" />
+  </Style>
+  <Style Selector="Border.wgt-node-decoration.selected">
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+
+  <!-- Miniature renderer previews replace T/E/M/W letter badges. -->
+  <Style Selector="Border.wgt-theme-choice-glyph">
+    <Setter Property="Background" Value="#FF0C141A" />
+    <Setter Property="BorderBrush" Value="#FF2C424F" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Border.wgt-theme-choice-glyph.preview-elegant">
+    <Setter Property="Background" Value="#FF1D191D" />
+    <Setter Property="BorderBrush" Value="#FF665762" />
+  </Style>
+  <Style Selector="Border.wgt-theme-choice-glyph.preview-machine">
+    <Setter Property="Background" Value="#FF07130D" />
+    <Setter Property="BorderBrush" Value="#FF307A55" />
+    <Setter Property="CornerRadius" Value="3" />
+  </Style>
+  <Style Selector="Border.wgt-theme-choice-glyph.preview-world">
+    <Setter Property="Background" Value="#FF0A1B12" />
+    <Setter Property="BorderBrush" Value="#FF3F7057" />
+  </Style>
+
+  <Style Selector="Border.wgt-theme-preview-mark.technical">
+    <Setter Property="Background" Value="#FF55CCEE" />
+    <Setter Property="Opacity" Value="0.82" />
+  </Style>
+  <Style Selector="Border.wgt-theme-preview-ring.elegant">
+    <Setter Property="BorderBrush" Value="#FFD0BEAA" />
+    <Setter Property="Opacity" Value="0.62" />
+  </Style>
+  <Style Selector="Border.wgt-theme-preview-mark.machine">
+    <Setter Property="Background" Value="#FF61F2AE" />
+    <Setter Property="Opacity" Value="0.86" />
+  </Style>
+  <Style Selector="Border.wgt-theme-preview-ring.world">
+    <Setter Property="Background" Value="#FF173C2A" />
+    <Setter Property="BorderBrush" Value="#FF67B58A" />
+    <Setter Property="Opacity" Value="0.82" />
+  </Style>
+  <Style Selector="Border.wgt-theme-preview-dot.technical">
+    <Setter Property="Background" Value="#FF6EDAF7" />
+  </Style>
+  <Style Selector="Border.wgt-theme-preview-dot.world">
+    <Setter Property="Background" Value="#FF91DFB8" />
+    <Setter Property="BoxShadow" Value="0 0 8 1 #4491DFB8" />
+  </Style>
+</Styles>

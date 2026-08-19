@@ -88,6 +88,7 @@ public sealed partial class DesktopAtlasView
 
                 EnsureFinalVisualExperience();
                 UpgradeFinalNodeVisuals();
+                RebuildThemeNodeDecorations();
                 RebuildSpatialDepthField();
                 WireDirectProductEntry();
             },
@@ -172,13 +173,13 @@ public sealed partial class DesktopAtlasView
         header.Classes.Add("wgt-theme-chooser-header");
         ThemeChoices.Children.Insert(0, header);
 
-        ConfigureThemeChoice(TechnicalThemeButton, "T", "Technical", "instrument panel");
-        ConfigureThemeChoice(ElegantThemeButton, "E", "Elegant", "quiet material");
-        ConfigureThemeChoice(MachineThemeButton, "M", "Machine", "engineered grid");
-        ConfigureThemeChoice(WorldThemeButton, "W", "World", "spatial terrain");
+        ConfigureThemeChoice(TechnicalThemeButton, "Technical", "instrument panel");
+        ConfigureThemeChoice(ElegantThemeButton, "Elegant", "quiet material");
+        ConfigureThemeChoice(MachineThemeButton, "Machine", "engineered grid");
+        ConfigureThemeChoice(WorldThemeButton, "World", "spatial terrain");
     }
 
-    private static void ConfigureThemeChoice(Button button, string glyph, string title, string description)
+    private static void ConfigureThemeChoice(Button button, string title, string description)
     {
         button.Width = 216;
         button.Height = 44;
@@ -188,22 +189,16 @@ public sealed partial class DesktopAtlasView
         button.Classes.Add($"preview-{title.ToLowerInvariant()}");
         ToolTip.SetTip(button, $"{title} · {description}");
 
-        var glyphBorder = new Border
+        var previewFrame = new Border
         {
-            Width = 28,
-            Height = 28,
+            Width = 30,
+            Height = 30,
             CornerRadius = new CornerRadius(8),
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
-            Child = new TextBlock
-            {
-                Text = glyph,
-                FontSize = 10,
-                FontWeight = FontWeight.Bold,
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-            }
+            Child = BuildThemePreview(title)
         };
-        glyphBorder.Classes.Add("wgt-theme-choice-glyph");
+        previewFrame.Classes.Add("wgt-theme-choice-glyph");
+        previewFrame.Classes.Add($"preview-{title.ToLowerInvariant()}");
 
         var text = new StackPanel
         {
@@ -231,10 +226,93 @@ public sealed partial class DesktopAtlasView
         {
             ColumnDefinitions = new ColumnDefinitions("Auto,*"),
             ColumnSpacing = 9,
-            Children = { glyphBorder, text }
+            Children = { previewFrame, text }
         };
         Grid.SetColumn(text, 1);
         button.Content = content;
+    }
+
+    private static Canvas BuildThemePreview(string title)
+    {
+        var preview = new Canvas
+        {
+            Width = 22,
+            Height = 22,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+        };
+        preview.Classes.Add("wgt-theme-mini-preview");
+        preview.Classes.Add($"preview-{title.ToLowerInvariant()}");
+
+        switch (title)
+        {
+            case "Technical":
+                preview.Children.Add(PreviewRail(18, 1, 2, 10, "technical"));
+                preview.Children.Add(PreviewRail(1, 18, 10, 2, "technical"));
+                preview.Children.Add(PreviewDot(5, 8.5, 8.5, "technical"));
+                break;
+            case "Elegant":
+                preview.Children.Add(PreviewRing(18, 18, 2, 2, "elegant"));
+                preview.Children.Add(PreviewRing(8, 8, 7, 7, "elegant"));
+                break;
+            case "Machine":
+                preview.Children.Add(PreviewRail(10, 2, 2, 3, "machine"));
+                preview.Children.Add(PreviewRail(2, 10, 2, 3, "machine"));
+                preview.Children.Add(PreviewRail(10, 2, 10, 17, "machine"));
+                preview.Children.Add(PreviewRail(2, 10, 18, 9, "machine"));
+                break;
+            case "World":
+                preview.Children.Add(PreviewRing(17, 9, 2.5, 10, "world"));
+                preview.Children.Add(PreviewDot(4, 5, 5, "world"));
+                preview.Children.Add(PreviewDot(3, 15, 4, "world"));
+                preview.Children.Add(PreviewDot(3, 12, 16, "world"));
+                break;
+        }
+
+        return preview;
+    }
+
+    private static Border PreviewRail(double width, double height, double left, double top, string kind)
+    {
+        var rail = new Border { Width = width, Height = height, IsHitTestVisible = false };
+        rail.Classes.Add("wgt-theme-preview-mark");
+        rail.Classes.Add(kind);
+        Canvas.SetLeft(rail, left);
+        Canvas.SetTop(rail, top);
+        return rail;
+    }
+
+    private static Border PreviewRing(double width, double height, double left, double top, string kind)
+    {
+        var ring = new Border
+        {
+            Width = width,
+            Height = height,
+            CornerRadius = new CornerRadius(Math.Min(width, height) / 2),
+            BorderThickness = new Thickness(1),
+            IsHitTestVisible = false
+        };
+        ring.Classes.Add("wgt-theme-preview-ring");
+        ring.Classes.Add(kind);
+        Canvas.SetLeft(ring, left);
+        Canvas.SetTop(ring, top);
+        return ring;
+    }
+
+    private static Border PreviewDot(double size, double left, double top, string kind)
+    {
+        var dot = new Border
+        {
+            Width = size,
+            Height = size,
+            CornerRadius = new CornerRadius(size / 2),
+            IsHitTestVisible = false
+        };
+        dot.Classes.Add("wgt-theme-preview-dot");
+        dot.Classes.Add(kind);
+        Canvas.SetLeft(dot, left);
+        Canvas.SetTop(dot, top);
+        return dot;
     }
 
     private void UpdateExperienceState()
@@ -273,9 +351,6 @@ public sealed partial class DesktopAtlasView
 
         foreach (var node in currentShell.AtlasNodes.Where(node => node.IsCore || node.IsService))
         {
-            // Depth is now a focus effect, not permanent decoration. One restrained
-            // field per product node is enough; the first smoke proved that nested
-            // rings made the Atlas look like editor guides.
             var diameter = node.IsCore ? 250d : 178d;
             AddDepthRing(node, diameter, "focus-field");
         }
@@ -311,30 +386,35 @@ public sealed partial class DesktopAtlasView
 
     private void UpdateSpatialDepthSelection()
     {
-        if (spatialDepthLayer is null)
-            return;
-
-        var selectedId = shell?.SelectedAtlasNode?.NodeId;
-        var focusNodeIds = BuildFocusNodeSet(selectedId);
-        foreach (var ring in spatialDepthLayer.Children.OfType<Border>())
+        if (spatialDepthLayer is not null)
         {
-            if (ring.DataContext is not AtlasNodePresentationViewModel node)
-                continue;
+            var selectedId = shell?.SelectedAtlasNode?.NodeId;
+            var focusNodeIds = BuildFocusNodeSet(selectedId);
+            foreach (var ring in spatialDepthLayer.Children.OfType<Border>())
+            {
+                if (ring.DataContext is not AtlasNodePresentationViewModel node)
+                    continue;
 
-            var selected = string.Equals(node.NodeId, selectedId, StringComparison.Ordinal);
-            var contextual = selectedId is not null && !selected && focusNodeIds.Contains(node.NodeId);
-            var dimmed = selectedId is not null && !focusNodeIds.Contains(node.NodeId);
-            SetStateClass(ring, "selected", selected);
-            SetStateClass(ring, "contextual", contextual);
-            SetStateClass(ring, "dimmed", dimmed);
+                var selected = string.Equals(node.NodeId, selectedId, StringComparison.Ordinal);
+                var contextual = selectedId is not null && !selected && focusNodeIds.Contains(node.NodeId);
+                var dimmed = selectedId is not null && !focusNodeIds.Contains(node.NodeId);
+                SetStateClass(ring, "selected", selected);
+                SetStateClass(ring, "contextual", contextual);
+                SetStateClass(ring, "dimmed", dimmed);
+            }
         }
+
+        UpdateThemeNodeDecorationSelection();
     }
 
     private void ApplyThemeToSpatialDepth()
     {
-        if (spatialDepthLayer is null)
-            return;
-        foreach (var ring in spatialDepthLayer.Children.OfType<StyledElement>())
-            ApplyThemeClass(ring);
+        if (spatialDepthLayer is not null)
+        {
+            foreach (var ring in spatialDepthLayer.Children.OfType<StyledElement>())
+                ApplyThemeClass(ring);
+        }
+
+        ApplyThemeToNodeDecorations();
     }
 }
