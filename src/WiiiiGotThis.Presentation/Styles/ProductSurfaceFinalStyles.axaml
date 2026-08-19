@@ -21,6 +21,33 @@
     <Setter Property="Opacity" Value="0.38" />
   </Style>
 
+  <!-- Every icon in the hosted-product rail is WGT-owned chrome. Keep the hit target
+       compact but deliberate: no default Fluent rectangle, no black debug orb. -->
+  <Style Selector="Button.wgt-product-rail-action">
+    <Setter Property="Background" Value="#78111A20" />
+    <Setter Property="BorderBrush" Value="#80516B78" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="#FFDCE8ED" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="BoxShadow" Value="0 4 12 0 #22000000" />
+  </Style>
+  <Style Selector="Button.wgt-product-rail-action:pointerover">
+    <Setter Property="Background" Value="#B51B2B33" />
+    <Setter Property="BorderBrush" Value="#C06C9AAF" />
+    <Setter Property="Foreground" Value="#FFFFFFFF" />
+    <Setter Property="BoxShadow" Value="0 5 16 0 #38000000" />
+  </Style>
+  <Style Selector="Button.wgt-product-rail-action:pressed">
+    <Setter Property="Background" Value="#D5192B32" />
+    <Setter Property="BoxShadow" Value="0 2 8 0 #28000000" />
+  </Style>
+  <Style Selector="Button.wgt-product-rail-action:focus-visible">
+    <Setter Property="BorderBrush" Value="#FF93D7E8" />
+    <Setter Property="BorderThickness" Value="1.5" />
+  </Style>
+
   <Style Selector="Button.wgt-product-return">
     <Setter Property="Background" Value="#94101A21" />
     <Setter Property="BorderBrush" Value="#FF31505F" />
@@ -63,6 +90,15 @@
     <Setter Property="Background" Value="#FF55CFF2" />
     <Setter Property="Opacity" Value="0.46" />
   </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Button.wgt-product-rail-action">
+    <Setter Property="Background" Value="#8F0A1820" />
+    <Setter Property="BorderBrush" Value="#A64FB6D3" />
+    <Setter Property="CornerRadius" Value="11" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Button.wgt-product-rail-action:pointerover">
+    <Setter Property="Background" Value="#C60F2834" />
+    <Setter Property="BorderBrush" Value="#FF62CAE6" />
+  </Style>
   <Style Selector="Grid.wgt-atlas-root.theme-technical Button.wgt-product-return">
     <Setter Property="Background" Value="#B50A1A24" />
     <Setter Property="BorderBrush" Value="#FF4FB6D3" />
@@ -80,6 +116,17 @@
   <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-product-depth-track">
     <Setter Property="Background" Value="#FFAA9987" />
     <Setter Property="Opacity" Value="0.24" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Button.wgt-product-rail-action">
+    <Setter Property="Background" Value="#701C171C" />
+    <Setter Property="BorderBrush" Value="#826F6269" />
+    <Setter Property="Foreground" Value="#FFE9DFD6" />
+    <Setter Property="CornerRadius" Value="19" />
+    <Setter Property="BoxShadow" Value="0 3 12 0 #20000000" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Button.wgt-product-rail-action:pointerover">
+    <Setter Property="Background" Value="#A92A2228" />
+    <Setter Property="BorderBrush" Value="#BCA9988D" />
   </Style>
   <Style Selector="Grid.wgt-atlas-root.theme-elegant Button.wgt-product-return">
     <Setter Property="Background" Value="#B51B171B" />
@@ -102,6 +149,17 @@
   <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-product-depth-track">
     <Setter Property="Background" Value="#FF63F5B2" />
     <Setter Property="Opacity" Value="0.58" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Button.wgt-product-rail-action">
+    <Setter Property="Background" Value="#8506120C" />
+    <Setter Property="BorderBrush" Value="#A33A9A69" />
+    <Setter Property="Foreground" Value="#FFD9FFE9" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="BoxShadow" Value="0 0 12 0 #183CF29C" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Button.wgt-product-rail-action:pointerover">
+    <Setter Property="Background" Value="#BD0A2116" />
+    <Setter Property="BorderBrush" Value="#FF63F5B2" />
   </Style>
   <Style Selector="Grid.wgt-atlas-root.theme-machine Button.wgt-product-return">
     <Setter Property="Background" Value="#C505140D" />
@@ -126,6 +184,17 @@
   <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-product-depth-track">
     <Setter Property="Background" Value="#FF79D2A5" />
     <Setter Property="Opacity" Value="0.34" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Button.wgt-product-rail-action">
+    <Setter Property="Background" Value="#85101F17" />
+    <Setter Property="BorderBrush" Value="#A34F8665" />
+    <Setter Property="Foreground" Value="#FFE1F4E8" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="BoxShadow" Value="0 4 14 0 #24000000" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Button.wgt-product-rail-action:pointerover">
+    <Setter Property="Background" Value="#B7183225" />
+    <Setter Property="BorderBrush" Value="#FF78C69A" />
   </Style>
   <Style Selector="Grid.wgt-atlas-root.theme-world Button.wgt-product-return">
     <Setter Property="Background" Value="#B50A1B12" />
