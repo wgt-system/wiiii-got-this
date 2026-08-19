@@ -137,14 +137,17 @@ public sealed partial class DesktopAtlasView
         var nodeY = world.Y * sceneScale.ScaleY + sceneTranslate.Y;
         var left = InspectorCard.Margin.Left;
         var top = InspectorCard.Margin.Top;
-        var cardWidth = InspectorCard.Bounds.Width > 0 ? InspectorCard.Bounds.Width : 404d;
+        var cardWidth = InspectorCard.Bounds.Width > 0 ? InspectorCard.Bounds.Width : 372d;
         var cardOnRight = left >= nodeX;
         var direction = cardOnRight ? 1d : -1d;
+
+        // Match the final renderer's horizontal hit geometry. The old capability
+        // radius (31px) made the tether visibly cross a 160px-wide capability port.
         var nodeRadius = node.Kind switch
         {
-            AtlasNodeKind.Core => 92d,
-            AtlasNodeKind.Service => 73d,
-            _ => 31d
+            AtlasNodeKind.Core => 94d,
+            AtlasNodeKind.Service => 74d,
+            _ => 80d
         } * sceneScale.ScaleX;
 
         var start = new Point(nodeX + direction * nodeRadius, nodeY);
