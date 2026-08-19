@@ -11,6 +11,7 @@ namespace WiiiiGotThis.Presentation;
 
 public sealed partial class DesktopAtlasView
 {
+    private Canvas? inspectorTetherLayer;
     private AtlasPath? inspectorTether;
     private ShellViewModel? polishShell;
     private bool polishEventsAttached;
@@ -25,7 +26,7 @@ public sealed partial class DesktopAtlasView
         EnsureInspectorTether();
         sceneScale.PropertyChanged += OnAtlasCameraTransformChanged;
         sceneTranslate.PropertyChanged += OnAtlasCameraTransformChanged;
-        InspectorCard.LayoutUpdated += OnInspectorLayoutUpdated;
+        InspectorCard.SizeChanged += OnInspectorSizeChanged;
         AttachPolishShell(DataContext as ShellViewModel);
         AttachExperienceShell(DataContext as ShellViewModel);
         ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
@@ -41,7 +42,7 @@ public sealed partial class DesktopAtlasView
         polishEventsAttached = false;
         sceneScale.PropertyChanged -= OnAtlasCameraTransformChanged;
         sceneTranslate.PropertyChanged -= OnAtlasCameraTransformChanged;
-        InspectorCard.LayoutUpdated -= OnInspectorLayoutUpdated;
+        InspectorCard.SizeChanged -= OnInspectorSizeChanged;
         AttachExperienceShell(null);
         AttachPolishShell(null);
     }
@@ -91,7 +92,7 @@ public sealed partial class DesktopAtlasView
 
     private void OnAtlasCameraTransformChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => UpdateInspectorTether();
 
-    private void OnInspectorLayoutUpdated(object? sender, EventArgs e) => UpdateInspectorTether();
+    private void OnInspectorSizeChanged(object? sender, SizeChangedEventArgs e) => UpdateInspectorTether();
 
     private void EnsureInspectorTether()
     {
@@ -105,7 +106,19 @@ public sealed partial class DesktopAtlasView
         };
         inspectorTether.Classes.Add("wgt-atlas-inspector-tether");
         ApplyThemeClass(inspectorTether);
-        AtlasViewport.Children.Insert(Math.Min(1, AtlasViewport.Children.Count), inspectorTether);
+
+        inspectorTetherLayer = new Canvas
+        {
+            IsHitTestVisible = false,
+            ClipToBounds = true,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+            Children = { inspectorTether }
+        };
+
+        // Keep geometry out of the Grid measure pass. A direct Path child can feed its
+        // changing geometry back into measure/layout when the inspector appears.
+        AtlasViewport.Children.Insert(Math.Min(1, AtlasViewport.Children.Count), inspectorTetherLayer);
     }
 
     private void UpdateInspectorTether()
