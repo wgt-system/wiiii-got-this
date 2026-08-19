@@ -18,4 +18,12 @@ public sealed class AtlasAppearanceContractTests
             ],
             themes);
     }
+
+    [Fact]
+    public void Atlas_exposes_full_and_reduced_motion_as_presentation_preferences()
+    {
+        Assert.Equal(
+            [AtlasMotionPreference.Full, AtlasMotionPreference.Reduced],
+            Enum.GetValues<AtlasMotionPreference>());
+    }
 }
