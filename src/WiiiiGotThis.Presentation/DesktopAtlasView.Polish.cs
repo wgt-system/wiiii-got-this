@@ -71,6 +71,7 @@ public sealed partial class DesktopAtlasView
         InspectorCard.Width = 300;
         InspectorCard.MaxHeight = 560;
         InspectorCard.Padding = new Thickness(16);
+        EnsureAtlasNavigationChrome();
     }
 
     private void AttachPolishShell(ShellViewModel? next)

@@ -1,0 +1,57 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Button.wgt-atlas-center-control">
+    <Setter Property="Background" Value="#86101820" />
+    <Setter Property="BorderBrush" Value="#88314856" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Opacity" Value="0.68" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+        <BrushTransition Property="Background" Duration="0:0:0.12" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.wgt-atlas-center-control:pointerover">
+    <Setter Property="Opacity" Value="1" />
+    <Setter Property="Background" Value="#D0162731" />
+    <Setter Property="BorderBrush" Value="#FF5CA6C2" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-center-ring">
+    <Setter Property="BorderBrush" Value="#FF9EB4BF" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-center-dot">
+    <Setter Property="Background" Value="#FF65CBEA" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-center-tick">
+    <Setter Property="Background" Value="#FF8097A3" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Button.wgt-atlas-center-control">
+    <Setter Property="Background" Value="#861A161B" />
+    <Setter Property="BorderBrush" Value="#8861515B" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-atlas-center-dot">
+    <Setter Property="Background" Value="#FFD4C3AE" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Button.wgt-atlas-center-control">
+    <Setter Property="Background" Value="#8606120C" />
+    <Setter Property="BorderBrush" Value="#88407859" />
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-atlas-center-ring">
+    <Setter Property="BorderBrush" Value="#FF68EFB0" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-atlas-center-dot">
+    <Setter Property="Background" Value="#FF68EFB0" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-world Button.wgt-atlas-center-control">
+    <Setter Property="Background" Value="#860A1811" />
+    <Setter Property="BorderBrush" Value="#88436E57" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-atlas-center-dot">
+    <Setter Property="Background" Value="#FF8ADDB3" />
+  </Style>
+</Styles>
