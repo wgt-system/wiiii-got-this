@@ -10,6 +10,7 @@
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasInteractionFinalStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasContextualDetailStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasThemeIdentityStyles.axaml" />
+    <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasCoreIdentityStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasNavigationChromeStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/ProductSurfaceFinalStyles.axaml" />
   </Application.Styles>
