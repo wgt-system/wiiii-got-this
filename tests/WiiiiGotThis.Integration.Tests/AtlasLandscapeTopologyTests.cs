@@ -37,7 +37,9 @@ public sealed class AtlasLandscapeTopologyTests
         var layout = BuildRepresentativeLayout();
         var landscape = AtlasLandscapeBuilder.Build(layout.Nodes, layout.Connections);
 
-        var dependency = Assert.Single(landscape.Routes.Where(route => route.Kind == AtlasLandscapeRouteKind.CrossServiceDependency));
+        var dependency = Assert.Single(
+            landscape.Routes,
+            route => route.Kind == AtlasLandscapeRouteKind.CrossServiceDependency);
         var source = layout.Nodes.Single(node => node.NodeId == dependency.SourceNodeId);
         var target = layout.Nodes.Single(node => node.NodeId == dependency.TargetNodeId);
 
