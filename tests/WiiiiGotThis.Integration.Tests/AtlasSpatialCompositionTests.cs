@@ -21,14 +21,14 @@ public sealed class AtlasSpatialCompositionTests
 
         var layout = AtlasPresentationLayoutBuilder.Build(projection);
 
-        AssertPosition(layout, "service:illumination", 0, -285);
+        AssertPosition(layout, "service:illumination", 0, -255);
         AssertPosition(layout, "service:orientation", 365, 0);
-        AssertPosition(layout, "service:conveyance", 0, 285);
+        AssertPosition(layout, "service:conveyance", 0, 255);
         AssertPosition(layout, "service:vocation", -365, 0);
     }
 
     [Fact]
-    public void Capability_ports_stay_clustered_close_to_their_provider()
+    public void Capability_ports_leave_enough_room_for_their_expanded_label()
     {
         var vocation = Service("vocation", "Vocation");
         var capability = new AtlasNode(
@@ -59,7 +59,8 @@ public sealed class AtlasSpatialCompositionTests
             Math.Pow(port.X - service.X, 2) +
             Math.Pow(port.Y - service.Y, 2));
 
-        Assert.InRange(distance, 131.999, 132.001);
+        Assert.InRange(distance, 165.999, 166.001);
+        Assert.True(distance > 154, "Expanded capability and service hit geometry must not overlap on a direct radial placement.");
     }
 
     private static AtlasNode Service(string id, string title) => new(

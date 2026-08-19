@@ -201,9 +201,10 @@ public static class AtlasPresentationLayoutBuilder
             };
             byId.Add(service.NodeId, servicePresentation);
 
-            // Capability ports stay close enough to read as part of their provider
-            // cluster instead of detached cards floating in empty space.
-            const double capabilityRadius = 132;
+            // Compact capability dots and expanded 160px labels share one stable
+            // anchor. 166px keeps the focused label clear of the provider emblem
+            // while still reading as one local service cluster.
+            const double capabilityRadius = 166;
             const double spread = Math.PI * 0.42;
             for (var capabilityIndex = 0; capabilityIndex < capabilities.Length; capabilityIndex++)
             {
@@ -258,12 +259,12 @@ public static class AtlasPresentationLayoutBuilder
     {
         return service.ServiceIdentity?.Value switch
         {
-            // The Atlas is a wide desktop surface. The primary four services form an
-            // elliptical cross so the composition breathes horizontally without
-            // pushing Illumination/Conveyance into the title/search and bottom edge.
-            "illumination" => (0, -285, -Math.PI / 2),
+            // The four first-class services form a wide cross. Vertical providers sit
+            // closer to WGT Core so their outward capability arc clears Search and the
+            // bottom edge even when a port expands into its labeled state.
+            "illumination" => (0, -255, -Math.PI / 2),
             "orientation" => (365, 0, 0),
-            "conveyance" => (0, 285, Math.PI / 2),
+            "conveyance" => (0, 255, Math.PI / 2),
             "vocation" => (-365, 0, Math.PI),
             _ => FallbackServicePlacement(index, count)
         };
