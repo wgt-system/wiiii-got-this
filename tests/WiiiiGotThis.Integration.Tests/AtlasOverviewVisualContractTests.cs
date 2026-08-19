@@ -3,7 +3,7 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasOverviewVisualContractTests
 {
     [Fact]
-    public void Overview_declutters_capability_detail_until_a_node_is_selected()
+    public void Overview_keeps_capability_detail_compact_until_its_focus_context_is_active()
     {
         var root = FindRepositoryRoot();
         var renderer = File.ReadAllText(Path.Combine(
@@ -18,7 +18,8 @@ public sealed class AtlasOverviewVisualContractTests
             "Styles",
             "AtlasInteractionFinalStyles.axaml"));
 
-        Assert.Contains("overview && node.IsCapability", renderer, StringComparison.Ordinal);
+        Assert.Contains("detailContext && focusNodeIds.Contains(node.NodeId)", renderer, StringComparison.Ordinal);
+        Assert.Contains("node.IsCapability && !capabilityExpanded", renderer, StringComparison.Ordinal);
         Assert.Contains("connection.Kind != AtlasConnectionKind.Composition", renderer, StringComparison.Ordinal);
         Assert.Contains("capability.overview-secondary", styles, StringComparison.Ordinal);
         Assert.Contains("Path.wgt-atlas-connection.overview-secondary", styles, StringComparison.Ordinal);
