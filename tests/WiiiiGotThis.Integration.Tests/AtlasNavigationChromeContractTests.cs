@@ -3,7 +3,7 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasNavigationChromeContractTests
 {
     [Fact]
-    public void Atlas_exposes_a_small_center_WGT_affordance_instead_of_persistent_instruction_chrome()
+    public void Atlas_exposes_a_small_fit_WGT_affordance_instead_of_persistent_instruction_chrome()
     {
         var root = FindRepositoryRoot();
         var navigation = File.ReadAllText(Path.Combine(
@@ -23,7 +23,8 @@ public sealed class AtlasNavigationChromeContractTests
             "DesktopAtlasView.FinalRenderer.cs"));
 
         Assert.Contains("AtlasCenterWgt", navigation, StringComparison.Ordinal);
-        Assert.Contains("Center WGT Atlas", navigation, StringComparison.Ordinal);
+        Assert.Contains("Fit WGT Atlas", navigation, StringComparison.Ordinal);
+        Assert.Contains("FitOverviewCamera()", navigation, StringComparison.Ordinal);
         Assert.Contains("ResetCamera();", navigation, StringComparison.Ordinal);
         Assert.Contains("SelectAtlasNodeCommand.Execute(null)", navigation, StringComparison.Ordinal);
         Assert.Contains("EnsureAtlasNavigationChrome();", polish, StringComparison.Ordinal);
