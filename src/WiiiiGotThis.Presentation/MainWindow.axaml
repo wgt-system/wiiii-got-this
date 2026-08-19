@@ -6,7 +6,9 @@
         Height="880"
         MinWidth="1040"
         MinHeight="680"
+        RequestedThemeVariant="Dark"
+        Background="#FF060D13"
         WindowStartupLocation="CenterScreen"
-        Title="Wiiii Got This">
+        Title="Wiiii Got This · Atlas">
   <local:DesktopShellView x:Name="ShellView" />
 </Window>

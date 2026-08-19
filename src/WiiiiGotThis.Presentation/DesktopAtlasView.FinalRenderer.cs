@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -7,25 +8,48 @@ namespace WiiiiGotThis.Presentation;
 public sealed partial class DesktopAtlasView
 {
     private bool finalVisualExperiencePrepared;
+    private ShellViewModel? finalVisualShell;
 
     private void EnsureFinalVisualExperience()
     {
-        if (finalVisualExperiencePrepared)
+        if (!finalVisualExperiencePrepared)
+        {
+            finalVisualExperiencePrepared = true;
+            ConfigureFinalChrome();
+        }
+
+        AttachFinalVisualShell(experienceShell);
+    }
+
+    private void AttachFinalVisualShell(ShellViewModel? next)
+    {
+        if (ReferenceEquals(finalVisualShell, next))
             return;
 
-        finalVisualExperiencePrepared = true;
-        ConfigureFinalChrome();
+        if (finalVisualShell is not null)
+            finalVisualShell.PropertyChanged -= OnFinalVisualShellPropertyChanged;
+
+        finalVisualShell = next;
+        if (finalVisualShell is not null)
+            finalVisualShell.PropertyChanged += OnFinalVisualShellPropertyChanged;
+
+        UpdateFinalOverviewState();
+    }
+
+    private void OnFinalVisualShellPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ShellViewModel.SelectedAtlasNode))
+            UpdateFinalOverviewState();
     }
 
     private void ConfigureFinalChrome()
     {
-        // The initial smoke showed that a persistent keyboard/mouse instruction card
-        // reads as debug chrome. Input remains available through normal interaction
-        // and tooltips; the Atlas itself should stay visually quiet.
+        // Persistent control instructions read as debug chrome in the first physical
+        // smoke. The interaction remains available; hints belong in contextual help.
         ControlHint.IsVisible = false;
 
-        // Settings opens Appearance directly. A second circular "theme" button made
-        // the hierarchy look like two unrelated floating controls.
+        // Settings opens Appearance directly. A second floating theme orb created an
+        // unnecessary hierarchy and looked like a detached control cluster.
         ThemeMenuButton.IsVisible = false;
 
         if (AtlasSearch.Parent is Grid searchGrid &&
@@ -35,13 +59,31 @@ public sealed partial class DesktopAtlasView
             searchStack.Width = 430;
             searchStack.Margin = new Thickness(0, 18, 0, 0);
             searchStack.Spacing = 6;
-            searchDock.Padding = new Thickness(7, 5);
+            searchDock.Padding = new Thickness(6, 4);
+            AtlasSearch.Height = 34;
+
+            if (searchGrid.Children.OfType<Border>().FirstOrDefault() is { } searchGlyph)
+            {
+                searchGlyph.Width = 30;
+                searchGlyph.Height = 30;
+                searchGlyph.CornerRadius = new CornerRadius(15);
+            }
         }
 
         if (ThemeMenuButton.Parent is Canvas settingsCanvas)
         {
             settingsCanvas.Width = 232;
             settingsCanvas.Height = 286;
+
+            var settingsButton = settingsCanvas.Children
+                .OfType<Button>()
+                .FirstOrDefault(button => !ReferenceEquals(button, ThemeMenuButton));
+            if (settingsButton is not null)
+            {
+                settingsButton.Width = 40;
+                settingsButton.Height = 40;
+                settingsButton.CornerRadius = new CornerRadius(20);
+            }
         }
 
         InspectorCard.Width = 372;
@@ -88,6 +130,41 @@ public sealed partial class DesktopAtlasView
             var world = WorldPoint(node);
             Canvas.SetLeft(nodeShell, world.X - nodeShell.Width / 2);
             Canvas.SetTop(nodeShell, world.Y - nodeShell.Height / 2);
+        }
+
+        UpdateFinalOverviewState();
+    }
+
+    private void UpdateFinalOverviewState()
+    {
+        var overview = finalVisualShell?.SelectedAtlasNode is null;
+
+        foreach (var nodeShell in SceneCanvas.Children.OfType<Border>())
+        {
+            if (!nodeShell.Classes.Contains("wgt-atlas-node-shell") ||
+                nodeShell.DataContext is not AtlasNodePresentationViewModel node)
+            {
+                continue;
+            }
+
+            var secondary = overview && node.IsCapability;
+            SetStateClass(nodeShell, "overview-secondary", secondary);
+            if (nodeShell.Child is Button button)
+                SetStateClass(button, "overview-secondary", secondary);
+        }
+
+        foreach (var path in SceneCanvas.Children.OfType<Avalonia.Controls.Shapes.Path>())
+        {
+            if (!path.Classes.Contains("wgt-atlas-connection") ||
+                path.DataContext is not AtlasConnectionPresentationViewModel connection)
+            {
+                continue;
+            }
+
+            SetStateClass(
+                path,
+                "overview-secondary",
+                overview && connection.Kind != AtlasConnectionKind.Composition);
         }
     }
 
