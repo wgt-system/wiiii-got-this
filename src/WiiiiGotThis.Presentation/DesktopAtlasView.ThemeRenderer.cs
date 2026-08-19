@@ -21,32 +21,40 @@ public sealed partial class DesktopAtlasView
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
             IsHitTestVisible = false,
-            ClipToBounds = false
+            ClipToBounds = true
         };
         themeAmbientLayer.Classes.Add("wgt-theme-ambient-layer");
 
-        AddAmbientRing("wgt-theme-technical-reticle", 316, 316, 532, 282, 158);
-        AddAmbientRing("wgt-theme-technical-reticle", 520, 520, 430, 180, 260);
+        // Technical: compact instrumentation around the visual centre, not giant rings
+        // spanning the entire viewport.
+        AddAmbientRing("wgt-theme-technical-reticle", 220, 220, 580, 330, 110);
+        AddAmbientRing("wgt-theme-technical-reticle", 360, 360, 510, 260, 180);
+        AddAmbientRail("wgt-theme-technical-reticle-line", 420, 1, 480, 439);
+        AddAmbientRail("wgt-theme-technical-reticle-line", 1, 420, 689, 230);
 
-        AddAmbientRail("wgt-theme-machine-rail", 760, 1, 310, 176);
-        AddAmbientRail("wgt-theme-machine-rail", 760, 1, 310, 704);
-        AddAmbientRail("wgt-theme-machine-rail", 1, 484, 250, 198);
-        AddAmbientRail("wgt-theme-machine-rail", 1, 484, 1129, 198);
-        AddAmbientCorner("wgt-theme-machine-corner", 250, 176, 1, 1);
-        AddAmbientCorner("wgt-theme-machine-corner", 1074, 176, -1, 1);
-        AddAmbientCorner("wgt-theme-machine-corner", 250, 648, 1, -1);
-        AddAmbientCorner("wgt-theme-machine-corner", 1074, 648, -1, -1);
+        // Machine: a bounded engineering frame. It intentionally does not hug the
+        // window edges, which previously made the whole UI look boxed in.
+        AddAmbientRail("wgt-theme-machine-rail", 560, 1, 410, 270);
+        AddAmbientRail("wgt-theme-machine-rail", 560, 1, 410, 610);
+        AddAmbientRail("wgt-theme-machine-rail", 1, 340, 410, 270);
+        AddAmbientRail("wgt-theme-machine-rail", 1, 340, 970, 270);
+        AddAmbientCorner("wgt-theme-machine-corner", 410, 270, 1, 1);
+        AddAmbientCorner("wgt-theme-machine-corner", 970, 270, -1, 1);
+        AddAmbientCorner("wgt-theme-machine-corner", 410, 610, 1, -1);
+        AddAmbientCorner("wgt-theme-machine-corner", 970, 610, -1, -1);
 
-        AddAmbientRing("wgt-theme-world-orbit", 640, 640, 370, 120, 320);
-        AddAmbientRing("wgt-theme-world-orbit", 970, 610, 205, 136, 305);
-        AddAmbientRing("wgt-theme-world-orbit", 420, 300, 710, 510, 150);
-        AddAmbientDot("wgt-theme-world-beacon", 8, 8, 406, 196);
-        AddAmbientDot("wgt-theme-world-beacon", 6, 6, 1014, 222);
-        AddAmbientDot("wgt-theme-world-beacon", 7, 7, 1048, 646);
-        AddAmbientDot("wgt-theme-world-beacon", 5, 5, 333, 670);
+        // World: sparse spatial beacons only. The previous three enormous orbital
+        // ellipses dominated the actual service graph and read as unfinished guides.
+        AddAmbientDot("wgt-theme-world-beacon", 8, 8, 434, 244);
+        AddAmbientDot("wgt-theme-world-beacon", 6, 6, 1012, 278);
+        AddAmbientDot("wgt-theme-world-beacon", 7, 7, 1032, 642);
+        AddAmbientDot("wgt-theme-world-beacon", 5, 5, 366, 662);
+        AddAmbientDot("wgt-theme-world-beacon", 4, 4, 544, 184);
+        AddAmbientDot("wgt-theme-world-beacon", 4, 4, 842, 706);
 
-        AddAmbientRing("wgt-theme-elegant-halo", 760, 500, 310, 190, 250);
-        AddAmbientRing("wgt-theme-elegant-halo", 390, 390, 710, 250, 195);
+        // Elegant: one restrained halo pair, deliberately quieter than the graph.
+        AddAmbientRing("wgt-theme-elegant-halo", 280, 280, 550, 300, 140);
+        AddAmbientRing("wgt-theme-elegant-halo", 430, 430, 475, 225, 215);
 
         AtlasViewport.Children.Insert(0, themeAmbientLayer);
         ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
@@ -110,7 +118,7 @@ public sealed partial class DesktopAtlasView
 
     private void AddAmbientCorner(string className, double left, double top, double directionX, double directionY)
     {
-        const double arm = 54;
+        const double arm = 42;
         const double thickness = 2;
         AddAmbientRail(className, arm, thickness, directionX > 0 ? left : left - arm, top);
         AddAmbientRail(className, thickness, arm, left, directionY > 0 ? top : top - arm);
