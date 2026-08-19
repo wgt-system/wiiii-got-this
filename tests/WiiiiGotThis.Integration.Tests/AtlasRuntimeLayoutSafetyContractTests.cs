@@ -3,7 +3,7 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasRuntimeLayoutSafetyContractTests
 {
     [Fact]
-    public void Inspector_positioning_is_render_only_and_has_one_placement_path()
+    public void Inspector_positioning_is_render_only_and_user_owned_after_initial_placement()
     {
         var root = FindRepositoryRoot();
         var presentation = Path.Combine(root, "src", "WiiiiGotThis.Presentation");
@@ -25,8 +25,18 @@ public sealed class AtlasRuntimeLayoutSafetyContractTests
             "InspectorCard.RenderTransform = inspectorTranslate;",
             polishSource,
             StringComparison.Ordinal);
-        Assert.Contains("inspectorTranslate.X = left;", polishSource, StringComparison.Ordinal);
-        Assert.Contains("inspectorTranslate.Y = top;", polishSource, StringComparison.Ordinal);
+        Assert.Contains("private bool inspectorHasPlacement;", polishSource, StringComparison.Ordinal);
+        Assert.Contains("private bool inspectorDragging;", polishSource, StringComparison.Ordinal);
+        Assert.Contains("inspectorTranslate.X = Math.Clamp", polishSource, StringComparison.Ordinal);
+        Assert.Contains("inspectorTranslate.Y = Math.Clamp", polishSource, StringComparison.Ordinal);
+
+        var cameraHandlerStart = polishSource.IndexOf("private void OnAtlasCameraTransformChanged", StringComparison.Ordinal);
+        var nextHandler = polishSource.IndexOf("private void OnInspectorSizeChanged", cameraHandlerStart, StringComparison.Ordinal);
+        Assert.True(cameraHandlerStart >= 0 && nextHandler > cameraHandlerStart);
+        var cameraHandler = polishSource[cameraHandlerStart..nextHandler];
+        Assert.Contains("UpdateProductionSceneCamera();", cameraHandler, StringComparison.Ordinal);
+        Assert.Contains("UpdateInspectorTether();", cameraHandler, StringComparison.Ordinal);
+        Assert.DoesNotContain("QueueInspectorPlacementRefinement();", cameraHandler, StringComparison.Ordinal);
 
         Assert.All(atlasSources, source =>
         {
@@ -36,7 +46,7 @@ public sealed class AtlasRuntimeLayoutSafetyContractTests
     }
 
     [Fact]
-    public void Inspector_size_changes_can_refine_render_position_without_mutating_layout_geometry()
+    public void Inspector_size_changes_can_clamp_render_position_without_mutating_layout_geometry()
     {
         var root = FindRepositoryRoot();
         var source = File.ReadAllText(Path.Combine(
@@ -50,6 +60,9 @@ public sealed class AtlasRuntimeLayoutSafetyContractTests
         Assert.Contains("DispatcherPriority.Render", source, StringComparison.Ordinal);
         Assert.Contains("var left = inspectorTranslate.X;", source, StringComparison.Ordinal);
         Assert.Contains("var top = inspectorTranslate.Y;", source, StringComparison.Ordinal);
+        Assert.Contains("OnInspectorHeaderPointerPressed", source, StringComparison.Ordinal);
+        Assert.Contains("OnInspectorDragMoved", source, StringComparison.Ordinal);
+        Assert.Contains("OnInspectorDragReleased", source, StringComparison.Ordinal);
         Assert.DoesNotContain("InspectorCard.Margin", source, StringComparison.Ordinal);
     }
 
