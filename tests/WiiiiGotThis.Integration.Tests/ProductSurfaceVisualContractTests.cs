@@ -50,6 +50,32 @@ public sealed class ProductSurfaceVisualContractTests
         Assert.DoesNotContain("Text = \"IL\"", productSurface, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void Atlas_themes_continue_only_through_WGT_owned_product_depth_chrome()
+    {
+        var root = FindRepositoryRoot();
+        var styles = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "WiiiiGotThis.Presentation",
+            "Styles",
+            "ProductSurfaceFinalStyles.axaml"));
+
+        foreach (var theme in new[] { "technical", "elegant", "machine", "world" })
+        {
+            Assert.Contains($"theme-{theme} Border.wgt-product-rail", styles, StringComparison.Ordinal);
+            Assert.Contains($"theme-{theme} Border.wgt-product-depth-track", styles, StringComparison.Ordinal);
+            Assert.Contains($"theme-{theme} Button.wgt-product-return", styles, StringComparison.Ordinal);
+        }
+
+        Assert.Contains("theme-machine Border.wgt-product-service-mark", styles, StringComparison.Ordinal);
+        Assert.Contains("theme-world Border.wgt-product-service-mark", styles, StringComparison.Ordinal);
+        Assert.DoesNotContain("theme-technical Border.wgt-product-stage", styles, StringComparison.Ordinal);
+        Assert.DoesNotContain("theme-elegant Border.wgt-product-stage", styles, StringComparison.Ordinal);
+        Assert.DoesNotContain("theme-machine Border.wgt-product-stage", styles, StringComparison.Ordinal);
+        Assert.DoesNotContain("theme-world Border.wgt-product-stage", styles, StringComparison.Ordinal);
+    }
+
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
