@@ -52,8 +52,8 @@ public sealed partial class DesktopAtlasView
             InsertActivationPreview(overviewStack);
 
         RenameInspectorTab(overview, "Node", "Overview and actions");
-        RenameInspectorTab(capabilities, "Caps", "Published capabilities");
-        RenameInspectorTab(dependencies, "Links", "Dependencies and explicit cross-service relationships");
+        RenameInspectorTab(capabilities, "Caps", "System capabilities");
+        RenameInspectorTab(dependencies, "Links", "Dependencies and explicit cross-product relationships");
         RenameInspectorTab(system, "Diag", "System and diagnostics");
 
         inspectorOwnershipFact = CreateInspectorFactText();
@@ -117,7 +117,7 @@ public sealed partial class DesktopAtlasView
 
         var facts = new StackPanel
         {
-            Spacing = 5,
+            Spacing = 9,
             Children =
             {
                 BuildActivationScopeFact(activationCapabilitiesFact, activationDependenciesFact),
@@ -139,54 +139,41 @@ public sealed partial class DesktopAtlasView
 
         activationPreview = new Border
         {
-            Padding = new Avalonia.Thickness(10),
+            Padding = new Avalonia.Thickness(0, 9, 0, 0),
+            BorderThickness = new Avalonia.Thickness(0, 1, 0, 0),
+            BorderBrush = new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.FromArgb(44, 144, 198, 177)),
             IsVisible = false,
             Child = new StackPanel
             {
-                Spacing = 7,
+                Spacing = 9,
                 Children = { heading, facts }
             }
         };
-        activationPreview.Classes.Add("wgt-activation-preview");
         AutomationProperties.SetName(activationPreview, "Before activation");
 
         overviewStack.Children.Insert(Math.Min(2, overviewStack.Children.Count), activationPreview);
     }
 
-    private static Border BuildActivationScopeFact(TextBlock capabilities, TextBlock dependencies)
+    private static StackPanel BuildActivationScopeFact(TextBlock capabilities, TextBlock dependencies)
     {
         var label = new TextBlock { Text = "CAPABILITIES / LINKS" };
         label.Classes.Add("wgt-caption");
-        var content = new StackPanel
+        return new StackPanel
         {
-            Spacing = 1,
+            Spacing = 2,
             Children = { label, capabilities, dependencies }
         };
-        var card = new Border
-        {
-            Padding = new Avalonia.Thickness(8, 6),
-            Child = content
-        };
-        card.Classes.Add("wgt-activation-fact");
-        return card;
     }
 
-    private static Border BuildActivationFact(string labelText, TextBlock value)
+    private static StackPanel BuildActivationFact(string labelText, TextBlock value)
     {
         var label = new TextBlock { Text = labelText };
         label.Classes.Add("wgt-caption");
-        var content = new StackPanel
+        return new StackPanel
         {
             Spacing = 2,
             Children = { label, value }
         };
-        var card = new Border
-        {
-            Padding = new Avalonia.Thickness(8, 6),
-            Child = content
-        };
-        card.Classes.Add("wgt-activation-fact");
-        return card;
     }
 
     private void UpdateFinalInspectorFacts()
@@ -205,12 +192,12 @@ public sealed partial class DesktopAtlasView
         SetFact(
             inspectorEnablementFact,
             integration is null
-                ? "No service-level enablement setting applies to this Atlas node."
+                ? "No product-level enablement setting applies to this Atlas object."
                 : $"{integration.GlobalEnablementText}. {integration.DeviceBehaviorText}");
         SetFact(
             inspectorConnectionFact,
             integration is null
-                ? "No provider publication connection is attached to this Atlas node."
+                ? "No provider publication connection is attached to this Atlas object."
                 : $"{integration.ConnectionHealthTitle}. {integration.ConnectionHealthDescription}");
     }
 
@@ -226,23 +213,24 @@ public sealed partial class DesktopAtlasView
         if (!show || integration is null)
             return;
 
-        var capabilityCount = finalVisualShell.SelectedIntegrationCapabilities.Count;
+        var atlasCapabilityCount = finalVisualShell.AtlasNodes.Count(candidate =>
+            candidate.IsCapability && candidate.ServiceIdentity == node.ServiceIdentity);
         var dependencyCount = CountExplicitServiceDependencies(node);
         SetFact(
             activationCapabilitiesFact,
-            capabilityCount switch
+            atlasCapabilityCount switch
             {
-                0 => "No capability currently resolved.",
-                1 => "1 provider capability currently resolved.",
-                _ => $"{capabilityCount} provider capabilities currently resolved."
+                0 => "No user-facing Atlas capability is attached.",
+                1 => "1 user-facing Atlas capability is attached.",
+                _ => $"{atlasCapabilityCount} user-facing Atlas capabilities are attached."
             });
         SetFact(
             activationDependenciesFact,
             dependencyCount switch
             {
-                0 => "No explicit cross-service link published.",
-                1 => "1 explicit cross-service link published.",
-                _ => $"{dependencyCount} explicit cross-service links published."
+                0 => "No explicit cross-product capability link is attached.",
+                1 => "1 explicit cross-product capability link is attached.",
+                _ => $"{dependencyCount} explicit cross-product capability links are attached."
             });
         SetFact(
             activationDataFact,
@@ -253,7 +241,7 @@ public sealed partial class DesktopAtlasView
             $"Affects {finalVisualShell.CurrentDeviceName}. {integration.DeviceBehaviorText}");
         SetFact(
             activationUnknownsFact,
-            "No additional permission requirement or cross-device guarantee is published to WGT.");
+            "No additional permission requirement or cross-device guarantee is inferred when the provider does not publish one.");
     }
 
     private static string ActivationHostSummary(AtlasNodePresentationViewModel node) => node.ServiceIdentity?.Value switch
@@ -275,7 +263,7 @@ public sealed partial class DesktopAtlasView
             .ToHashSet(StringComparer.Ordinal);
 
         return finalVisualShell.AtlasConnections.Count(connection =>
-            connection.Kind == AtlasConnectionKind.CapabilityDependency
+            connection.Kind is AtlasConnectionKind.CapabilityDependency or AtlasConnectionKind.CapabilityConsumption
             && (ownedNodeIds.Contains(connection.Source.NodeId) || ownedNodeIds.Contains(connection.Target.NodeId)));
     }
 
@@ -284,25 +272,22 @@ public sealed partial class DesktopAtlasView
         var stack = new StackPanel
         {
             Margin = new Avalonia.Thickness(0, 12, 0, 0),
-            Spacing = 8
+            Spacing = 0
         };
 
-        foreach (var fact in facts)
+        for (var index = 0; index < facts.Length; index++)
         {
+            var fact = facts[index];
             var label = new TextBlock { Text = fact.Label };
             label.Classes.Add("wgt-caption");
-            var content = new StackPanel
+            stack.Children.Add(new StackPanel
             {
                 Spacing = 3,
+                Margin = new Avalonia.Thickness(0, index == 0 ? 0 : 9, 0, 9),
                 Children = { label, fact.Value }
-            };
-            var card = new Border
-            {
-                Padding = new Avalonia.Thickness(10, 8),
-                Child = content
-            };
-            card.Classes.Add("wgt-inspector-fact");
-            stack.Children.Add(card);
+            });
+            if (index < facts.Length - 1)
+                stack.Children.Add(new Separator { Opacity = 0.35 });
         }
 
         return new ScrollViewer
@@ -335,18 +320,18 @@ public sealed partial class DesktopAtlasView
         AtlasNodeKind.Service =>
             $"{node.Title} remains a provider-owned bounded context. Hosting or composing it in WGT does not transfer its domain ownership.",
         _ =>
-            "This capability is provider-published. WGT renders its availability and explicit relationships without becoming the capability owner."
+            $"{node.Title} is owned by {node.ServiceIdentity?.Value ?? "its provider"}. WGT renders the accepted relationship without becoming the capability owner."
     };
 
     private static string DataBoundaryFact(AtlasNodePresentationViewModel node)
     {
         if (node.IsCore)
-            return "The Atlas is a WGT presentation/read model over registered integrations, enablement and published capability state; it is not a shared provider database.";
+            return "The Atlas is a WGT presentation/read model over registered integrations, enablement and accepted capability state; it is not a shared provider database.";
         if (node.IsKnownOnlyService)
-            return "Only this service identity is known on the current client. No provider capability publication or provider domain data is composed here yet.";
+            return "Only this service identity is known on the current client. No provider Product Surface or runtime publication is composed here yet.";
         if (node.IsService)
             return "WGT keeps host-side integration, enablement and last-known publication metadata. Opening the provider product does not copy provider domain records into WGT.";
-        return "WGT uses the provider-published/resolved capability state needed for this integration surface. No additional provider data guarantees are inferred.";
+        return "The capability remains provider-owned. Atlas exposes only the state and relationships WGT can legitimately know.";
     }
 
     private static string TransportBoundaryFact(AtlasNodePresentationViewModel node)
@@ -357,11 +342,11 @@ public sealed partial class DesktopAtlasView
             "vocation" =>
                 "On Windows, WGT hosts Vocation through its configured local loopback product endpoint. Provider-internal network and data behavior remains Vocation-owned.",
             "orientation" =>
-                "On Windows, WGT hosts Orientation through its configured local loopback product endpoint. Orientation remains authoritative for its backend, maps and routing/network behavior.",
+                "Orientation owns generic geospatial behavior and its product runtime. Consumers such as Vocation keep their own domain meaning while using that generic capability.",
             "illumination" =>
                 "On Windows, Illumination is hosted in-process through its provider-owned Product Surface. Illumination retains its own persistence and domain composition.",
             "conveyance" =>
-                "No Conveyance Product Surface or published capability runtime is composed on this client yet.",
+                "Conveyance is shared opaque cross-device delivery infrastructure, not a peer product. Product-specific use remains explicit and domain payloads stay provider-owned.",
             _ when node.IsCore =>
                 "Transport remains concrete-provider-specific. WGT does not impose a universal plugin transport or shared provider runtime protocol.",
             _ =>
@@ -374,15 +359,17 @@ public sealed partial class DesktopAtlasView
         if (node.IsCore)
             return "The Desktop Atlas host is active on this device.";
         if (node.IsKnownOnlyService)
-            return "Known to WGT, but no provider surface or capability publication is composed on this client yet.";
+            return node.IsSharedCapabilityProvider
+                ? "Known shared infrastructure; no local product surface is expected. Concrete product consumption is shown only when configured."
+                : "Known to WGT, but no provider Product Surface/runtime publication is composed on this client yet.";
         if (!node.IsEnabled)
             return "Integrated with WGT but disabled on this device.";
         if (node.IsAvailable)
             return node.IsCapability
-                ? "This published capability is currently available on this device."
-                : "This service is composed and currently available to WGT on this device.";
+                ? "This system capability is currently available in its provider context."
+                : "This product is composed and currently available to WGT on this device.";
         return node.IsCapability
             ? $"This capability is not currently available here. {node.AvailabilityText}"
-            : $"The service is composed but not currently healthy/available here. {node.AvailabilityText}";
+            : $"The product is composed but not currently healthy/available here. {node.AvailabilityText}";
     }
 }
