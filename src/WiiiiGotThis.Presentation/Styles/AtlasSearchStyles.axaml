@@ -1,24 +1,25 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Style Selector="Border.wgt-atlas-search-results">
-    <Setter Property="Background" Value="{DynamicResource WgtAtlasOpaqueRaisedBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource WgtAtlasNodeBorderBrush}" />
+    <Setter Property="Background" Value="#F2182029" />
+    <Setter Property="BorderBrush" Value="#FF34414D" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="18" />
-    <Setter Property="BoxShadow" Value="0 18 44 0 #66000000" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="BoxShadow" Value="0 10 28 0 #44000000" />
   </Style>
 
   <Style Selector="Button.wgt-atlas-search-result">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="#FFE8EEF4" />
     <Setter Property="Padding" Value="12,10" />
-    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="CornerRadius" Value="10" />
   </Style>
   <Style Selector="Button.wgt-atlas-search-result:pointerover">
-    <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
+    <Setter Property="Background" Value="#FF22313C" />
   </Style>
   <Style Selector="Button.wgt-atlas-search-result:focus-visible">
-    <Setter Property="Background" Value="{DynamicResource WgtAccentLowBrush}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="Background" Value="#FF22313C" />
+    <Setter Property="BorderBrush" Value="#FF70A7C2" />
     <Setter Property="BorderThickness" Value="1" />
   </Style>
 </Styles>
