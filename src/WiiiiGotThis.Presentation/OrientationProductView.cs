@@ -1,6 +1,7 @@
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Threading;
 
 namespace WiiiiGotThis.Presentation;
 
@@ -108,6 +109,14 @@ public sealed class OrientationProductView : Grid
         }
 
         reloadInProgress = true;
+        IProductRuntimeStatusSource? statusSource = Runtime as IProductRuntimeStatusSource;
+        Action<string>? stageHandler = null;
+        if (statusSource is not null)
+        {
+            stageHandler = stage => Dispatcher.UIThread.Post(() => ShowLoading(stage));
+            statusSource.StageChanged += stageHandler;
+        }
+
         try
         {
             ShowLoading("Starting local Orientation…");
@@ -130,6 +139,8 @@ public sealed class OrientationProductView : Grid
         }
         finally
         {
+            if (statusSource is not null && stageHandler is not null)
+                statusSource.StageChanged -= stageHandler;
             reloadInProgress = false;
         }
     }
