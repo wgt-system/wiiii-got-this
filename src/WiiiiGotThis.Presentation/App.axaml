@@ -14,5 +14,6 @@
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasNavigationChromeStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/ProductSurfaceFinalStyles.axaml" />
     <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasReducedMotionStyles.axaml" />
+    <StyleInclude Source="avares://WiiiiGotThis.Presentation/Styles/AtlasDossierV2Styles.axaml" />
   </Application.Styles>
 </Application>
