@@ -64,10 +64,15 @@ public sealed class ProductSurfaceVisualContractTests
             "Styles",
             "ProductSurfaceFinalStyles.axaml"));
 
+        Assert.Contains("Button.wgt-product-rail-action", styles, StringComparison.Ordinal);
+        Assert.Contains("Button.wgt-product-rail-action:pointerover", styles, StringComparison.Ordinal);
+        Assert.Contains("Button.wgt-product-rail-action:focus-visible", styles, StringComparison.Ordinal);
+
         foreach (var theme in new[] { "technical", "elegant", "machine", "world" })
         {
             Assert.Contains($"theme-{theme} Border.wgt-product-rail", styles, StringComparison.Ordinal);
             Assert.Contains($"theme-{theme} Border.wgt-product-depth-track", styles, StringComparison.Ordinal);
+            Assert.Contains($"theme-{theme} Button.wgt-product-rail-action", styles, StringComparison.Ordinal);
             Assert.Contains($"theme-{theme} Button.wgt-product-return", styles, StringComparison.Ordinal);
         }
 
