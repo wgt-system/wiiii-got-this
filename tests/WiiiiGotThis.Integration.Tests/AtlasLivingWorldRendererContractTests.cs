@@ -31,7 +31,7 @@ public sealed class AtlasLivingWorldRendererContractTests
     }
 
     [Fact]
-    public void World_theme_treats_Conveyance_as_shared_infrastructure_and_reveals_capabilities_locally()
+    public void World_theme_treats_shared_capability_providers_as_infrastructure_and_reveals_capabilities_locally()
     {
         var root = FindRepositoryRoot();
         var world = File.ReadAllText(Path.Combine(
@@ -42,7 +42,8 @@ public sealed class AtlasLivingWorldRendererContractTests
 
         Assert.Contains("DrawConveyanceFacility", world, StringComparison.Ordinal);
         Assert.Contains("RELAY YARD", world, StringComparison.Ordinal);
-        Assert.Contains("!string.Equals(node.ServiceIdentity?.Value, \"conveyance\"", world, StringComparison.Ordinal);
+        Assert.Contains("node.IsPrimaryProductProvider", world, StringComparison.Ordinal);
+        Assert.Contains("node.IsSharedCapabilityProvider", world, StringComparison.Ordinal);
         Assert.Contains("CapabilityRevealZoom", world, StringComparison.Ordinal);
         Assert.Contains("DrawCapabilityBuilding", world, StringComparison.Ordinal);
     }
