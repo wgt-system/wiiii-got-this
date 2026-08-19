@@ -124,8 +124,7 @@ public sealed class BuildAtlasProjectionUseCase
     private readonly StringComparer titleComparer = StringComparer.OrdinalIgnoreCase;
     private readonly IReadOnlyList<AtlasProductService> productServices;
     private readonly IReadOnlyList<AtlasProductDependency> productDependencies;
-    private IReadOnlyCollection<AtlasCapabilityConsumptionPreference> configuredConsumptionPreferences =
-        Array.Empty<AtlasCapabilityConsumptionPreference>();
+    private AtlasCapabilityConsumptionPreference[] configuredConsumptionPreferences = [];
 
     public BuildAtlasProjectionUseCase(
         IEnumerable<AtlasProductService>? productServices = null,
@@ -155,7 +154,7 @@ public sealed class BuildAtlasProjectionUseCase
     public void SetConsumptionPreferences(IEnumerable<AtlasCapabilityConsumptionPreference> preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
-        configuredConsumptionPreferences = Array.AsReadOnly(preferences.ToArray());
+        configuredConsumptionPreferences = preferences.ToArray();
     }
 
     public AtlasProjection Build(
