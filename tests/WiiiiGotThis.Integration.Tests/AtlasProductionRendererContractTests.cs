@@ -53,6 +53,8 @@ public sealed class AtlasProductionRendererContractTests
         Assert.Contains("AtlasThemePreference.World", renderer, StringComparison.Ordinal);
         Assert.Contains("RequestAnimationFrame", renderer, StringComparison.Ordinal);
         Assert.Contains("themeTransitionActive = !reducedMotion", renderer, StringComparison.Ordinal);
+        Assert.Contains("Focus();", renderer, StringComparison.Ordinal);
+        Assert.DoesNotContain("AtlasViewport.Focus();", host, StringComparison.Ordinal);
         Assert.Contains("if (!node.IsEnabled)", host, StringComparison.Ordinal);
         Assert.Contains("await OpenSelectedProductSurfaceAsync()", host, StringComparison.Ordinal);
     }

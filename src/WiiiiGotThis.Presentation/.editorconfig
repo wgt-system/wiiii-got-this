@@ -1,0 +1,4 @@
+# AtlasSceneControl is deliberately an instance-oriented scene renderer: helper
+# methods stay colocated with renderer state while the production scene evolves.
+[AtlasSceneControl.cs]
+dotnet_diagnostic.CA1822.severity = none

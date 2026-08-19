@@ -105,7 +105,6 @@ public sealed partial class DesktopAtlasView
 
         shell.SelectAtlasNodeCommand.Execute(node);
         QueueInspectorPlacementRefinement();
-        AtlasViewport.Focus();
     }
 
     private async void OnProductionSceneNodeActivated(AtlasNodePresentationViewModel node)
