@@ -24,6 +24,7 @@ public sealed partial class DesktopAtlasView
             return;
 
         polishEventsAttached = true;
+        ConfigureSpatialInspectorDossier();
         EnsureThemeRenderer();
         EnsureInspectorTether();
         sceneScale.PropertyChanged += OnAtlasCameraTransformChanged;
@@ -54,6 +55,7 @@ public sealed partial class DesktopAtlasView
 
     private void OnAtlasPolishDataContextChanged(object? sender, EventArgs e)
     {
+        ConfigureSpatialInspectorDossier();
         AttachPolishShell(DataContext as ShellViewModel);
         AttachExperienceShell(DataContext as ShellViewModel);
         EnsureFinalInspectorSections();
@@ -62,6 +64,13 @@ public sealed partial class DesktopAtlasView
         UpdateFinalInspectorFacts();
         QueueInspectorPlacementRefinement();
         UpdateInspectorTether();
+    }
+
+    private void ConfigureSpatialInspectorDossier()
+    {
+        InspectorCard.Width = 300;
+        InspectorCard.MaxHeight = 560;
+        InspectorCard.Padding = new Thickness(16);
     }
 
     private void AttachPolishShell(ShellViewModel? next)
@@ -146,21 +155,42 @@ public sealed partial class DesktopAtlasView
         var world = WorldPoint(node);
         var nodeX = world.X * sceneScale.ScaleX + sceneTranslate.X;
         var nodeY = world.Y * sceneScale.ScaleY + sceneTranslate.Y;
-        var cardWidth = InspectorCard.Bounds.Width > 0 ? InspectorCard.Bounds.Width : 372d;
+        var cardWidth = InspectorCard.Bounds.Width > 0 ? InspectorCard.Bounds.Width : 300d;
         var cardHeight = InspectorCard.Bounds.Height > 0
-            ? Math.Min(InspectorCard.Bounds.Height, 600d)
-            : 540d;
-        const double gap = 28d;
-        const double edge = 18d;
-        const double topChromeClearance = 78d;
+            ? Math.Min(InspectorCard.Bounds.Height, 560d)
+            : 500d;
+        var nodeHalfWidth = node.Kind switch
+        {
+            AtlasNodeKind.Core => 94d,
+            AtlasNodeKind.Service => 74d,
+            _ => 80d
+        } * sceneScale.ScaleX;
+        const double gap = 18d;
+        const double edge = 14d;
+        const double topChromeClearance = 72d;
 
-        var left = nodeX + gap;
-        if (left + cardWidth > AtlasViewport.Bounds.Width - edge)
-            left = nodeX - cardWidth - gap;
+        var viewportCenter = AtlasViewport.Bounds.Width / 2;
+        var preferLeft = nodeX < viewportCenter - 50d;
+        var leftCandidate = nodeX - nodeHalfWidth - gap - cardWidth;
+        var rightCandidate = nodeX + nodeHalfWidth + gap;
+        double left;
+
+        if (preferLeft)
+        {
+            left = leftCandidate;
+            if (left < edge && rightCandidate + cardWidth <= AtlasViewport.Bounds.Width - edge)
+                left = rightCandidate;
+        }
+        else
+        {
+            left = rightCandidate;
+            if (left + cardWidth > AtlasViewport.Bounds.Width - edge && leftCandidate >= edge)
+                left = leftCandidate;
+        }
+
         left = Math.Clamp(left, edge, Math.Max(edge, AtlasViewport.Bounds.Width - cardWidth - edge));
-
         var top = Math.Clamp(
-            nodeY - 110d,
+            nodeY - 96d,
             topChromeClearance,
             Math.Max(topChromeClearance, AtlasViewport.Bounds.Height - cardHeight - edge));
 
@@ -213,7 +243,7 @@ public sealed partial class DesktopAtlasView
         var nodeY = world.Y * sceneScale.ScaleY + sceneTranslate.Y;
         var left = InspectorCard.Margin.Left;
         var top = InspectorCard.Margin.Top;
-        var cardWidth = InspectorCard.Bounds.Width > 0 ? InspectorCard.Bounds.Width : 372d;
+        var cardWidth = InspectorCard.Bounds.Width > 0 ? InspectorCard.Bounds.Width : 300d;
         var cardOnRight = left >= nodeX;
         var direction = cardOnRight ? 1d : -1d;
         var nodeRadius = node.Kind switch
@@ -226,7 +256,7 @@ public sealed partial class DesktopAtlasView
         var start = new Point(nodeX + direction * nodeRadius, nodeY);
         var end = new Point(
             cardOnRight ? left : left + cardWidth,
-            Math.Clamp(nodeY, top + 54d, top + 132d));
+            Math.Clamp(nodeY, top + 48d, top + 118d));
         var control = new Point(
             start.X + (end.X - start.X) * 0.58,
             start.Y + (end.Y - start.Y) * 0.18);
