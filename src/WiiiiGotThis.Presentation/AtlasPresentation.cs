@@ -48,7 +48,7 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     {
         AtlasNodeKind.Core => ChildNodeCount == 1 ? "1 product" : $"{ChildNodeCount} products",
         AtlasNodeKind.Service => ChildNodeCount == 1 ? "1 capability" : $"{ChildNodeCount} capabilities",
-        AtlasNodeKind.Capability => "Published capability",
+        AtlasNodeKind.Capability => "System capability",
         _ => "Atlas node"
     };
     public string RelationshipSummaryText => relationships.Count switch
@@ -136,7 +136,8 @@ public static class AtlasPresentationFocus
         if (string.Equals(selectedNodeId, BuildAtlasProjectionUseCase.CoreNodeId, StringComparison.Ordinal))
             return focused;
 
-        foreach (var connection in connections.Where(item => item.Kind == AtlasConnectionKind.CapabilityDependency))
+        foreach (var connection in connections.Where(item =>
+                     item.Kind is AtlasConnectionKind.CapabilityConsumption or AtlasConnectionKind.CapabilityDependency))
         {
             if (focused.Contains(connection.Source.NodeId) || focused.Contains(connection.Target.NodeId))
             {
@@ -210,9 +211,8 @@ public static class AtlasPresentationLayoutBuilder
             };
             byId.Add(service.NodeId, servicePresentation);
 
-            // Compact capability dots and expanded labels share one stable local anchor.
-            // Capability presentation is local to the provider and does not make each
-            // published contract a first-level global Atlas destination.
+            // Capability presentation is local to the owning provider and does not make each
+            // published/integration contract a first-level global Atlas destination.
             const double capabilityRadius = 166;
             const double spread = Math.PI * 0.42;
             for (var capabilityIndex = 0; capabilityIndex < capabilities.Length; capabilityIndex++)
@@ -238,9 +238,10 @@ public static class AtlasPresentationLayoutBuilder
             .Select(connection => new AtlasConnectionPresentationViewModel(connection, byId[connection.SourceNodeId], byId[connection.TargetNodeId]))
             .ToArray();
 
-        foreach (var connection in connections.Where(connection => connection.Kind == AtlasConnectionKind.CapabilityDependency))
+        foreach (var connection in connections.Where(connection =>
+                     connection.Kind is AtlasConnectionKind.CapabilityConsumption or AtlasConnectionKind.CapabilityDependency))
         {
-            var description = connection.Model.Description ?? "This capability depends on another WGT service.";
+            var description = connection.Model.Description ?? "This product uses another WGT capability.";
             connection.Source.AddRelationship(new(
                 "Uses",
                 connection.Target.Title,
@@ -268,9 +269,6 @@ public static class AtlasPresentationLayoutBuilder
     {
         return service.ServiceIdentity?.Value switch
         {
-            // The current three first-class products stay recognizable while shared
-            // infrastructure remains available as a separate technical node. Future direct
-            // products move to the outer ring before grouping is considered.
             "illumination" => (0, -255, -Math.PI / 2),
             "orientation" => (365, 0, 0),
             "conveyance" => (0, 255, Math.PI / 2),
