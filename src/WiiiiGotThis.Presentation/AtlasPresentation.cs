@@ -22,11 +22,16 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     public bool HasDescription => !string.IsNullOrWhiteSpace(Model.Description);
     public ServiceIdentity? ServiceIdentity => Model.ServiceIdentity;
     public CapabilityIdentity? CapabilityIdentity => Model.CapabilityIdentity;
+    public AtlasProductRole? ProductRole => Model.ProductRole;
     public bool IsEnabled => Model.IsEnabled;
     public bool IsAvailable => Model.IsAvailable;
     public bool IsIntegrated => Model.IsIntegrated;
     public bool IsKnownOnlyService => IsService && !IsIntegrated;
     public bool IsIntegratedService => IsService && IsIntegrated;
+    public bool IsFirstClassProductProvider => IsService && ProductRole == AtlasProductRole.FirstClassProductProvider;
+    public bool IsDualRoleProvider => IsService && ProductRole == AtlasProductRole.DualRoleProvider;
+    public bool IsSharedCapabilityProvider => IsService && ProductRole == AtlasProductRole.SharedCapabilityProvider;
+    public bool IsPrimaryProductProvider => IsService && !IsSharedCapabilityProvider;
     public bool CanOpenProductSurface => IsIntegratedService && IsSupportedProductSurfaceService(ServiceIdentity?.Value);
     public string OpenProductSurfaceLabel => IsEnabled ? $"Open {Title}" : $"Enable & open {Title}";
     public AvailabilityReason? AvailabilityReason => Model.AvailabilityReason;
@@ -41,7 +46,7 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     public int ChildNodeCount { get; internal set; }
     public string ScopeSummaryText => Kind switch
     {
-        AtlasNodeKind.Core => ChildNodeCount == 1 ? "1 service" : $"{ChildNodeCount} services",
+        AtlasNodeKind.Core => ChildNodeCount == 1 ? "1 product" : $"{ChildNodeCount} products",
         AtlasNodeKind.Service => ChildNodeCount == 1 ? "1 capability" : $"{ChildNodeCount} capabilities",
         AtlasNodeKind.Capability => "Published capability",
         _ => "Atlas node"
@@ -55,7 +60,9 @@ public sealed class AtlasNodePresentationViewModel(AtlasNode node, double x, dou
     public string KindLabel => Kind switch
     {
         AtlasNodeKind.Core => "WGT CORE",
-        AtlasNodeKind.Service => "SERVICE",
+        AtlasNodeKind.Service when IsSharedCapabilityProvider => "SHARED INFRASTRUCTURE",
+        AtlasNodeKind.Service when IsDualRoleProvider => "PRODUCT + CAPABILITY",
+        AtlasNodeKind.Service => "PRODUCT",
         AtlasNodeKind.Capability => "CAPABILITY",
         _ => "NODE"
     };
@@ -179,7 +186,9 @@ public static class AtlasPresentationLayoutBuilder
             .ThenBy(node => node.Title, StringComparer.OrdinalIgnoreCase)
             .ThenBy(node => node.NodeId, StringComparer.Ordinal)
             .ToArray();
-        corePresentation.ChildNodeCount = services.Length;
+        corePresentation.ChildNodeCount = projection.Connections.Count(connection =>
+            connection.Kind == AtlasConnectionKind.Composition
+            && string.Equals(connection.SourceNodeId, core.NodeId, StringComparison.Ordinal));
 
         for (var index = 0; index < services.Length; index++)
         {
@@ -201,9 +210,9 @@ public static class AtlasPresentationLayoutBuilder
             };
             byId.Add(service.NodeId, servicePresentation);
 
-            // Compact capability dots and expanded 160px labels share one stable
-            // anchor. 166px keeps the focused label clear of the provider emblem
-            // while still reading as one local service cluster.
+            // Compact capability dots and expanded labels share one stable local anchor.
+            // Capability presentation is local to the provider and does not make each
+            // published contract a first-level global Atlas destination.
             const double capabilityRadius = 166;
             const double spread = Math.PI * 0.42;
             for (var capabilityIndex = 0; capabilityIndex < capabilities.Length; capabilityIndex++)
@@ -259,9 +268,9 @@ public static class AtlasPresentationLayoutBuilder
     {
         return service.ServiceIdentity?.Value switch
         {
-            // The four first-class services form a wide cross. Vertical providers sit
-            // closer to WGT Core so their outward capability arc clears Search and the
-            // bottom edge even when a port expands into its labeled state.
+            // The current three first-class products stay recognizable while shared
+            // infrastructure remains available as a separate technical node. Future direct
+            // products move to the outer ring before grouping is considered.
             "illumination" => (0, -255, -Math.PI / 2),
             "orientation" => (365, 0, 0),
             "conveyance" => (0, 255, Math.PI / 2),
@@ -275,7 +284,12 @@ public static class AtlasPresentationLayoutBuilder
         var angle = count <= 1
             ? -Math.PI / 2
             : -Math.PI / 2 + 2 * Math.PI * index / count;
-        const double radius = 330;
+        var radius = count switch
+        {
+            <= 8 => 330d,
+            <= 15 => 470d,
+            _ => 560d
+        };
         return (Math.Cos(angle) * radius, Math.Sin(angle) * radius, angle);
     }
 }
