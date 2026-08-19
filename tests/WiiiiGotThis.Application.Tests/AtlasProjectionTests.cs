@@ -137,8 +137,71 @@ public sealed class AtlasProjectionTests
 
         Assert.Contains(ownership, edge => edge.SourceNodeId == "service:orientation" && edge.TargetNodeId == geospatial.NodeId);
         Assert.Contains(ownership, edge => edge.SourceNodeId == "service:conveyance" && edge.TargetNodeId == delivery.NodeId);
-        Assert.Contains(dependencies, edge => edge.SourceNodeId == "service:vocation" && edge.TargetNodeId == geospatial.NodeId && edge.Description!.Contains("Orientation", StringComparison.Ordinal));
-        Assert.Contains(dependencies, edge => edge.SourceNodeId == "service:vocation" && edge.TargetNodeId == delivery.NodeId && edge.Description!.Contains("Conveyance", StringComparison.Ordinal));
+
+        var geospatialUse = Assert.Single(dependencies, edge => edge.TargetNodeId == geospatial.NodeId);
+        Assert.Equal("service:vocation", geospatialUse.SourceNodeId);
+        Assert.True(geospatialUse.IsEnabled);
+        Assert.False(geospatialUse.IsUserConfigurable);
+        Assert.Contains("Orientation", geospatialUse.Description!, StringComparison.Ordinal);
+
+        var conveyanceUse = Assert.Single(dependencies, edge => edge.TargetNodeId == delivery.NodeId);
+        Assert.Equal("service:vocation", conveyanceUse.SourceNodeId);
+        Assert.True(conveyanceUse.IsEnabled);
+        Assert.True(conveyanceUse.IsUserConfigurable);
+        Assert.Contains("Conveyance", conveyanceUse.Description!, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Build_applies_a_product_scoped_Conveyance_preference_without_changing_capability_ownership()
+    {
+        var preference = new AtlasCapabilityConsumptionPreference(
+            new AtlasCapabilityConsumptionKey(
+                new ServiceIdentity("vocation"),
+                new ServiceIdentity("conveyance"),
+                new CapabilityIdentity(BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId)),
+            false);
+
+        var projection = new BuildAtlasProjectionUseCase().Build([], [], consumptionPreferences: [preference]);
+        var delivery = Assert.Single(projection.Nodes, node => node.CapabilityIdentity?.Value == BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId);
+        var ownership = Assert.Single(projection.Connections, edge =>
+            edge.Kind == AtlasConnectionKind.CapabilityOwnership
+            && edge.TargetNodeId == delivery.NodeId);
+        var conveyanceUse = Assert.Single(projection.Connections, edge =>
+            edge.Kind == AtlasConnectionKind.CapabilityDependency
+            && edge.TargetNodeId == delivery.NodeId);
+        var geospatialUse = Assert.Single(projection.Connections, edge =>
+            edge.Kind == AtlasConnectionKind.CapabilityDependency
+            && edge.TargetNodeId.EndsWith(BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId, StringComparison.Ordinal));
+
+        Assert.Equal("service:conveyance", ownership.SourceNodeId);
+        Assert.Equal("service:vocation", conveyanceUse.SourceNodeId);
+        Assert.False(conveyanceUse.IsEnabled);
+        Assert.True(conveyanceUse.IsUserConfigurable);
+        Assert.True(geospatialUse.IsEnabled);
+        Assert.False(geospatialUse.IsUserConfigurable);
+        Assert.DoesNotContain(projection.Connections, edge =>
+            edge.Kind == AtlasConnectionKind.Composition && edge.TargetNodeId == "service:conveyance");
+    }
+
+    [Fact]
+    public void Configured_preferences_are_used_by_subsequent_projection_builds()
+    {
+        var builder = new BuildAtlasProjectionUseCase();
+        builder.SetConsumptionPreferences([
+            new AtlasCapabilityConsumptionPreference(
+                new AtlasCapabilityConsumptionKey(
+                    new ServiceIdentity("vocation"),
+                    new ServiceIdentity("conveyance"),
+                    new CapabilityIdentity(BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId)),
+                false)
+        ]);
+
+        var projection = builder.Build([], []);
+        var conveyanceUse = Assert.Single(projection.Connections, edge =>
+            edge.IsUserConfigurable
+            && edge.TargetNodeId.EndsWith(BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId, StringComparison.Ordinal));
+
+        Assert.False(conveyanceUse.IsEnabled);
     }
 
     [Fact]
