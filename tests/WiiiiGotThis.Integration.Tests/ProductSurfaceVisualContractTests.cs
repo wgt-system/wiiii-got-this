@@ -14,7 +14,10 @@ public sealed class ProductSurfaceVisualContractTests
 
         Assert.Contains("ColumnDefinitions = new ColumnDefinitions(\"68,*\")", source, StringComparison.Ordinal);
         Assert.Contains("wgt-product-depth-track", source, StringComparison.Ordinal);
-        Assert.Contains("FULL PRODUCT", source, StringComparison.Ordinal);
+        Assert.Contains("Return to WGT Atlas", source, StringComparison.Ordinal);
+        Assert.Contains("WGT settings", source, StringComparison.Ordinal);
+        Assert.Contains("BuildProviderCapabilityRail", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("FULL PRODUCT", source, StringComparison.Ordinal);
         Assert.DoesNotContain("ColumnDefinitions = new ColumnDefinitions(\"76,*\")", source, StringComparison.Ordinal);
     }
 
