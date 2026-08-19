@@ -148,9 +148,25 @@ public sealed partial class DesktopAtlasView
             productionRendererShell.AtlasTheme,
             productionRendererShell.IsAtlasReducedMotion);
 
+        // World presents shared capability consumption through the dedicated infrastructure
+        // overlay. Do not also feed the same shared capability node/edge into the base town
+        // renderer, otherwise a local relay/factory gets duplicated by a generic graph-like
+        // route/building near the shared provider yard.
+        var worldBaseNodes = productionRendererShell.AtlasNodes
+            .Where(node => !(node.IsCapability && node.ProductRole == AtlasProductRole.SharedCapabilityProvider))
+            .ToArray();
+        var worldBaseNodeIds = worldBaseNodes
+            .Select(node => node.NodeId)
+            .ToHashSet(StringComparer.Ordinal);
+        var worldBaseConnections = productionRendererShell.AtlasConnections
+            .Where(connection =>
+                worldBaseNodeIds.Contains(connection.Source.NodeId)
+                && worldBaseNodeIds.Contains(connection.Target.NodeId))
+            .ToArray();
+
         livingWorldRenderer.SetScene(
-            productionRendererShell.AtlasNodes,
-            productionRendererShell.AtlasConnections,
+            worldBaseNodes,
+            worldBaseConnections,
             productionRendererShell.SelectedAtlasNode?.NodeId,
             productionRendererShell.IsAtlasReducedMotion);
 
