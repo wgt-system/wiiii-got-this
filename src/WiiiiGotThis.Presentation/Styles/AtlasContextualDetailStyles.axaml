@@ -42,7 +42,7 @@
     <Setter Property="BoxShadow" Value="0 0 14 2 #3879D2A5" />
   </Style>
 
-  <!-- Caption material masks topology beneath text without turning the node into a card. -->
+  <!-- Caption material masks topology beneath text without restoring a full card shell. -->
   <Style Selector="Border.wgt-node-caption">
     <Setter Property="Background" Value="#E6081117" />
     <Setter Property="BorderBrush" Value="#482C4654" />
@@ -67,6 +67,34 @@
   </Style>
   <Style Selector="Button.wgt-atlas-node.selected Border.wgt-node-caption">
     <Setter Property="BorderBrush" Value="#9977AFC3" />
+  </Style>
+
+  <!-- Inspector navigation stays compact as Data and Device become first-class facts. -->
+  <Style Selector="TabControl.wgt-atlas-tabs TabItem">
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="Padding" Value="7,6" />
+    <Setter Property="MinWidth" Value="0" />
+  </Style>
+  <Style Selector="Border.wgt-inspector-fact">
+    <Setter Property="Background" Value="#76091117" />
+    <Setter Property="BorderBrush" Value="#4F2B424E" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="9" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-inspector-fact">
+    <Setter Property="Background" Value="#76171318" />
+    <Setter Property="BorderBrush" Value="#4F51444B" />
+    <Setter Property="CornerRadius" Value="11" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-inspector-fact">
+    <Setter Property="Background" Value="#76040D09" />
+    <Setter Property="BorderBrush" Value="#4F286D4B" />
+    <Setter Property="CornerRadius" Value="3" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-inspector-fact">
+    <Setter Property="Background" Value="#7608130E" />
+    <Setter Property="BorderBrush" Value="#4F3D6B52" />
+    <Setter Property="CornerRadius" Value="10" />
   </Style>
 
   <!-- Service sigils are symbolic rather than repository-name initials. -->

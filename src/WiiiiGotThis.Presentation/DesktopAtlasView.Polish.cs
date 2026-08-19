@@ -31,8 +31,10 @@ public sealed partial class DesktopAtlasView
         InspectorCard.SizeChanged += OnInspectorSizeChanged;
         AttachPolishShell(DataContext as ShellViewModel);
         AttachExperienceShell(DataContext as ShellViewModel);
+        EnsureFinalInspectorSections();
         ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
         UpdateExperienceState();
+        UpdateFinalInspectorFacts();
         QueueInspectorPlacementRefinement();
         UpdateInspectorTether();
     }
@@ -54,8 +56,10 @@ public sealed partial class DesktopAtlasView
     {
         AttachPolishShell(DataContext as ShellViewModel);
         AttachExperienceShell(DataContext as ShellViewModel);
+        EnsureFinalInspectorSections();
         ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
         UpdateExperienceState();
+        UpdateFinalInspectorFacts();
         QueueInspectorPlacementRefinement();
         UpdateInspectorTether();
     }
@@ -78,8 +82,14 @@ public sealed partial class DesktopAtlasView
         if (e.PropertyName == nameof(ShellViewModel.SelectedAtlasNode))
         {
             UpdateSpatialDepthSelection();
+            UpdateFinalInspectorFacts();
             QueueInspectorPlacementRefinement();
             UpdateInspectorTether();
+        }
+        else if (e.PropertyName == nameof(ShellViewModel.SelectedIntegration)
+                 || e.PropertyName == nameof(ShellViewModel.CurrentDeviceName))
+        {
+            UpdateFinalInspectorFacts();
         }
         else if (e.PropertyName == nameof(ShellViewModel.AtlasTheme) && polishShell is not null)
         {
@@ -184,8 +194,6 @@ public sealed partial class DesktopAtlasView
             Children = { inspectorTether }
         };
 
-        // Keep geometry out of the Grid measure pass. A direct Path child can feed its
-        // changing geometry back into measure/layout when the inspector appears.
         AtlasViewport.Children.Insert(Math.Min(1, AtlasViewport.Children.Count), inspectorTetherLayer);
     }
 
