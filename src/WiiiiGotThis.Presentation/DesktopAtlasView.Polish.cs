@@ -194,7 +194,10 @@ public sealed partial class DesktopAtlasView
     private void OnInspectorHeaderPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         var point = e.GetCurrentPoint(InspectorCard);
-        if (!point.Properties.IsLeftButtonPressed || e.Source is Button)
+        var sourceIsButton = e.Source is Button
+            || e.Source is Visual visual
+            && visual.GetVisualAncestors().OfType<Button>().Any();
+        if (!point.Properties.IsLeftButtonPressed || sourceIsButton)
             return;
 
         inspectorDragging = true;
