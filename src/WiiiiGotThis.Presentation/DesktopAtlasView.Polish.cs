@@ -28,11 +28,13 @@ public sealed partial class DesktopAtlasView
         ConfigureSpatialInspectorDossier();
         EnsureThemeRenderer();
         EnsureInspectorTether();
+        EnsureProductionSceneRenderer();
         sceneScale.PropertyChanged += OnAtlasCameraTransformChanged;
         sceneTranslate.PropertyChanged += OnAtlasCameraTransformChanged;
         InspectorCard.SizeChanged += OnInspectorSizeChanged;
         AttachPolishShell(DataContext as ShellViewModel);
         AttachExperienceShell(DataContext as ShellViewModel);
+        AttachProductionRendererShell(DataContext as ShellViewModel);
         EnsureFinalInspectorSections();
         ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
         UpdateExperienceState();
@@ -50,6 +52,7 @@ public sealed partial class DesktopAtlasView
         sceneScale.PropertyChanged -= OnAtlasCameraTransformChanged;
         sceneTranslate.PropertyChanged -= OnAtlasCameraTransformChanged;
         InspectorCard.SizeChanged -= OnInspectorSizeChanged;
+        AttachProductionRendererShell(null);
         AttachExperienceShell(null);
         AttachPolishShell(null);
     }
@@ -59,6 +62,7 @@ public sealed partial class DesktopAtlasView
         ConfigureSpatialInspectorDossier();
         AttachPolishShell(DataContext as ShellViewModel);
         AttachExperienceShell(DataContext as ShellViewModel);
+        AttachProductionRendererShell(DataContext as ShellViewModel);
         EnsureFinalInspectorSections();
         ApplyThemeRenderer(polishShell?.AtlasTheme ?? visualTheme);
         UpdateExperienceState();
@@ -119,6 +123,7 @@ public sealed partial class DesktopAtlasView
 
     private void OnAtlasCameraTransformChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
+        UpdateProductionSceneCamera();
         QueueInspectorPlacementRefinement();
         UpdateInspectorTether();
     }
@@ -139,6 +144,8 @@ public sealed partial class DesktopAtlasView
             () =>
             {
                 inspectorPlacementQueued = false;
+                if (!polishEventsAttached)
+                    return;
                 RefineInspectorPlacement();
                 UpdateInspectorTether();
             },
