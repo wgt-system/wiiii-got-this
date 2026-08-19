@@ -8,13 +8,14 @@ namespace WiiiiGotThis.Presentation;
 public sealed partial class DesktopAtlasView
 {
     private AtlasLandscapeControl? productionSceneRenderer;
+    private AtlasLivingWorldControl? livingWorldRenderer;
     private ShellViewModel? productionRendererShell;
 
-    private bool IsProductionSceneRendererActive => productionSceneRenderer is not null;
+    private bool IsProductionSceneRendererActive => productionSceneRenderer is not null || livingWorldRenderer is not null;
 
     private void EnsureProductionSceneRenderer()
     {
-        if (productionSceneRenderer is not null)
+        if (productionSceneRenderer is not null && livingWorldRenderer is not null)
             return;
 
         productionSceneRenderer = new AtlasLandscapeControl
@@ -26,8 +27,20 @@ public sealed partial class DesktopAtlasView
         productionSceneRenderer.NodeInvoked += OnProductionSceneNodeInvoked;
         productionSceneRenderer.NodeActivated += OnProductionSceneNodeActivated;
 
+        livingWorldRenderer = new AtlasLivingWorldControl
+        {
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
+            VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
+            IsHitTestVisible = false,
+            IsVisible = false
+        };
+        livingWorldRenderer.NodeInvoked += OnProductionSceneNodeInvoked;
+        livingWorldRenderer.NodeActivated += OnProductionSceneNodeActivated;
+
         // The legacy Canvas and the first custom graph/region experiment stay only as
-        // migration evidence. The visible production candidate is the semantic landscape.
+        // migration evidence. The visible production candidate is either the semantic
+        // technical landscape or the dedicated living-world projection over the same
+        // Atlas node/connection model.
         SceneCanvas.IsVisible = false;
         SceneCanvas.IsHitTestVisible = false;
         SceneCanvas.Children.Clear();
@@ -36,6 +49,7 @@ public sealed partial class DesktopAtlasView
             themeAmbientLayer.IsVisible = false;
 
         AtlasViewport.Children.Insert(0, productionSceneRenderer);
+        AtlasViewport.Children.Insert(1, livingWorldRenderer);
         UpdateProductionScene();
         UpdateProductionSceneCamera();
     }
@@ -80,8 +94,14 @@ public sealed partial class DesktopAtlasView
 
     private void UpdateProductionScene()
     {
-        if (productionSceneRenderer is null || productionRendererShell is null)
+        if (productionSceneRenderer is null || livingWorldRenderer is null || productionRendererShell is null)
             return;
+
+        var isLivingWorld = productionRendererShell.AtlasTheme == AtlasThemePreference.World;
+        productionSceneRenderer.IsVisible = !isLivingWorld;
+        productionSceneRenderer.IsHitTestVisible = !isLivingWorld;
+        livingWorldRenderer.IsVisible = isLivingWorld;
+        livingWorldRenderer.IsHitTestVisible = isLivingWorld;
 
         productionSceneRenderer.SetScene(
             productionRendererShell.AtlasNodes,
@@ -89,11 +109,21 @@ public sealed partial class DesktopAtlasView
             productionRendererShell.SelectedAtlasNode?.NodeId,
             productionRendererShell.AtlasTheme,
             productionRendererShell.IsAtlasReducedMotion);
+
+        livingWorldRenderer.SetScene(
+            productionRendererShell.AtlasNodes,
+            productionRendererShell.AtlasConnections,
+            productionRendererShell.SelectedAtlasNode?.NodeId,
+            productionRendererShell.IsAtlasReducedMotion);
     }
 
     private void UpdateProductionSceneCamera()
     {
         productionSceneRenderer?.SetCamera(
+            sceneScale.ScaleX,
+            sceneTranslate.X,
+            sceneTranslate.Y);
+        livingWorldRenderer?.SetCamera(
             sceneScale.ScaleX,
             sceneTranslate.X,
             sceneTranslate.Y);
