@@ -24,7 +24,7 @@ public sealed class AtlasTetherGeometryContractTests
     }
 
     [Fact]
-    public void Inspector_prefers_the_outward_side_of_the_selected_service()
+    public void Inspector_keeps_user_owned_screen_position_while_tether_tracks_the_world_object()
     {
         var root = FindRepositoryRoot();
         var source = File.ReadAllText(Path.Combine(
@@ -33,9 +33,16 @@ public sealed class AtlasTetherGeometryContractTests
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.Polish.cs"));
 
-        Assert.Contains("preferLeft = nodeX < viewportCenter - 50d", source, StringComparison.Ordinal);
-        Assert.Contains("leftCandidate = nodeX - nodeHalfWidth - gap - cardWidth", source, StringComparison.Ordinal);
-        Assert.Contains("rightCandidate = nodeX + nodeHalfWidth + gap", source, StringComparison.Ordinal);
+        Assert.Contains("private bool inspectorHasPlacement;", source, StringComparison.Ordinal);
+        Assert.Contains("private bool inspectorDragging;", source, StringComparison.Ordinal);
+        Assert.Contains("inspectorDragOriginX", source, StringComparison.Ordinal);
+        Assert.Contains("inspectorDragOriginY", source, StringComparison.Ordinal);
+        Assert.Contains("e.Pointer.Capture(InspectorCard);", source, StringComparison.Ordinal);
+        Assert.Contains("var left = inspectorTranslate.X;", source, StringComparison.Ordinal);
+        Assert.Contains("var top = inspectorTranslate.Y;", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("preferLeft = nodeX < viewportCenter", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("leftCandidate = nodeX - nodeHalfWidth", source, StringComparison.Ordinal);
+        Assert.DoesNotContain("rightCandidate = nodeX + nodeHalfWidth", source, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
