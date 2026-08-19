@@ -59,7 +59,7 @@ public sealed class AtlasInspectorFactsContractTests
     }
 
     [Fact]
-    public void Disabled_product_services_show_WGT_known_effects_before_activation()
+    public void Disabled_product_services_show_a_compact_WGT_known_decision_summary_before_activation()
     {
         var root = FindRepositoryRoot();
         var facts = File.ReadAllText(Path.Combine(
@@ -80,9 +80,11 @@ public sealed class AtlasInspectorFactsContractTests
             "AtlasContextualDetailStyles.axaml"));
 
         Assert.Contains("BEFORE ACTIVATION", facts, StringComparison.Ordinal);
-        Assert.Contains("CAPABILITIES", facts, StringComparison.Ordinal);
-        Assert.Contains("EXPLICIT DEPENDENCIES", facts, StringComparison.Ordinal);
-        Assert.Contains("PERMISSIONS / CROSS-DEVICE", facts, StringComparison.Ordinal);
+        Assert.Contains("CAPABILITIES / LINKS", facts, StringComparison.Ordinal);
+        Assert.Contains("DATA BOUNDARY", facts, StringComparison.Ordinal);
+        Assert.Contains("HOST / NETWORK", facts, StringComparison.Ordinal);
+        Assert.Contains("THIS DEVICE", facts, StringComparison.Ordinal);
+        Assert.Contains("NOT PUBLISHED", facts, StringComparison.Ordinal);
         Assert.Contains("node.IsIntegratedService && !node.IsEnabled", facts, StringComparison.Ordinal);
         Assert.Contains("Select {node.Title} to review activation before opening", experience, StringComparison.Ordinal);
         Assert.Contains("if (!node.IsEnabled)", experience, StringComparison.Ordinal);
@@ -102,6 +104,7 @@ public sealed class AtlasInspectorFactsContractTests
         Assert.Contains("connection.Kind == AtlasConnectionKind.CapabilityDependency", source, StringComparison.Ordinal);
         Assert.Contains("ownedNodeIds.Contains(connection.Source.NodeId)", source, StringComparison.Ordinal);
         Assert.Contains("ownedNodeIds.Contains(connection.Target.NodeId)", source, StringComparison.Ordinal);
+        Assert.Contains("No additional permission requirement or cross-device guarantee is published to WGT.", source, StringComparison.Ordinal);
     }
 
     [Fact]
