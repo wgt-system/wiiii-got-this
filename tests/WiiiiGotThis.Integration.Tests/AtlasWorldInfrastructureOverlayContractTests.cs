@@ -3,48 +3,48 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasWorldInfrastructureOverlayContractTests
 {
     [Fact]
-    public void World_projects_shared_capability_consumption_as_a_local_facility_and_backbone()
+    public void Shared_capability_consumption_is_projected_as_selected_relationship_traces_and_provider_infrastructure()
     {
         var root = FindRepositoryRoot();
-        var world = File.ReadAllText(Path.Combine(
+        var grid = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldV2Control.cs"));
+            "AtlasGridControl.cs"));
         var host = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.ProductionRenderer.cs"));
 
-        Assert.Contains("DrawConveyanceConsumption", world, StringComparison.Ordinal);
-        Assert.Contains("connection.IsEnabled", world, StringComparison.Ordinal);
-        Assert.Contains("connection.IsCapabilityUse", world, StringComparison.Ordinal);
-        Assert.Contains("BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId", world, StringComparison.Ordinal);
-        Assert.Contains("var facility = vocationCenter + new Vector(", world, StringComparison.Ordinal);
-        Assert.Contains("DrawIndustrialGround(context, facility", world, StringComparison.Ordinal);
-        Assert.Contains("DrawWarehouse(context, facility", world, StringComparison.Ordinal);
-        Assert.Contains("DrawRelayMast(context, facility", world, StringComparison.Ordinal);
-        Assert.Contains("OpenWorldRoute(route)", world, StringComparison.Ordinal);
-        Assert.Contains("worldV2Renderer = new AtlasWorldV2Control", host, StringComparison.Ordinal);
+        Assert.Contains("DrawInfrastructureBus", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawInfrastructureNode", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawRelationshipTraces", grid, StringComparison.Ordinal);
+        Assert.Contains("connection.IsEnabled", grid, StringComparison.Ordinal);
+        Assert.Contains("connection.IsCapabilityUse", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawOrthogonalTrace", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawVisibleCapabilityPorts", grid, StringComparison.Ordinal);
+        Assert.Contains("atlasGridRenderer = new AtlasGridControl", host, StringComparison.Ordinal);
         Assert.DoesNotContain("new AtlasWorldInfrastructureOverlay", host, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Local_facility_is_a_projection_of_one_enabled_consumption_not_an_extra_provider()
+    public void Infrastructure_visualization_does_not_invent_domain_entities_or_peer_products()
     {
         var root = FindRepositoryRoot();
-        var world = File.ReadAllText(Path.Combine(
+        var grid = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldV2Control.cs"));
+            "AtlasGridControl.cs"));
 
-        Assert.Contains("string.Equals(connection.Source.ServiceIdentity?.Value, \"vocation\"", world, StringComparison.Ordinal);
-        Assert.Contains("string.Equals(connection.Target.CapabilityIdentity?.Value, BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId", world, StringComparison.Ordinal);
-        Assert.Contains("TryService(\"conveyance\"", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("new ServiceIdentity", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("new CapabilityIdentity", world, StringComparison.Ordinal);
+        Assert.Contains("node.IsSharedCapabilityProvider", grid, StringComparison.Ordinal);
+        Assert.Contains("AtlasConnectionKind.CapabilityOwnership", grid, StringComparison.Ordinal);
+        Assert.Contains("connection.IsCapabilityUse", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("new ServiceIdentity", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("new CapabilityIdentity", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("facility", grid, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("warehouse", grid, StringComparison.OrdinalIgnoreCase);
     }
 
     private static string FindRepositoryRoot()
