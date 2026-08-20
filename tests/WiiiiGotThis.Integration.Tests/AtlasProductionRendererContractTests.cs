@@ -16,11 +16,11 @@ public sealed class AtlasProductionRendererContractTests
             "src",
             "WiiiiGotThis.Presentation",
             "AtlasLandscape.cs"));
-        var world = File.ReadAllText(Path.Combine(
+        var grid = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldV2Control.cs"));
+            "AtlasGridControl.cs"));
         var host = File.ReadAllText(Path.Combine(
             root,
             "src",
@@ -39,11 +39,12 @@ public sealed class AtlasProductionRendererContractTests
         Assert.Contains("DrawRoutes", renderer, StringComparison.Ordinal);
         Assert.Contains("DrawCoreNexus", renderer, StringComparison.Ordinal);
 
-        Assert.Contains("public sealed class AtlasWorldV2Control : Control", world, StringComparison.Ordinal);
-        Assert.Contains("private AtlasWorldV2Control? worldV2Renderer", host, StringComparison.Ordinal);
-        Assert.Contains("worldV2Renderer = new AtlasWorldV2Control", host, StringComparison.Ordinal);
-        Assert.Contains("worldV2Renderer.IsVisible = isWorld", host, StringComparison.Ordinal);
+        Assert.Contains("public sealed class AtlasGridControl : Control", grid, StringComparison.Ordinal);
+        Assert.Contains("private AtlasGridControl? atlasGridRenderer", host, StringComparison.Ordinal);
+        Assert.Contains("atlasGridRenderer = new AtlasGridControl", host, StringComparison.Ordinal);
+        Assert.Contains("atlasGridRenderer.IsVisible = isWorld", host, StringComparison.Ordinal);
         Assert.Contains("productionSceneRenderer.IsVisible = !isWorld", host, StringComparison.Ordinal);
+        Assert.DoesNotContain("new AtlasWorldV2Control", host, StringComparison.Ordinal);
         Assert.DoesNotContain("new AtlasLivingWorldControl", host, StringComparison.Ordinal);
         Assert.DoesNotContain("new AtlasWorldEnvironmentalDetailOverlay", host, StringComparison.Ordinal);
         Assert.DoesNotContain("new AtlasWorldRegionalArchitectureOverlay", host, StringComparison.Ordinal);
@@ -58,7 +59,7 @@ public sealed class AtlasProductionRendererContractTests
         Assert.Contains("SceneCanvas.IsVisible = false", host, StringComparison.Ordinal);
         Assert.Contains("ControlHint.IsVisible = false", host, StringComparison.Ordinal);
         Assert.Contains("AtlasViewport.Children.Insert(0, productionSceneRenderer)", host, StringComparison.Ordinal);
-        Assert.Contains("AtlasViewport.Children.Insert(1, worldV2Renderer)", host, StringComparison.Ordinal);
+        Assert.Contains("AtlasViewport.Children.Insert(1, atlasGridRenderer)", host, StringComparison.Ordinal);
 
         var productionGuard = atlasView.IndexOf("if (IsProductionSceneRendererActive)", StringComparison.Ordinal);
         var legacyMaterialization = atlasView.IndexOf("AddGridLines();", StringComparison.Ordinal);
@@ -77,11 +78,11 @@ public sealed class AtlasProductionRendererContractTests
             "src",
             "WiiiiGotThis.Presentation",
             "AtlasLandscapeControl.cs"));
-        var world = File.ReadAllText(Path.Combine(
+        var grid = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldV2Control.cs"));
+            "AtlasGridControl.cs"));
         var host = File.ReadAllText(Path.Combine(
             root,
             "src",
@@ -94,17 +95,18 @@ public sealed class AtlasProductionRendererContractTests
         Assert.Contains("themeTransitionActive = !reducedMotion", renderer, StringComparison.Ordinal);
         Assert.Contains("Focus();", renderer, StringComparison.Ordinal);
 
-        Assert.Contains("AtlasPresentationFocus.Build", world, StringComparison.Ordinal);
-        Assert.Contains("RequestAnimationFrame", world, StringComparison.Ordinal);
-        Assert.Contains("reducedMotion", world, StringComparison.Ordinal);
-        Assert.Contains("NodeInvoked", world, StringComparison.Ordinal);
-        Assert.Contains("NodeActivated", world, StringComparison.Ordinal);
-        Assert.Contains("Focus();", world, StringComparison.Ordinal);
+        Assert.Contains("AtlasPresentationFocus.Build", grid, StringComparison.Ordinal);
+        Assert.Contains("RequestAnimationFrame", grid, StringComparison.Ordinal);
+        Assert.Contains("reducedMotion", grid, StringComparison.Ordinal);
+        Assert.Contains("NodeInvoked", grid, StringComparison.Ordinal);
+        Assert.Contains("NodeActivated", grid, StringComparison.Ordinal);
+        Assert.Contains("Focus();", grid, StringComparison.Ordinal);
+        Assert.Contains("MoveSelection", grid, StringComparison.Ordinal);
 
         Assert.DoesNotContain("AtlasViewport.Focus();", host, StringComparison.Ordinal);
         Assert.Contains("if (!node.IsEnabled)", host, StringComparison.Ordinal);
         Assert.Contains("await OpenSelectedProductSurfaceAsync()", host, StringComparison.Ordinal);
-        Assert.Contains("worldV2Renderer?.SetCamera", host, StringComparison.Ordinal);
+        Assert.Contains("atlasGridRenderer?.SetCamera", host, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
