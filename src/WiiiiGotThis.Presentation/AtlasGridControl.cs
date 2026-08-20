@@ -691,7 +691,7 @@ public sealed class AtlasGridControl : Control
         return next;
     }
 
-    private Color AccentFor(AtlasNodePresentationViewModel node)
+    private static Color AccentFor(AtlasNodePresentationViewModel node)
     {
         if (node.IsCore)
             return CoreAccent;
