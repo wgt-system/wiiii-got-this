@@ -130,7 +130,7 @@ public sealed partial class DesktopAtlasView
     private void OnAtlasCameraTransformChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         // Camera movement must never choose a new dossier side/position. The user owns the
-        // floating dossier position; only the tether follows the selected world object.
+        // floating dossier position; only the tether follows the selected Atlas object.
         UpdateProductionSceneCamera();
         UpdateInspectorTether();
     }
@@ -308,8 +308,8 @@ public sealed partial class DesktopAtlasView
     private Point ActiveRendererWorldPoint(AtlasNodePresentationViewModel node)
     {
         if (shell?.AtlasTheme == AtlasThemePreference.World
-            && worldV2Renderer is not null
-            && worldV2Renderer.TryGetWorldPosition(node.NodeId, out var authored))
+            && atlasGridRenderer is not null
+            && atlasGridRenderer.TryGetWorldPosition(node.NodeId, out var authored))
         {
             return new Point(WorldCenterX + authored.X, WorldCenterY + authored.Y);
         }
