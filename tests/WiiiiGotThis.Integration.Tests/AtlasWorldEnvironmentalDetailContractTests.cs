@@ -3,51 +3,51 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasWorldEnvironmentalDetailContractTests
 {
     [Fact]
-    public void World_v2_contains_authored_environmental_structure_beyond_settlement_blobs()
+    public void Flagship_grid_has_visual_depth_without_landscape_or_city_metaphors()
     {
         var root = FindRepositoryRoot();
-        var world = File.ReadAllText(Path.Combine(
+        var grid = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldV2Control.cs"));
+            "AtlasGridControl.cs"));
         var host = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.ProductionRenderer.cs"));
 
-        Assert.Contains("DrawContiguousTerrain", world, StringComparison.Ordinal);
-        Assert.Contains("DrawRegionalLandUse", world, StringComparison.Ordinal);
-        Assert.Contains("DrawWater", world, StringComparison.Ordinal);
-        Assert.Contains("DrawRoadNetwork", world, StringComparison.Ordinal);
-        Assert.Contains("DrawRailNetwork", world, StringComparison.Ordinal);
-        Assert.Contains("DrawVegetation", world, StringComparison.Ordinal);
-        Assert.Contains("vocationFields", world, StringComparison.Ordinal);
-        Assert.Contains("var campus =", world, StringComparison.Ordinal);
-        Assert.Contains("orientationRidge", world, StringComparison.Ordinal);
-        Assert.Contains("industrialBelt", world, StringComparison.Ordinal);
-        Assert.Contains("tributary", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("DrawGlow", world, StringComparison.Ordinal);
+        Assert.Contains("DrawBackground", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawGrid", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawAmbientField", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawForegroundVignette", grid, StringComparison.Ordinal);
+        Assert.Contains("GridMinor", grid, StringComparison.Ordinal);
+        Assert.Contains("GridMajor", grid, StringComparison.Ordinal);
+        Assert.Contains("GridPoint", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("LandOutline", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("DrawWater", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("DrawRoad", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("DrawRail", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("DrawVegetation", grid, StringComparison.Ordinal);
         Assert.DoesNotContain("new AtlasWorldEnvironmentalDetailOverlay", host, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void World_v2_environmental_geometry_uses_concrete_point_arrays_on_the_hot_render_path()
+    public void Grid_geometry_is_viewport_bounded_and_camera_aware()
     {
         var root = FindRepositoryRoot();
-        var world = File.ReadAllText(Path.Combine(
+        var grid = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldV2Control.cs"));
+            "AtlasGridControl.cs"));
 
-        Assert.Contains("Point[] canopy", world, StringComparison.Ordinal);
-        Assert.Contains("Point[] local", world, StringComparison.Ordinal);
-        Assert.Contains("ClosedWorldShape(Point[] worldPoints", world, StringComparison.Ordinal);
-        Assert.Contains("OpenWorldRoute(Point[] worldPoints)", world, StringComparison.Ordinal);
-        Assert.Contains("DrawRoad(DrawingContext context, Point[] points", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("IReadOnlyList<Point> points", world, StringComparison.Ordinal);
+        Assert.Contains("leftWorld", grid, StringComparison.Ordinal);
+        Assert.Contains("rightWorld", grid, StringComparison.Ordinal);
+        Assert.Contains("topWorld", grid, StringComparison.Ordinal);
+        Assert.Contains("bottomWorld", grid, StringComparison.Ordinal);
+        Assert.Contains("Screen(new Point", grid, StringComparison.Ordinal);
+        Assert.Contains("ClipToBounds = true", grid, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
