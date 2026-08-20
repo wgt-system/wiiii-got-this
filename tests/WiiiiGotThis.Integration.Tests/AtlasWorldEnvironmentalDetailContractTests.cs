@@ -24,10 +24,11 @@ public sealed class AtlasWorldEnvironmentalDetailContractTests
         Assert.Contains("DrawRailNetwork", world, StringComparison.Ordinal);
         Assert.Contains("DrawVegetation", world, StringComparison.Ordinal);
         Assert.Contains("vocationFields", world, StringComparison.Ordinal);
-        Assert.Contains("illuminationGarden", world, StringComparison.Ordinal);
+        Assert.Contains("var campus =", world, StringComparison.Ordinal);
         Assert.Contains("orientationRidge", world, StringComparison.Ordinal);
-        Assert.Contains("wgtGreenbelt", world, StringComparison.Ordinal);
+        Assert.Contains("industrialBelt", world, StringComparison.Ordinal);
         Assert.Contains("tributary", world, StringComparison.Ordinal);
+        Assert.DoesNotContain("DrawGlow", world, StringComparison.Ordinal);
         Assert.DoesNotContain("new AtlasWorldEnvironmentalDetailOverlay", host, StringComparison.Ordinal);
     }
 
@@ -41,7 +42,8 @@ public sealed class AtlasWorldEnvironmentalDetailContractTests
             "WiiiiGotThis.Presentation",
             "AtlasWorldV2Control.cs"));
 
-        Assert.Contains("Point[] trees", world, StringComparison.Ordinal);
+        Assert.Contains("Point[] canopy", world, StringComparison.Ordinal);
+        Assert.Contains("Point[] local", world, StringComparison.Ordinal);
         Assert.Contains("ClosedWorldShape(Point[] worldPoints", world, StringComparison.Ordinal);
         Assert.Contains("OpenWorldRoute(Point[] worldPoints)", world, StringComparison.Ordinal);
         Assert.Contains("DrawRoad(DrawingContext context, Point[] points", world, StringComparison.Ordinal);
