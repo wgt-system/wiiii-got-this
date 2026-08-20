@@ -40,7 +40,7 @@ public sealed partial class DesktopAtlasView
         if (primaryNodes.Length == 0)
             return false;
 
-        var isAuthoredWorld = currentShell.AtlasTheme == AtlasThemePreference.World && worldV2Renderer is not null;
+        var isFlagshipGrid = currentShell.AtlasTheme == AtlasThemePreference.World && atlasGridRenderer is not null;
         const double serviceHalfWidth = 86d;
         const double serviceHalfHeight = 92d;
         const double coreHalfWidth = 108d;
@@ -52,14 +52,12 @@ public sealed partial class DesktopAtlasView
         var maxY = double.NegativeInfinity;
         foreach (var node in primaryNodes)
         {
-            var point = isAuthoredWorld ? ActiveRendererWorldPoint(node) : WorldPoint(node);
-            // World V2 is one contiguous geography. The additional footprint is deliberate: the
-            // camera must fit coast/terrain/roads around a place, not merely its settlement anchor.
-            var halfWidth = isAuthoredWorld
-                ? node.IsCore ? 320d : 285d
+            var point = isFlagshipGrid ? ActiveRendererWorldPoint(node) : WorldPoint(node);
+            var halfWidth = isFlagshipGrid
+                ? node.IsCore ? 156d : node.IsSharedCapabilityProvider ? 124d : 132d
                 : node.IsCore ? coreHalfWidth : serviceHalfWidth;
-            var halfHeight = isAuthoredWorld
-                ? node.IsCore ? 260d : 245d
+            var halfHeight = isFlagshipGrid
+                ? node.IsCore ? 78d : node.IsSharedCapabilityProvider ? 52d : 66d
                 : node.IsCore ? coreHalfHeight : serviceHalfHeight;
             minX = Math.Min(minX, point.X - halfWidth);
             maxX = Math.Max(maxX, point.X + halfWidth);
@@ -69,15 +67,15 @@ public sealed partial class DesktopAtlasView
 
         const double horizontalSafeArea = 72d;
         const double topSafeArea = 104d;
-        const double bottomSafeArea = 42d;
+        const double bottomSafeArea = 52d;
         var availableWidth = Math.Max(320d, AtlasViewport.Bounds.Width - horizontalSafeArea * 2);
         var availableHeight = Math.Max(280d, AtlasViewport.Bounds.Height - topSafeArea - bottomSafeArea);
         var contentWidth = Math.Max(1d, maxX - minX);
         var contentHeight = Math.Max(1d, maxY - minY);
         var fittedZoom = Math.Clamp(
             Math.Min(availableWidth / contentWidth, availableHeight / contentHeight),
-            isAuthoredWorld ? 0.56d : 0.66d,
-            isAuthoredWorld ? 0.94d : 1.08d);
+            isFlagshipGrid ? 0.62d : 0.66d,
+            isFlagshipGrid ? 1.02d : 1.08d);
 
         var worldCenterX = (minX + maxX) / 2d;
         var worldCenterY = (minY + maxY) / 2d;
