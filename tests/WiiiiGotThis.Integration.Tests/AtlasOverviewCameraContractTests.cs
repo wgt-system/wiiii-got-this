@@ -3,7 +3,7 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasOverviewCameraContractTests
 {
     [Fact]
-    public void Overview_camera_fits_core_and_first_class_services_into_safe_desktop_chrome()
+    public void Overview_camera_fits_core_products_and_infrastructure_into_safe_desktop_chrome()
     {
         var root = FindRepositoryRoot();
         var source = File.ReadAllText(Path.Combine(
@@ -13,11 +13,13 @@ public sealed class AtlasOverviewCameraContractTests
             "DesktopAtlasView.OverviewCamera.cs"));
 
         Assert.Contains("node.IsCore || node.IsService", source, StringComparison.Ordinal);
+        Assert.Contains("isFlagshipGrid", source, StringComparison.Ordinal);
+        Assert.Contains("node.IsSharedCapabilityProvider", source, StringComparison.Ordinal);
         Assert.Contains("topSafeArea = 104d", source, StringComparison.Ordinal);
-        Assert.Contains("bottomSafeArea = 42d", source, StringComparison.Ordinal);
+        Assert.Contains("bottomSafeArea = 52d", source, StringComparison.Ordinal);
         Assert.Contains("horizontalSafeArea = 72d", source, StringComparison.Ordinal);
-        Assert.Contains("0.66d", source, StringComparison.Ordinal);
-        Assert.Contains("1.08d", source, StringComparison.Ordinal);
+        Assert.Contains("0.62d", source, StringComparison.Ordinal);
+        Assert.Contains("1.02d", source, StringComparison.Ordinal);
         Assert.Contains("targetScreenY = topSafeArea + availableHeight / 2d", source, StringComparison.Ordinal);
     }
 
