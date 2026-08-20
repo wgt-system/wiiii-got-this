@@ -1,0 +1,61 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+    Physical Windows smoke is the authority for this layer. The normal dossier must read as one
+    persistent tool surface, not a card containing badges containing metric cards.
+  -->
+  <Style Selector="Border.wgt-atlas-inspector">
+    <Setter Property="Height" Value="560" />
+    <Setter Property="Padding" Value="16" />
+  </Style>
+
+  <!--
+    Do not rely on IsVisible alone: older/dynamic visual paths may attach a local visibility value
+    with higher precedence than this late style layer. Collapse every other visual dimension too so
+    taxonomy/state badges cannot reappear in the normal dossier even when such a path survives.
+  -->
+  <Style Selector="Border.wgt-atlas-inspector Border.wgt-atlas-kind-chip">
+    <Setter Property="IsVisible" Value="False" />
+    <Setter Property="IsHitTestVisible" Value="False" />
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="MaxWidth" Value="0" />
+    <Setter Property="MaxHeight" Value="0" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-inspector Border.wgt-atlas-state-chip">
+    <Setter Property="IsVisible" Value="False" />
+    <Setter Property="IsHitTestVisible" Value="False" />
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="MaxWidth" Value="0" />
+    <Setter Property="MaxHeight" Value="0" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+
+  <!-- Any older metric wrappers that still reach the visual tree are deliberately flattened. -->
+  <Style Selector="Border.wgt-atlas-inspector Border.wgt-inspector-metric">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="BoxShadow" Value="0 0 0 0 #00000000" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="0" />
+  </Style>
+
+  <Style Selector="Border.wgt-atlas-inspector Separator">
+    <Setter Property="Opacity" Value="0.38" />
+  </Style>
+
+  <!-- Footer action remains visually distinct, but belongs to the dossier rather than a nested card. -->
+  <Style Selector="Border.wgt-atlas-inspector Button.wgt-primary-action">
+    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="Margin" Value="0,8,0,0" />
+  </Style>
+</Styles>

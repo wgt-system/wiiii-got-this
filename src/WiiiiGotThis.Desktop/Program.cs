@@ -21,12 +21,17 @@ internal static class Program
         var deviceStore = new SqliteLocalDeviceStore(connectionFactory);
         var integrationStore = new SqliteServiceIntegrationStore(connectionFactory);
         var publicationStore = new SqliteIntegrationPublicationStore(connectionFactory);
+        var appearanceStore = new JsonAtlasAppearancePreferenceStore(Path.Combine(dataDirectory, "appearance.json"));
+        var capabilityConsumptionStore = new JsonAtlasCapabilityConsumptionPreferenceStore(
+            Path.Combine(dataDirectory, "capability-consumption.json"));
         var vocationHttpClient = new HttpClient();
         var vocationSource = new VocationHttpOpportunityOverviewSource(vocationHttpClient);
         var vocationMapSource = new VocationHttpMapProjectionSource(vocationHttpClient);
         var adapters = new StaticIntegrationAdapterCatalog([
             new ReferenceIntegrationAdapter(),
-            new VocationIntegrationAdapter(vocationSource, vocationMapSource)]);
+            new VocationIntegrationAdapter(vocationSource, vocationMapSource),
+            new IlluminationDesktopIntegrationAdapter(),
+            new OrientationDesktopIntegrationAdapter()]);
         var ensureDevice = new EnsureCurrentDeviceUseCase(deviceStore);
         var register = new RegisterKnownIntegrationsUseCase(adapters, integrationStore);
         var refresh = new RefreshPublicationsUseCase(adapters, publicationStore);
@@ -37,10 +42,48 @@ internal static class Program
         var catalog = new ResolveCapabilityCatalogUseCase(adapters, integrationStore, publicationStore);
         var readVocationOpportunityOverview = new GetVocationOpportunityOverviewUseCase(vocationSource);
         var readVocationMapProjection = new GetVocationMapProjectionUseCase(vocationMapSource);
-        var shell = new ShellViewModel(ensureDevice, register, refresh, list, global, deviceOverride, clearOverride, catalog, "Windows PC", readVocationOpportunityOverview, readVocationMapProjection);
+        var shell = new ShellViewModel(
+            ensureDevice,
+            register,
+            refresh,
+            list,
+            global,
+            deviceOverride,
+            clearOverride,
+            catalog,
+            "Windows PC",
+            readVocationOpportunityOverview,
+            readVocationMapProjection,
+            new GetAtlasAppearancePreferenceUseCase(appearanceStore),
+            new SetAtlasAppearancePreferenceUseCase(appearanceStore));
 
-        BuildAvaloniaApp(shell).StartWithClassicDesktopLifetime(args);
+        var readCapabilityConsumption = new GetAtlasCapabilityConsumptionPreferencesUseCase(capabilityConsumptionStore);
+        var writeCapabilityConsumption = new SetAtlasCapabilityConsumptionPreferenceUseCase(capabilityConsumptionStore);
+        shell.ConfigureCapabilityConsumptionPreferences(
+            readCapabilityConsumption.GetAsync().AsTask().GetAwaiter().GetResult(),
+            writeCapabilityConsumption);
+
+        var illuminationProductSurface = new IlluminationDesktopProductSurfaceSource();
+        using var vocationProductRuntime = new VocationDesktopProductRuntime();
+        using var orientationProductRuntime = new OrientationDesktopProductRuntime();
+
+        BuildAvaloniaApp(
+            shell,
+            illuminationProductSurface,
+            vocationProductRuntime,
+            orientationProductRuntime).StartWithClassicDesktopLifetime(args);
     }
 
-    private static AppBuilder BuildAvaloniaApp(ShellViewModel shell) => AppBuilder.Configure(() => new App(shell)).UsePlatformDetect().LogToTrace();
+    private static AppBuilder BuildAvaloniaApp(
+        ShellViewModel shell,
+        IIlluminationProductSurfaceSource illuminationProductSurface,
+        IVocationProductRuntime vocationProductRuntime,
+        IOrientationProductRuntime orientationProductRuntime) =>
+        AppBuilder.Configure(() => new App(
+                shell,
+                illuminationProductSurface,
+                vocationProductRuntime,
+                orientationProductRuntime))
+            .UsePlatformDetect()
+            .LogToTrace();
 }

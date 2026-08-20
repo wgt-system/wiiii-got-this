@@ -1,3 +1,14 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.MainWindow" Width="1180" Height="760" MinWidth="900" MinHeight="600" WindowStartupLocation="CenterScreen" Title="Wiiii Got This">
-  <local:DesktopShellView />
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:WiiiiGotThis.Presentation"
+        x:Class="WiiiiGotThis.Presentation.MainWindow"
+        Width="1380"
+        Height="880"
+        MinWidth="1040"
+        MinHeight="680"
+        RequestedThemeVariant="Dark"
+        Background="#FF060D13"
+        WindowStartupLocation="CenterScreen"
+        Title="Wiiii Got This · Atlas">
+  <local:DesktopShellView x:Name="ShellView" />
 </Window>

@@ -1,0 +1,462 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <SolidColorBrush x:Key="WgtAtlasThemeChoiceBrush" Color="#EC151B22" />
+    <SolidColorBrush x:Key="WgtAtlasThemeChoiceHoverBrush" Color="#F21C2530" />
+    <SolidColorBrush x:Key="WgtAtlasThemeHeaderBrush" Color="#E6121820" />
+  </Styles.Resources>
+
+  <!--
+    Runtime visual correction pass.
+    The Atlas is deliberately a spatial product surface rather than a light Fluent form
+    with dark floating rectangles. Themes therefore own the canvas/material identity
+    while the semantic graph remains unchanged.
+  -->
+  <Style Selector="Grid.wgt-atlas-root.theme-technical">
+    <Setter Property="Background" Value="#FF0A1017" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant">
+    <Setter Property="Background" Value="#FF151417" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine">
+    <Setter Property="Background" Value="#FF07110E" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world">
+    <Setter Property="Background" Value="#FF0D1714" />
+  </Style>
+
+  <!-- Theme-specific graph guide language. -->
+  <Style Selector="Line.wgt-atlas-gridline.theme-technical">
+    <Setter Property="Stroke" Value="#FF203747" />
+    <Setter Property="Opacity" Value="0.42" />
+  </Style>
+  <Style Selector="Line.wgt-atlas-gridline.theme-elegant">
+    <Setter Property="Stroke" Value="#FF3A353B" />
+    <Setter Property="Opacity" Value="0.09" />
+  </Style>
+  <Style Selector="Line.wgt-atlas-gridline.theme-machine">
+    <Setter Property="Stroke" Value="#FF1D4938" />
+    <Setter Property="Opacity" Value="0.48" />
+  </Style>
+  <Style Selector="Line.wgt-atlas-gridline.theme-world">
+    <Setter Property="Stroke" Value="#FF214238" />
+    <Setter Property="Opacity" Value="0.08" />
+  </Style>
+
+  <!-- Nodes are dark spatial objects in every renderer; no more white Fluent bubbles. -->
+  <Style Selector="Button.wgt-atlas-node">
+    <Setter Property="Foreground" Value="#FFF2F6F9" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.theme-technical">
+    <Setter Property="Background" Value="#FF111C25" />
+    <Setter Property="BoxShadow" Value="0 12 32 0 #6A000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-technical">
+    <Setter Property="Background" Value="#FF111C25" />
+    <Setter Property="BorderBrush" Value="#FF355A70" />
+    <Setter Property="Foreground" Value="#FFF0F8FC" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-technical">
+    <Setter Property="CornerRadius" Value="28" />
+    <Setter Property="Background" Value="#FF0C1720" />
+    <Setter Property="BoxShadow" Value="0 0 26 0 #324CCAF0, 0 18 48 0 #76000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-technical">
+    <Setter Property="CornerRadius" Value="28" />
+    <Setter Property="Background" Value="#FF0C1720" />
+    <Setter Property="BorderBrush" Value="#FF4CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.service.theme-technical">
+    <Setter Property="CornerRadius" Value="24" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service.theme-technical">
+    <Setter Property="CornerRadius" Value="24" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-technical.selected">
+    <Setter Property="Background" Value="#FF162B38" />
+    <Setter Property="BorderBrush" Value="#FF4CCAF0" />
+  </Style>
+
+  <Style Selector="Border.wgt-atlas-node-shell.theme-elegant">
+    <Setter Property="Background" Value="#FF211E22" />
+    <Setter Property="BoxShadow" Value="0 18 54 0 #52000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-elegant">
+    <Setter Property="Background" Value="#FF211E22" />
+    <Setter Property="BorderBrush" Value="#FF4D464E" />
+    <Setter Property="Foreground" Value="#FFF5EFE8" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-elegant">
+    <Setter Property="CornerRadius" Value="92" />
+    <Setter Property="Background" Value="#FF1B191C" />
+    <Setter Property="BoxShadow" Value="0 24 72 0 #66000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-elegant">
+    <Setter Property="CornerRadius" Value="92" />
+    <Setter Property="Background" Value="#FF1B191C" />
+    <Setter Property="BorderBrush" Value="#FFB9A995" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.service.theme-elegant">
+    <Setter Property="CornerRadius" Value="73" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service.theme-elegant">
+    <Setter Property="CornerRadius" Value="73" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-elegant.selected">
+    <Setter Property="Background" Value="#FF2C282D" />
+    <Setter Property="BorderBrush" Value="#FFD6C7B5" />
+  </Style>
+
+  <Style Selector="Border.wgt-atlas-node-shell.theme-machine">
+    <Setter Property="Background" Value="#FF0D1A16" />
+    <Setter Property="BoxShadow" Value="0 0 16 0 #255EF0B0, 0 12 34 0 #70000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-machine">
+    <Setter Property="Background" Value="#FF0D1A16" />
+    <Setter Property="BorderBrush" Value="#FF2C8E69" />
+    <Setter Property="Foreground" Value="#FFE9FFF6" />
+    <Setter Property="BorderThickness" Value="1.5" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-machine">
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Background" Value="#FF091611" />
+    <Setter Property="BoxShadow" Value="0 0 30 0 #365EF0B0, 0 16 42 0 #76000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-machine">
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Background" Value="#FF091611" />
+    <Setter Property="BorderBrush" Value="#FF63F5B2" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.service.theme-machine">
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service.theme-machine">
+    <Setter Property="CornerRadius" Value="6" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-machine.selected">
+    <Setter Property="Background" Value="#FF123025" />
+    <Setter Property="BorderBrush" Value="#FF63F5B2" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+
+  <Style Selector="Border.wgt-atlas-node-shell.theme-world">
+    <Setter Property="Background" Value="#FF17231F" />
+    <Setter Property="BoxShadow" Value="0 10 34 0 #66000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-world">
+    <Setter Property="Background" Value="#FF17231F" />
+    <Setter Property="BorderBrush" Value="#FF3F705D" />
+    <Setter Property="Foreground" Value="#FFF0FAF5" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.core.theme-world">
+    <Setter Property="CornerRadius" Value="52" />
+    <Setter Property="Background" Value="#FF101D19" />
+    <Setter Property="BoxShadow" Value="0 0 30 0 #287DD3A6, 0 18 52 0 #72000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-world">
+    <Setter Property="CornerRadius" Value="52" />
+    <Setter Property="Background" Value="#FF101D19" />
+    <Setter Property="BorderBrush" Value="#FF7DD3A6" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-node-shell.service.theme-world">
+    <Setter Property="CornerRadius" Value="42" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service.theme-world">
+    <Setter Property="CornerRadius" Value="42" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-world.selected">
+    <Setter Property="Background" Value="#FF20362E" />
+    <Setter Property="BorderBrush" Value="#FF7DD3A6" />
+  </Style>
+
+  <!-- Capability ports stay quieter than product nodes. -->
+  <Style Selector="Border.wgt-atlas-node-shell.capability">
+    <Setter Property="BoxShadow" Value="0 6 18 0 #4D000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability">
+    <Setter Property="Opacity" Value="0.88" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.selected">
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+
+  <!-- Connections carry renderer identity more strongly than idle guide rings. -->
+  <Style Selector="Path.wgt-atlas-connection.theme-technical">
+    <Setter Property="Stroke" Value="#FF4C9AB8" />
+    <Setter Property="Opacity" Value="0.46" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection.dependency.theme-technical">
+    <Setter Property="Stroke" Value="#FF4CCAF0" />
+    <Setter Property="Opacity" Value="0.72" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection.theme-elegant">
+    <Setter Property="Stroke" Value="#FF8D808A" />
+    <Setter Property="Opacity" Value="0.24" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection.dependency.theme-elegant">
+    <Setter Property="Stroke" Value="#FFD6C7B5" />
+    <Setter Property="Opacity" Value="0.4" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection.theme-machine">
+    <Setter Property="Stroke" Value="#FF48B489" />
+    <Setter Property="Opacity" Value="0.55" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection.dependency.theme-machine">
+    <Setter Property="Stroke" Value="#FF63F5B2" />
+    <Setter Property="Opacity" Value="0.9" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection.theme-world">
+    <Setter Property="Stroke" Value="#FF609E82" />
+    <Setter Property="Opacity" Value="0.38" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection.dependency.theme-world">
+    <Setter Property="Stroke" Value="#FF7DD3A6" />
+    <Setter Property="Opacity" Value="0.7" />
+  </Style>
+
+  <!-- Global chrome: raised, compact-looking material instead of opaque black slabs. -->
+  <Style Selector="Border.wgt-atlas-search-dock">
+    <Setter Property="Background" Value="#E6121820" />
+    <Setter Property="BorderBrush" Value="#FF2D3945" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="17" />
+    <Setter Property="BoxShadow" Value="0 8 22 0 #3D000000" />
+    <Setter Property="Opacity" Value="0.96" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-search-dock TextBox">
+    <Setter Property="Foreground" Value="#FFE8EEF4" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-search-dock TextBlock">
+    <Setter Property="Foreground" Value="#FFD4E2EC" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-search-results">
+    <Setter Property="Background" Value="#F2182029" />
+    <Setter Property="BorderBrush" Value="#FF34414D" />
+    <Setter Property="BoxShadow" Value="0 10 28 0 #44000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-search-result">
+    <Setter Property="Foreground" Value="#FFE8EEF4" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-orb">
+    <Setter Property="Background" Value="#D9141B22" />
+    <Setter Property="BorderBrush" Value="#FF34414D" />
+    <Setter Property="Foreground" Value="#FFDDE8EF" />
+    <Setter Property="Opacity" Value="0.9" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-orb:pointerover">
+    <Setter Property="Opacity" Value="1" />
+    <Setter Property="BorderBrush" Value="#FF648CA3" />
+  </Style>
+
+  <!-- Control hint no longer reads as a mysterious black widget. -->
+  <Style Selector="Border.wgt-atlas-controls">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="BoxShadow" Value="0 0 0 0 #00000000" />
+    <Setter Property="Opacity" Value="0.42" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-controls TextBlock">
+    <Setter Property="Foreground" Value="#FF9FB0BC" />
+  </Style>
+
+  <!-- Inspector remains WGT-owned chrome but uses the same material language as the scene. -->
+  <Style Selector="Border.wgt-atlas-inspector">
+    <Setter Property="Background" Value="#F2171E26" />
+    <Setter Property="BorderBrush" Value="#FF34414D" />
+    <Setter Property="BoxShadow" Value="0 16 42 0 #66000000" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-inspector TextBlock">
+    <Setter Property="Foreground" Value="#FFE8EEF4" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-inspector Button">
+    <Setter Property="Foreground" Value="#FFE8EEF4" />
+  </Style>
+  <Style Selector="Border.wgt-inspector-metric">
+    <Setter Property="Background" Value="#A611171D" />
+    <Setter Property="BorderBrush" Value="#FF2B3742" />
+  </Style>
+
+  <!-- Appearance chooser: explicit renderer identities without five heavy black blocks. -->
+  <Style Selector="Border.wgt-theme-chooser-header">
+    <Setter Property="Background" Value="#E6121820" />
+    <Setter Property="BorderBrush" Value="#FF34414D" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="BoxShadow" Value="0 6 16 0 #33000000" />
+  </Style>
+  <Style Selector="Border.wgt-theme-chooser-header TextBlock">
+    <Setter Property="Foreground" Value="#FFC6D4DE" />
+  </Style>
+  <Style Selector="Button.wgt-theme-choice">
+    <Setter Property="Background" Value="#E3171E26" />
+    <Setter Property="BorderBrush" Value="#FF34414D" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="#FFE8EEF4" />
+    <Setter Property="Opacity" Value="0.88" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+        <DoubleTransition Property="Opacity" Duration="0:0:0.14" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.wgt-theme-choice:pointerover">
+    <Setter Property="Background" Value="#F21E2933" />
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+  <Style Selector="Button.wgt-theme-choice.selected">
+    <Setter Property="Background" Value="#F022303A" />
+    <Setter Property="BorderBrush" Value="#FF70A7C2" />
+    <Setter Property="BorderThickness" Value="1.5" />
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+  <Style Selector="Border.wgt-theme-choice-glyph">
+    <Setter Property="Background" Value="#FF152632" />
+    <Setter Property="BorderBrush" Value="#FF3C5B6D" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <Style Selector="Button.wgt-theme-choice.selected Border.wgt-theme-choice-glyph">
+    <Setter Property="BorderBrush" Value="#FF70A7C2" />
+  </Style>
+
+  <!--
+    Node-bound depth is contextual information, not permanent decoration.
+    The first smoke showed that multiple always-visible rings around every service read
+    as unfinished drawing guides. Keep idle depth almost invisible and reveal it on focus.
+  -->
+  <Style Selector="Border.wgt-atlas-depth-node">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="#FF4A6474" />
+    <Setter Property="Opacity" Value="0.025" />
+    <Setter Property="BoxShadow" Value="0 0 0 0 #00000000" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.18" Easing="QuadraticEaseOut" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2" Easing="QuadraticEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.inner">
+    <Setter Property="Opacity" Value="0.012" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.core">
+    <Setter Property="Opacity" Value="0.075" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.contextual">
+    <Setter Property="Opacity" Value="0.15" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.selected">
+    <Setter Property="Opacity" Value="0.42" />
+    <Setter Property="BoxShadow" Value="0 0 42 0 #264CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.dimmed">
+    <Setter Property="Opacity" Value="0.006" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-elegant.contextual">
+    <Setter Property="BorderBrush" Value="#FF9E909A" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-elegant.selected">
+    <Setter Property="BorderBrush" Value="#FFD6C7B5" />
+    <Setter Property="BoxShadow" Value="0 0 44 0 #22D6C7B5" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-machine">
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-machine.inner">
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-machine.contextual">
+    <Setter Property="BorderBrush" Value="#FF48B489" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-machine.selected">
+    <Setter Property="BorderBrush" Value="#FF63F5B2" />
+    <Setter Property="BoxShadow" Value="0 0 42 0 #2863F5B2" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-world.contextual">
+    <Setter Property="BorderBrush" Value="#FF609E82" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-depth-node.theme-world.selected">
+    <Setter Property="BorderBrush" Value="#FF7DD3A6" />
+    <Setter Property="BoxShadow" Value="0 0 42 0 #247DD3A6" />
+  </Style>
+
+  <!-- Ambient renderer accents are restrained and never dominate the graph. -->
+  <Style Selector="Border.wgt-theme-ambient">
+    <Setter Property="Opacity" Value="0" />
+  </Style>
+  <Style Selector="Border.wgt-theme-technical-reticle.theme-technical">
+    <Setter Property="Opacity" Value="0.13" />
+    <Setter Property="BorderBrush" Value="#FF4CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-theme-technical-reticle-line.theme-technical">
+    <Setter Property="Opacity" Value="0.11" />
+    <Setter Property="Background" Value="#FF4CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-theme-elegant-halo.theme-elegant">
+    <Setter Property="Opacity" Value="0.07" />
+    <Setter Property="BorderBrush" Value="#FFD6C7B5" />
+  </Style>
+  <Style Selector="Border.wgt-theme-machine-rail.theme-machine">
+    <Setter Property="Opacity" Value="0.16" />
+    <Setter Property="Background" Value="#FF63F5B2" />
+  </Style>
+  <Style Selector="Border.wgt-theme-machine-corner.theme-machine">
+    <Setter Property="Opacity" Value="0.42" />
+    <Setter Property="Background" Value="#FF63F5B2" />
+  </Style>
+  <Style Selector="Border.wgt-theme-world-beacon.theme-world">
+    <Setter Property="Opacity" Value="0.48" />
+    <Setter Property="Background" Value="#FF7DD3A6" />
+  </Style>
+
+  <!-- Inspector tether remains presentation-only and is deliberately subordinate. -->
+  <Style Selector="Path.wgt-atlas-inspector-tether">
+    <Setter Property="StrokeThickness" Value="1.2" />
+    <Setter Property="Opacity" Value="0.42" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether.theme-elegant">
+    <Setter Property="Stroke" Value="#FFD6C7B5" />
+    <Setter Property="Opacity" Value="0.28" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether.theme-machine">
+    <Setter Property="Stroke" Value="#FF63F5B2" />
+    <Setter Property="Opacity" Value="0.56" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether.theme-world">
+    <Setter Property="Stroke" Value="#FF7DD3A6" />
+    <Setter Property="Opacity" Value="0.34" />
+  </Style>
+
+  <!-- Full products occupy a deeper WGT level; transitions are brief and state-driven. -->
+  <Style Selector="Grid.wgt-product-overlay">
+    <Setter Property="Opacity" Value="1" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.17" Easing="QuadraticEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.wgt-product-rail">
+    <Setter Property="BoxShadow" Value="10 0 32 0 #3D000000" />
+  </Style>
+  <Style Selector="Border.wgt-product-stage">
+    <Setter Property="BorderBrush" Value="#1FFFFFFF" />
+    <Setter Property="BorderThickness" Value="1,0,0,0" />
+  </Style>
+  <Style Selector="Button.wgt-product-return">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.wgt-product-return:pointerover">
+    <Setter Property="Background" Value="{DynamicResource WgtAccentBrush}" />
+    <Setter Property="Foreground" Value="White" />
+  </Style>
+  <Style Selector="Border.wgt-product-service-mark">
+    <Setter Property="BoxShadow" Value="0 0 24 0 #2446D8FF" />
+  </Style>
+</Styles>

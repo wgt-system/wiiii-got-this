@@ -1,0 +1,49 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Style Selector="Path.wgt-core-sigil">
+    <Setter Property="Stroke" Value="#FFE8F4F8" />
+    <Setter Property="StrokeThickness" Value="2.1" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="StrokeJoin" Value="Round" />
+    <Setter Property="Fill" Value="Transparent" />
+  </Style>
+  <Style Selector="Border.wgt-core-sigil-port">
+    <Setter Property="Background" Value="#FFE8F4F8" />
+    <Setter Property="BoxShadow" Value="0 0 10 1 #35E8F4F8" />
+  </Style>
+
+  <Style Selector="Button.wgt-atlas-node.core.theme-technical Path.wgt-core-sigil">
+    <Setter Property="Stroke" Value="#FF6EDAF7" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-technical Border.wgt-core-sigil-port">
+    <Setter Property="Background" Value="#FF6EDAF7" />
+    <Setter Property="BoxShadow" Value="0 0 12 2 #406EDAF7" />
+  </Style>
+
+  <Style Selector="Button.wgt-atlas-node.core.theme-elegant Path.wgt-core-sigil">
+    <Setter Property="Stroke" Value="#FFE0D0BC" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-elegant Border.wgt-core-sigil-port">
+    <Setter Property="Background" Value="#FFE0D0BC" />
+    <Setter Property="BoxShadow" Value="0 0 10 1 #28E0D0BC" />
+  </Style>
+
+  <Style Selector="Button.wgt-atlas-node.core.theme-machine Path.wgt-core-sigil">
+    <Setter Property="Stroke" Value="#FF78FFC2" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-machine Border.wgt-core-sigil-port">
+    <Setter Property="Background" Value="#FF78FFC2" />
+    <Setter Property="BoxShadow" Value="0 0 13 2 #4078FFC2" />
+  </Style>
+
+  <Style Selector="Button.wgt-atlas-node.core.theme-world Path.wgt-core-sigil">
+    <Setter Property="Stroke" Value="#FF91DFB8" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core.theme-world Border.wgt-core-sigil-port">
+    <Setter Property="Background" Value="#FF91DFB8" />
+    <Setter Property="BoxShadow" Value="0 0 12 2 #3491DFB8" />
+  </Style>
+
+  <Style Selector="Button.wgt-atlas-node.core:pointerover Path.wgt-core-sigil">
+    <Setter Property="StrokeThickness" Value="2.6" />
+  </Style>
+</Styles>

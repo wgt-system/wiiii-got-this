@@ -1,14 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup><OutputType>Exe</OutputType><RootNamespace>WiiiiGotThis.Desktop</RootNamespace><AssemblyName>WiiiiGotThis.Desktop</AssemblyName><ApplicationManifest>app.manifest</ApplicationManifest></PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>WiiiiGotThis.Desktop</RootNamespace>
+    <AssemblyName>WiiiiGotThis.Desktop</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <IlluminationRoot Condition="'$(IlluminationRoot)' == '' and '$(WGT_ILLUMINATION_ROOT)' != ''">$(WGT_ILLUMINATION_ROOT)</IlluminationRoot>
+    <IlluminationRoot Condition="'$(IlluminationRoot)' == ''">$(MSBuildProjectDirectory)\..\..\..\illumination</IlluminationRoot>
+    <IlluminationDesktopProject>$(IlluminationRoot)\src\Illumination.Desktop\Illumination.Desktop.csproj</IlluminationDesktopProject>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\WiiiiGotThis.Application\WiiiiGotThis.Application.csproj" />
+    <ProjectReference Include="..\WiiiiGotThis.Contracts\WiiiiGotThis.Contracts.csproj" />
+    <ProjectReference Include="..\WiiiiGotThis.Domain\WiiiiGotThis.Domain.csproj" />
     <ProjectReference Include="..\WiiiiGotThis.Infrastructure\WiiiiGotThis.Infrastructure.csproj" />
     <ProjectReference Include="..\WiiiiGotThis.Integrations.Reference\WiiiiGotThis.Integrations.Reference.csproj" />
     <ProjectReference Include="..\WiiiiGotThis.Integrations.Vocation\WiiiiGotThis.Integrations.Vocation.csproj" />
     <ProjectReference Include="..\WiiiiGotThis.Presentation\WiiiiGotThis.Presentation.csproj" />
+    <ProjectReference Include="$(IlluminationDesktopProject)" />
     <PackageReference Include="Avalonia.Desktop" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="orientation-map\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" TargetPath="orientation-map\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
+  <Target Name="EnsureIlluminationProductSurface" BeforeTargets="PrepareForBuild" Condition="!Exists('$(IlluminationDesktopProject)')">
+    <Error Text="The WGT Atlas Desktop build requires the pinned Illumination Product Surface checkout. Set WGT_ILLUMINATION_ROOT or place the sibling repository at P:\wgt-system\illumination." />
+  </Target>
 </Project>

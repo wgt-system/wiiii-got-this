@@ -10,6 +10,9 @@ public sealed partial class DesktopShellView : UserControl
 {
     private ShellViewModel? shell;
     private bool isAttached;
+    private IIlluminationProductSurfaceSource? illuminationProductSurfaceSource;
+    private IVocationProductRuntime? vocationProductRuntime;
+    private IOrientationProductRuntime? orientationProductRuntime;
 
     public DesktopShellView()
     {
@@ -17,6 +20,36 @@ public sealed partial class DesktopShellView : UserControl
         AttachedToVisualTree += OnAttached;
         DetachedFromVisualTree += OnDetached;
         DataContextChanged += OnDataContextChanged;
+    }
+
+    public IIlluminationProductSurfaceSource? IlluminationProductSurfaceSource
+    {
+        get => illuminationProductSurfaceSource;
+        set
+        {
+            illuminationProductSurfaceSource = value;
+            AtlasWorkspace.IlluminationProductSurfaceSource = value;
+        }
+    }
+
+    public IVocationProductRuntime? VocationProductRuntime
+    {
+        get => vocationProductRuntime;
+        set
+        {
+            vocationProductRuntime = value;
+            AtlasWorkspace.VocationProductRuntime = value;
+        }
+    }
+
+    public IOrientationProductRuntime? OrientationProductRuntime
+    {
+        get => orientationProductRuntime;
+        set
+        {
+            orientationProductRuntime = value;
+            AtlasWorkspace.OrientationProductRuntime = value;
+        }
     }
 
     private async void OnAttached(object? sender, VisualTreeAttachmentEventArgs e)
@@ -66,19 +99,15 @@ public sealed partial class DesktopShellView : UserControl
         switch (currentShell.CurrentSurface)
         {
             case ShellSurface.Home:
-                HomeNavigation.Focus();
+                AtlasWorkspace.FocusPrimaryControl();
                 break;
             case ShellSurface.Jobs:
-                if (!JobsWorkspace.FocusPrimaryControl())
-                    JobsNavigation.Focus();
+                JobsWorkspace.FocusPrimaryControl();
                 break;
             case ShellSurface.Map:
-                if (!MapWorkspace.FocusPrimaryControl())
-                    MapNavigation.Focus();
+                MapWorkspace.FocusPrimaryControl();
                 break;
             case ShellSurface.Settings:
-                if (!SettingsConnectionsList.Focus())
-                    SettingsNavigation.Focus();
                 break;
         }
     }

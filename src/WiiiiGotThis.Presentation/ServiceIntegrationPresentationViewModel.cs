@@ -16,7 +16,7 @@ public sealed class ServiceIntegrationPresentationViewModel(ServiceIntegrationLi
     public DateTimeOffset? LastRefreshAttemptedAtUtc => item.LastRefreshAttemptedAtUtc;
     public DateTimeOffset? LastSuccessfulRefreshAtUtc => item.LastSuccessfulRefreshAtUtc;
 
-    public bool IsReferenceIntegration => string.Equals(ServiceIdentity.Value, "reference", StringComparison.Ordinal);
+    public bool IsReferenceIntegration => string.Equals(ServiceIdentity.Value, "reference-service", StringComparison.Ordinal);
     public bool ShowEnableGloballyAction => !IsGloballyEnabled;
     public bool ShowDisableGloballyAction => IsGloballyEnabled;
     public bool HasDeviceOverride => CurrentDeviceOverride.HasValue;

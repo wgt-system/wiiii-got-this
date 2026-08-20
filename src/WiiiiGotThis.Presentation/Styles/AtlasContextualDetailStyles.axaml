@@ -1,0 +1,168 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Contextual capability disclosure: compact ports in overview, labels on focus. -->
+  <Style Selector="Border.wgt-atlas-node-shell.capability.compact-port">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BoxShadow" Value="0 0 0 0 #00000000" />
+    <Setter Property="Opacity" Value="0.78" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.compact-port">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.compact-port:pointerover">
+    <Setter Property="Background" Value="#261D3948" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="Border.wgt-node-compact-port-dot">
+    <Setter Property="Background" Value="#FF4CCAF0" />
+    <Setter Property="BoxShadow" Value="0 0 14 2 #454CCAF0" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.16" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Border.wgt-node-compact-port-dot.unavailable">
+    <Setter Property="Background" Value="#FF5A6870" />
+    <Setter Property="BoxShadow" Value="0 0 8 1 #245A6870" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.compact-port.theme-elegant Border.wgt-node-compact-port-dot">
+    <Setter Property="Background" Value="#FFD1C0AC" />
+    <Setter Property="BoxShadow" Value="0 0 12 1 #32D1C0AC" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.compact-port.theme-machine Border.wgt-node-compact-port-dot">
+    <Setter Property="Background" Value="#FF63F5B2" />
+    <Setter Property="BoxShadow" Value="0 0 14 2 #4063F5B2" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.compact-port.theme-world Border.wgt-node-compact-port-dot">
+    <Setter Property="Background" Value="#FF79D2A5" />
+    <Setter Property="BoxShadow" Value="0 0 14 2 #3879D2A5" />
+  </Style>
+
+  <!-- Caption material masks topology beneath text without restoring a full card shell. -->
+  <Style Selector="Border.wgt-node-caption">
+    <Setter Property="Background" Value="#E6081117" />
+    <Setter Property="BorderBrush" Value="#482C4654" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="9" />
+    <Setter Property="BoxShadow" Value="0 5 14 0 #32000000" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-elegant Border.wgt-node-caption">
+    <Setter Property="Background" Value="#E6181519" />
+    <Setter Property="BorderBrush" Value="#504D4249" />
+    <Setter Property="CornerRadius" Value="12" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-machine Border.wgt-node-caption">
+    <Setter Property="Background" Value="#E6040E09" />
+    <Setter Property="BorderBrush" Value="#552C7552" />
+    <Setter Property="CornerRadius" Value="3" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-world Border.wgt-node-caption">
+    <Setter Property="Background" Value="#E6081510" />
+    <Setter Property="BorderBrush" Value="#55406953" />
+    <Setter Property="CornerRadius" Value="11" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.selected Border.wgt-node-caption">
+    <Setter Property="BorderBrush" Value="#9977AFC3" />
+  </Style>
+
+  <!-- Inspector navigation stays compact as Data and Device become first-class facts. -->
+  <Style Selector="TabControl.wgt-atlas-tabs TabItem">
+    <Setter Property="FontSize" Value="10" />
+    <Setter Property="Padding" Value="7,6" />
+    <Setter Property="MinWidth" Value="0" />
+  </Style>
+  <Style Selector="Border.wgt-inspector-fact">
+    <Setter Property="Background" Value="#76091117" />
+    <Setter Property="BorderBrush" Value="#4F2B424E" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="9" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-inspector-fact">
+    <Setter Property="Background" Value="#76171318" />
+    <Setter Property="BorderBrush" Value="#4F51444B" />
+    <Setter Property="CornerRadius" Value="11" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-inspector-fact">
+    <Setter Property="Background" Value="#76040D09" />
+    <Setter Property="BorderBrush" Value="#4F286D4B" />
+    <Setter Property="CornerRadius" Value="3" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-inspector-fact">
+    <Setter Property="Background" Value="#7608130E" />
+    <Setter Property="BorderBrush" Value="#4F3D6B52" />
+    <Setter Property="CornerRadius" Value="10" />
+  </Style>
+
+  <!-- Activation is an informed state change, not an implicit side-effect of opening. -->
+  <Style Selector="Border.wgt-activation-preview">
+    <Setter Property="Background" Value="#A60A151C" />
+    <Setter Property="BorderBrush" Value="#8061B9D4" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="BoxShadow" Value="0 8 24 0 #36000000" />
+  </Style>
+  <Style Selector="Border.wgt-activation-fact">
+    <Setter Property="Background" Value="#65071117" />
+    <Setter Property="BorderBrush" Value="#3D3B5966" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="7" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-activation-preview">
+    <Setter Property="Background" Value="#A6191519" />
+    <Setter Property="BorderBrush" Value="#807B6A5E" />
+    <Setter Property="CornerRadius" Value="12" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-activation-fact">
+    <Setter Property="Background" Value="#66120F12" />
+    <Setter Property="BorderBrush" Value="#4256484E" />
+    <Setter Property="CornerRadius" Value="9" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-activation-preview">
+    <Setter Property="Background" Value="#A605120C" />
+    <Setter Property="BorderBrush" Value="#8070DFA8" />
+    <Setter Property="CornerRadius" Value="3" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-activation-fact">
+    <Setter Property="Background" Value="#66030B07" />
+    <Setter Property="BorderBrush" Value="#42488D69" />
+    <Setter Property="CornerRadius" Value="2" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-activation-preview">
+    <Setter Property="Background" Value="#A6081710" />
+    <Setter Property="BorderBrush" Value="#8078C79E" />
+    <Setter Property="CornerRadius" Value="11" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-activation-fact">
+    <Setter Property="Background" Value="#6606110B" />
+    <Setter Property="BorderBrush" Value="#42517C61" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+
+  <!-- Provider identities are real vector sigils, not font glyph placeholders. -->
+  <Style Selector="Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FFE8F4F8" />
+    <Setter Property="StrokeThickness" Value="2.2" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="StrokeJoin" Value="Round" />
+    <Setter Property="Fill" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-technical Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF6EDAF7" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-elegant Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FFE0D0BC" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-machine Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF78FFC2" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.theme-world Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF91DFB8" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service:pointerover Path.wgt-service-sigil">
+    <Setter Property="StrokeThickness" Value="2.7" />
+  </Style>
+</Styles>

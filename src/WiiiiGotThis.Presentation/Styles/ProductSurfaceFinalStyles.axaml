@@ -1,0 +1,358 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- WGT-owned depth rail around provider-owned full product surfaces. -->
+  <Style Selector="Grid.wgt-product-overlay">
+    <Setter Property="Background" Value="#FF05090D" />
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.17" />
+      </Transitions>
+    </Setter>
+  </Style>
+
+  <Style Selector="Border.wgt-product-rail">
+    <Setter Property="Background" Value="#FF070D12" />
+    <Setter Property="BorderBrush" Value="#FF1E2A32" />
+    <Setter Property="BorderThickness" Value="0,0,1,0" />
+    <Setter Property="BoxShadow" Value="8 0 28 0 #40000000" />
+  </Style>
+
+  <Style Selector="Border.wgt-product-depth-track">
+    <Setter Property="Background" Value="#FF274858" />
+    <Setter Property="Opacity" Value="0.38" />
+  </Style>
+
+  <!-- Every icon in the hosted-product rail is WGT-owned chrome. Keep the hit target
+       compact but deliberate: no default Fluent rectangle, no black debug orb. -->
+  <Style Selector="Button.wgt-product-rail-action">
+    <Setter Property="Background" Value="#78111A20" />
+    <Setter Property="BorderBrush" Value="#80516B78" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="#FFDCE8ED" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="CornerRadius" Value="12" />
+  </Style>
+  <Style Selector="Button.wgt-product-rail-action:pointerover">
+    <Setter Property="Background" Value="#B51B2B33" />
+    <Setter Property="BorderBrush" Value="#C06C9AAF" />
+    <Setter Property="Foreground" Value="#FFFFFFFF" />
+  </Style>
+  <Style Selector="Button.wgt-product-rail-action:pressed">
+    <Setter Property="Background" Value="#D5192B32" />
+  </Style>
+  <Style Selector="Button.wgt-product-rail-action:focus-visible">
+    <Setter Property="BorderBrush" Value="#FF93D7E8" />
+    <Setter Property="BorderThickness" Value="1.5" />
+  </Style>
+
+  <!-- WGT-global controls stay visually neutral and sit above the provider boundary. -->
+  <Style Selector="Button.wgt-product-rail-global">
+    <Setter Property="Background" Value="#8F101A22" />
+    <Setter Property="BorderBrush" Value="#9A4C6878" />
+    <Setter Property="Foreground" Value="#FFE6F0F4" />
+  </Style>
+  <Style Selector="Button.wgt-product-rail-global:pointerover">
+    <Setter Property="Background" Value="#C0182A35" />
+    <Setter Property="BorderBrush" Value="#E06E9CB1" />
+  </Style>
+
+  <!-- Provider/capability controls inherit the current provider identity from the rail.
+       This is only host chrome: provider business UI remains untouched. -->
+  <Style Selector="Button.wgt-product-rail-provider">
+    <Setter Property="Background" Value="#65101A17" />
+    <Setter Property="BorderBrush" Value="#70496759" />
+    <Setter Property="Foreground" Value="#FFDDEBE3" />
+  </Style>
+  <Style Selector="Button.wgt-product-rail-toggle">
+    <Setter Property="BorderThickness" Value="1.35" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.vocation Button.wgt-product-rail-provider">
+    <Setter Property="BorderBrush" Value="#8C4CCAF0" />
+    <Setter Property="Foreground" Value="#FFDDF7FF" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.vocation Button.wgt-product-rail-provider:pointerover">
+    <Setter Property="Background" Value="#9A0A2530" />
+    <Setter Property="BorderBrush" Value="#D85BD4F8" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.illumination Button.wgt-product-rail-provider">
+    <Setter Property="BorderBrush" Value="#82B9A76F" />
+    <Setter Property="Foreground" Value="#FFF1E8C9" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.illumination Button.wgt-product-rail-provider:pointerover">
+    <Setter Property="Background" Value="#922A2517" />
+    <Setter Property="BorderBrush" Value="#D8D1BC75" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.orientation Button.wgt-product-rail-provider">
+    <Setter Property="BorderBrush" Value="#8879D2A5" />
+    <Setter Property="Foreground" Value="#FFE2F8EB" />
+  </Style>
+  <Style Selector="Border.wgt-product-rail.orientation Button.wgt-product-rail-provider:pointerover">
+    <Setter Property="Background" Value="#92132A1E" />
+    <Setter Property="BorderBrush" Value="#D891DFB8" />
+  </Style>
+
+  <Style Selector="Button.wgt-product-return">
+    <Setter Property="Background" Value="#94101A21" />
+    <Setter Property="BorderBrush" Value="#FF31505F" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="#FFE4EEF2" />
+  </Style>
+  <Style Selector="Button.wgt-product-return:pointerover">
+    <Setter Property="Background" Value="#D5192C36" />
+    <Setter Property="BorderBrush" Value="#FF65B6D0" />
+  </Style>
+
+  <Style Selector="Border.wgt-product-service-mark">
+    <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="Background" Value="#FF0E1B23" />
+    <Setter Property="BorderBrush" Value="#FF3B7D94" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BoxShadow" Value="0 0 22 1 #244CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-product-service-mark.vocation">
+    <Setter Property="BorderBrush" Value="#FF4CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-product-service-mark.illumination">
+    <Setter Property="BorderBrush" Value="#FFB9A76F" />
+    <Setter Property="Background" Value="#FF1A1810" />
+    <Setter Property="BoxShadow" Value="0 0 22 1 #20B9A76F" />
+  </Style>
+  <Style Selector="Border.wgt-product-service-mark.orientation">
+    <Setter Property="BorderBrush" Value="#FF79D2A5" />
+    <Setter Property="Background" Value="#FF0B1912" />
+    <Setter Property="BoxShadow" Value="0 0 22 1 #2079D2A5" />
+  </Style>
+
+  <!-- The provider surface itself is deliberately not themed. Only WGT-owned host chrome
+       carries the Atlas visual language into the deeper product level. -->
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Border.wgt-product-rail">
+    <Setter Property="Background" Value="#FF061018" />
+    <Setter Property="BorderBrush" Value="#FF244B5C" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Border.wgt-product-depth-track">
+    <Setter Property="Background" Value="#FF55CFF2" />
+    <Setter Property="Opacity" Value="0.46" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Button.wgt-product-rail-action">
+    <Setter Property="Background" Value="#8F0A1820" />
+    <Setter Property="BorderBrush" Value="#A64FB6D3" />
+    <Setter Property="CornerRadius" Value="11" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Button.wgt-product-rail-action:pointerover">
+    <Setter Property="Background" Value="#C60F2834" />
+    <Setter Property="BorderBrush" Value="#FF62CAE6" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Button.wgt-product-return">
+    <Setter Property="Background" Value="#B50A1A24" />
+    <Setter Property="BorderBrush" Value="#FF4FB6D3" />
+    <Setter Property="CornerRadius" Value="20" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Border.wgt-product-service-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF6EDAF7" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-product-rail">
+    <Setter Property="Background" Value="#FF151217" />
+    <Setter Property="BorderBrush" Value="#FF493E46" />
+    <Setter Property="BoxShadow" Value="7 0 24 0 #30000000" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-product-depth-track">
+    <Setter Property="Background" Value="#FFAA9987" />
+    <Setter Property="Opacity" Value="0.24" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Button.wgt-product-rail-action">
+    <Setter Property="Background" Value="#701C171C" />
+    <Setter Property="BorderBrush" Value="#826F6269" />
+    <Setter Property="Foreground" Value="#FFE9DFD6" />
+    <Setter Property="CornerRadius" Value="19" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Button.wgt-product-rail-action:pointerover">
+    <Setter Property="Background" Value="#A92A2228" />
+    <Setter Property="BorderBrush" Value="#BCA9988D" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Button.wgt-product-return">
+    <Setter Property="Background" Value="#B51B171B" />
+    <Setter Property="BorderBrush" Value="#FF786A72" />
+    <Setter Property="CornerRadius" Value="20" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-product-service-mark">
+    <Setter Property="CornerRadius" Value="15" />
+    <Setter Property="BoxShadow" Value="0 0 16 0 #22000000" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-product-service-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FFE0D0BC" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-product-rail">
+    <Setter Property="Background" Value="#FF030B07" />
+    <Setter Property="BorderBrush" Value="#FF246746" />
+    <Setter Property="BoxShadow" Value="9 0 28 0 #42000000" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-product-depth-track">
+    <Setter Property="Background" Value="#FF63F5B2" />
+    <Setter Property="Opacity" Value="0.58" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Button.wgt-product-rail-action">
+    <Setter Property="Background" Value="#8506120C" />
+    <Setter Property="BorderBrush" Value="#A33A9A69" />
+    <Setter Property="Foreground" Value="#FFD9FFE9" />
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Button.wgt-product-rail-action:pointerover">
+    <Setter Property="Background" Value="#BD0A2116" />
+    <Setter Property="BorderBrush" Value="#FF63F5B2" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Button.wgt-product-return">
+    <Setter Property="Background" Value="#C505140D" />
+    <Setter Property="BorderBrush" Value="#FF4ABC80" />
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-product-service-mark">
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Background" Value="#FF06120C" />
+    <Setter Property="BorderBrush" Value="#FF3A9A69" />
+    <Setter Property="BoxShadow" Value="0 0 20 1 #2863F5B2" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-product-service-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF78FFC2" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-product-rail">
+    <Setter Property="Background" Value="#FF06110B" />
+    <Setter Property="BorderBrush" Value="#FF315C43" />
+    <Setter Property="BoxShadow" Value="7 0 25 0 #38000000" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-product-depth-track">
+    <Setter Property="Background" Value="#FF79D2A5" />
+    <Setter Property="Opacity" Value="0.34" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Button.wgt-product-rail-action">
+    <Setter Property="Background" Value="#85101F17" />
+    <Setter Property="BorderBrush" Value="#A34F8665" />
+    <Setter Property="Foreground" Value="#FFE1F4E8" />
+    <Setter Property="CornerRadius" Value="12" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Button.wgt-product-rail-action:pointerover">
+    <Setter Property="Background" Value="#B7183225" />
+    <Setter Property="BorderBrush" Value="#FF78C69A" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Button.wgt-product-return">
+    <Setter Property="Background" Value="#B50A1B12" />
+    <Setter Property="BorderBrush" Value="#FF5A9F77" />
+    <Setter Property="CornerRadius" Value="20" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-product-service-mark">
+    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="Background" Value="#FF09180F" />
+    <Setter Property="BorderBrush" Value="#FF4E8866" />
+    <Setter Property="BoxShadow" Value="0 0 18 1 #2079D2A5" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-product-service-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF91DFB8" />
+  </Style>
+
+  <Style Selector="Border.wgt-product-stage">
+    <Setter Property="Background" Value="#FF05090D" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+
+  <!-- Provider-specific startup/readiness is WGT-owned host state until the provider
+       surface takes over, so it may carry the current Atlas renderer language. -->
+  <Style Selector="StackPanel.wgt-provider-status-panel">
+    <Setter Property="Opacity" Value="0.96" />
+  </Style>
+  <Style Selector="Border.wgt-provider-status-mark">
+    <Setter Property="CornerRadius" Value="20" />
+    <Setter Property="Background" Value="#FF0C1820" />
+    <Setter Property="BorderBrush" Value="#FF3B7D94" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BoxShadow" Value="0 0 34 2 #244CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-provider-status-mark.vocation">
+    <Setter Property="BorderBrush" Value="#FF4CCAF0" />
+  </Style>
+  <Style Selector="Border.wgt-provider-status-mark.illumination">
+    <Setter Property="Background" Value="#FF1A1810" />
+    <Setter Property="BorderBrush" Value="#FFD1BC75" />
+    <Setter Property="BoxShadow" Value="0 0 34 2 #22D1BC75" />
+  </Style>
+  <Style Selector="Border.wgt-provider-status-mark.orientation">
+    <Setter Property="Background" Value="#FF0B1912" />
+    <Setter Property="BorderBrush" Value="#FF79D2A5" />
+    <Setter Property="BoxShadow" Value="0 0 34 2 #2279D2A5" />
+  </Style>
+  <Style Selector="TextBlock.wgt-provider-status-title">
+    <Setter Property="Foreground" Value="#FFE8EFF3" />
+  </Style>
+  <Style Selector="TextBlock.wgt-provider-status-text">
+    <Setter Property="Foreground" Value="#FF9FB1BC" />
+  </Style>
+  <Style Selector="ProgressBar.wgt-provider-status-progress">
+    <Setter Property="Foreground" Value="#FF4CCAF0" />
+    <Setter Property="IsIndeterminate" Value="True" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Border.wgt-provider-status-mark">
+    <Setter Property="Background" Value="#FF081721" />
+    <Setter Property="BorderBrush" Value="#FF4FB6D3" />
+    <Setter Property="BoxShadow" Value="0 0 34 2 #2855CFF2" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical Border.wgt-provider-status-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF6EDAF7" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-technical ProgressBar.wgt-provider-status-progress">
+    <Setter Property="Foreground" Value="#FF55CFF2" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-provider-status-mark">
+    <Setter Property="Background" Value="#FF1A161A" />
+    <Setter Property="BorderBrush" Value="#FF75656D" />
+    <Setter Property="CornerRadius" Value="24" />
+    <Setter Property="BoxShadow" Value="0 0 24 1 #22000000" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Border.wgt-provider-status-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FFE0D0BC" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant ProgressBar.wgt-provider-status-progress">
+    <Setter Property="Foreground" Value="#FFC9B8A5" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-provider-status-mark">
+    <Setter Property="Background" Value="#FF05130C" />
+    <Setter Property="BorderBrush" Value="#FF45B97B" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="BoxShadow" Value="0 0 32 2 #2863F5B2" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Border.wgt-provider-status-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF78FFC2" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine ProgressBar.wgt-provider-status-progress">
+    <Setter Property="Foreground" Value="#FF63F5B2" />
+  </Style>
+
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-provider-status-mark">
+    <Setter Property="Background" Value="#FF0A1A11" />
+    <Setter Property="BorderBrush" Value="#FF4D8866" />
+    <Setter Property="CornerRadius" Value="22" />
+    <Setter Property="BoxShadow" Value="0 0 28 1 #2479D2A5" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Border.wgt-provider-status-mark Path.wgt-service-sigil">
+    <Setter Property="Stroke" Value="#FF91DFB8" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world ProgressBar.wgt-provider-status-progress">
+    <Setter Property="Foreground" Value="#FF79D2A5" />
+  </Style>
+
+  <Style Selector="Button.wgt-provider-retry">
+    <Setter Property="Background" Value="#FF12212A" />
+    <Setter Property="BorderBrush" Value="#FF3B6679" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="#FFE4EEF2" />
+    <Setter Property="Padding" Value="16,8" />
+    <Setter Property="CornerRadius" Value="10" />
+  </Style>
+  <Style Selector="Button.wgt-provider-retry:pointerover">
+    <Setter Property="Background" Value="#FF1A303C" />
+    <Setter Property="BorderBrush" Value="#FF65B6D0" />
+  </Style>
+</Styles>

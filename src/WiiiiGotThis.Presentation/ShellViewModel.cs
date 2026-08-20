@@ -8,6 +8,7 @@ namespace WiiiiGotThis.Presentation;
 
 public enum ShellSurface
 {
+    // Retained as the migration-compatible root value while Desktop renders the Atlas.
     Home,
     Jobs,
     Map,
@@ -26,6 +27,9 @@ public sealed partial class ShellViewModel : ObservableObject
     private readonly ResolveCapabilityCatalogUseCase resolveCapabilityCatalog;
     private readonly GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview;
     private readonly GetVocationMapProjectionUseCase? readVocationMapProjection;
+    private readonly GetAtlasAppearancePreferenceUseCase? readAtlasAppearance;
+    private readonly SetAtlasAppearancePreferenceUseCase? writeAtlasAppearance;
+    private readonly BuildAtlasProjectionUseCase buildAtlasProjection = new();
     private readonly string suggestedDeviceName;
     private readonly object initializationGate = new();
     private Task? initializationTask;
@@ -37,6 +41,10 @@ public sealed partial class ShellViewModel : ObservableObject
     [ObservableProperty] private CapabilityPresentationViewModel? openedReferenceCapability;
     [ObservableProperty] private VocationOpportunityOverviewViewModel? openedVocationOpportunityOverview;
     [ObservableProperty] private VocationMapProjectionViewModel? openedVocationMapProjection;
+    [ObservableProperty] private AtlasNodePresentationViewModel? selectedAtlasNode;
+    [ObservableProperty] private AtlasThemePreference atlasTheme = AtlasThemePreference.Technical;
+    [ObservableProperty] private string atlasSearchText = string.Empty;
+    [ObservableProperty] private bool atlasSettingsExpanded;
     [ObservableProperty] private string statusText = "Starting…";
     [ObservableProperty] private ShellSurface currentSurface = ShellSurface.Home;
 
@@ -51,7 +59,9 @@ public sealed partial class ShellViewModel : ObservableObject
         ResolveCapabilityCatalogUseCase resolveCapabilityCatalog,
         string suggestedDeviceName,
         GetVocationOpportunityOverviewUseCase? readVocationOpportunityOverview = null,
-        GetVocationMapProjectionUseCase? readVocationMapProjection = null)
+        GetVocationMapProjectionUseCase? readVocationMapProjection = null,
+        GetAtlasAppearancePreferenceUseCase? readAtlasAppearance = null,
+        SetAtlasAppearancePreferenceUseCase? writeAtlasAppearance = null)
     {
         this.ensureCurrentDevice = ensureCurrentDevice;
         this.registerKnownIntegrations = registerKnownIntegrations;
@@ -63,6 +73,8 @@ public sealed partial class ShellViewModel : ObservableObject
         this.resolveCapabilityCatalog = resolveCapabilityCatalog;
         this.readVocationOpportunityOverview = readVocationOpportunityOverview;
         this.readVocationMapProjection = readVocationMapProjection;
+        this.readAtlasAppearance = readAtlasAppearance;
+        this.writeAtlasAppearance = writeAtlasAppearance;
         this.suggestedDeviceName = suggestedDeviceName;
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync);
@@ -73,15 +85,21 @@ public sealed partial class ShellViewModel : ObservableObject
         InheritGlobalSettingCommand = new AsyncRelayCommand(InheritGlobalSettingAsync, CanManageSelectedIntegration);
         OpenCapabilityCommand = new AsyncRelayCommand(OpenCapabilityAsync, CanOpenSelectedCapability);
         BackToCatalogCommand = new RelayCommand(() => OpenedReferenceCapability = null);
-        ShowHomeCommand = new RelayCommand(() => CurrentSurface = ShellSurface.Home);
+        ShowHomeCommand = new RelayCommand(ReturnToAtlas);
+        ReturnToAtlasCommand = new RelayCommand(ReturnToAtlas);
         ShowJobsCommand = new AsyncRelayCommand(ShowJobsAsync, CanShowJobs);
         ShowMapCommand = new AsyncRelayCommand(ShowMapAsync, CanShowMap);
         ShowSettingsCommand = new RelayCommand(() => CurrentSurface = ShellSurface.Settings);
+        SelectAtlasNodeCommand = new RelayCommand<AtlasNodePresentationViewModel?>(SelectAtlasNode);
+        SearchAtlasCommand = new RelayCommand(SearchAtlas);
+        ToggleAtlasSettingsCommand = new RelayCommand(() => AtlasSettingsExpanded = !AtlasSettingsExpanded);
     }
 
     public ObservableCollection<ServiceIntegrationPresentationViewModel> Integrations { get; } = [];
     public ObservableCollection<CapabilityPresentationViewModel> Capabilities { get; } = [];
     public ObservableCollection<CapabilityPresentationViewModel> SelectedIntegrationCapabilities { get; } = [];
+    public ObservableCollection<AtlasNodePresentationViewModel> AtlasNodes { get; } = [];
+    public ObservableCollection<AtlasConnectionPresentationViewModel> AtlasConnections { get; } = [];
     public IAsyncRelayCommand RefreshCommand { get; }
     public IAsyncRelayCommand EnableGloballyCommand { get; }
     public IAsyncRelayCommand DisableGloballyCommand { get; }
@@ -91,10 +109,15 @@ public sealed partial class ShellViewModel : ObservableObject
     public IAsyncRelayCommand OpenCapabilityCommand { get; }
     public IRelayCommand BackToCatalogCommand { get; }
     public IRelayCommand ShowHomeCommand { get; }
+    public IRelayCommand ReturnToAtlasCommand { get; }
     public IAsyncRelayCommand ShowJobsCommand { get; }
     public IAsyncRelayCommand ShowMapCommand { get; }
     public IRelayCommand ShowSettingsCommand { get; }
+    public IRelayCommand<AtlasNodePresentationViewModel?> SelectAtlasNodeCommand { get; }
+    public IRelayCommand SearchAtlasCommand { get; }
+    public IRelayCommand ToggleAtlasSettingsCommand { get; }
     public bool IsHomeVisible => CurrentSurface == ShellSurface.Home;
+    public bool IsAtlasVisible => CurrentSurface == ShellSurface.Home;
     public bool IsJobsVisible => CurrentSurface == ShellSurface.Jobs;
     public bool IsMapVisible => CurrentSurface == ShellSurface.Map;
     public bool IsSettingsVisible => CurrentSurface == ShellSurface.Settings;
@@ -110,11 +133,35 @@ public sealed partial class ShellViewModel : ObservableObject
     public bool IsCapabilityDetailsVisible => !IsReferenceCapabilityOpen && !IsVocationOpportunityOverviewOpen;
     public bool IsDesktopCapabilityDetailsVisible => !IsReferenceCapabilityOpen;
     public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusText);
+    public bool HasSelectedAtlasNode => SelectedAtlasNode is not null;
+    public bool IsSelectedAtlasCore => SelectedAtlasNode?.IsCore == true;
+    public bool IsSelectedAtlasService => SelectedAtlasNode?.IsService == true;
+    public bool IsSelectedAtlasCapability => SelectedAtlasNode?.IsCapability == true;
 
     public Task EnsureInitializedAsync()
     {
         lock (initializationGate)
             return initializationTask ??= InitializeCoreAsync();
+    }
+
+    public async Task SetAtlasThemeAsync(AtlasThemePreference theme, CancellationToken cancellationToken = default)
+    {
+        AtlasTheme = theme;
+        if (writeAtlasAppearance is null)
+            return;
+
+        try
+        {
+            await writeAtlasAppearance.SetThemeAsync(theme, cancellationToken);
+        }
+        catch (IOException)
+        {
+            StatusText = "Theme changed for this session but could not be saved.";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            StatusText = "Theme changed for this session but could not be saved.";
+        }
     }
 
     partial void OnSelectedIntegrationChanged(ServiceIntegrationPresentationViewModel? value)
@@ -128,6 +175,19 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         OpenedReferenceCapability = null;
         RefreshCommandStates();
+    }
+
+    partial void OnSelectedAtlasNodeChanged(AtlasNodePresentationViewModel? value)
+    {
+        OnPropertyChanged(nameof(HasSelectedAtlasNode));
+        OnPropertyChanged(nameof(IsSelectedAtlasCore));
+        OnPropertyChanged(nameof(IsSelectedAtlasService));
+        OnPropertyChanged(nameof(IsSelectedAtlasCapability));
+
+        if (value?.ServiceIdentity is { } serviceIdentity)
+            SelectedIntegration = Integrations.FirstOrDefault(integration => integration.ServiceIdentity == serviceIdentity);
+        if (value?.CapabilityIdentity is { } capabilityIdentity)
+            SelectedCapability = SelectedIntegrationCapabilities.FirstOrDefault(capability => capability.CapabilityIdentity == capabilityIdentity);
     }
 
     partial void OnOpenedReferenceCapabilityChanged(CapabilityPresentationViewModel? value)
@@ -153,6 +213,7 @@ public sealed partial class ShellViewModel : ObservableObject
     partial void OnCurrentSurfaceChanged(ShellSurface value)
     {
         OnPropertyChanged(nameof(IsHomeVisible));
+        OnPropertyChanged(nameof(IsAtlasVisible));
         OnPropertyChanged(nameof(IsJobsVisible));
         OnPropertyChanged(nameof(IsMapVisible));
         OnPropertyChanged(nameof(IsSettingsVisible));
@@ -166,6 +227,9 @@ public sealed partial class ShellViewModel : ObservableObject
     {
         try
         {
+            if (readAtlasAppearance is not null)
+                AtlasTheme = await readAtlasAppearance.GetThemeAsync() ?? AtlasThemePreference.Technical;
+
             var device = await ensureCurrentDevice.GetOrCreateAsync(suggestedDeviceName);
             CurrentDeviceIdentity = device.DeviceIdentity;
             CurrentDeviceName = device.DisplayName;
@@ -209,6 +273,7 @@ public sealed partial class ShellViewModel : ObservableObject
         if (CurrentDeviceIdentity is null) return;
         var selectedServiceIdentity = SelectedIntegration?.ServiceIdentity;
         var selectedCapabilityIdentity = SelectedCapability?.CapabilityIdentity;
+        var selectedAtlasNodeId = SelectedAtlasNode?.NodeId;
         var integrations = await listServiceIntegrations.ListAsync(CurrentDeviceIdentity);
         Replace(Integrations, integrations.Select(item => new ServiceIntegrationPresentationViewModel(item)));
         SelectedIntegration = selectedServiceIdentity is not null
@@ -218,6 +283,7 @@ public sealed partial class ShellViewModel : ObservableObject
         var entries = await resolveCapabilityCatalog.ResolveAsync(CurrentDeviceIdentity);
         Replace(Capabilities, entries.Select(x => new CapabilityPresentationViewModel(x)));
         RebuildSelectedIntegrationCapabilities(selectedCapabilityIdentity);
+        RebuildAtlas(integrations, entries, selectedAtlasNodeId);
         if (OpenedReferenceCapability is not null)
             OpenedReferenceCapability = SelectedIntegrationCapabilities.FirstOrDefault(x => x.CapabilityIdentity == OpenedReferenceCapability.CapabilityIdentity && x.CanOpen);
         RefreshCommandStates();
@@ -239,7 +305,13 @@ public sealed partial class ShellViewModel : ObservableObject
         }
 
         if (string.Equals(capability.CapabilityIdentity.Value, "vocation.opportunity_overview", StringComparison.Ordinal))
+        {
             await ShowJobsAsync();
+            return;
+        }
+
+        if (string.Equals(capability.CapabilityIdentity.Value, "vocation.map_projection", StringComparison.Ordinal))
+            await ShowMapAsync();
     }
 
     private async Task ShowJobsAsync()
@@ -285,13 +357,49 @@ public sealed partial class ShellViewModel : ObservableObject
             : SelectedIntegrationCapabilities.FirstOrDefault();
     }
 
+    private void RebuildAtlas(
+        IReadOnlyCollection<ServiceIntegrationListItem> integrations,
+        IReadOnlyCollection<CapabilityCatalogEntry> capabilities,
+        string? preferredNodeId)
+    {
+        var projection = buildAtlasProjection.Build(integrations, capabilities);
+        var layout = AtlasPresentationLayoutBuilder.Build(projection);
+        Replace(AtlasNodes, layout.Nodes);
+        Replace(AtlasConnections, layout.Connections);
+        SelectedAtlasNode = preferredNodeId is not null
+            ? AtlasNodes.FirstOrDefault(node => string.Equals(node.NodeId, preferredNodeId, StringComparison.Ordinal))
+            : null;
+    }
+
+    private void SelectAtlasNode(AtlasNodePresentationViewModel? node) => SelectedAtlasNode = node;
+
+    private void SearchAtlas()
+    {
+        var query = AtlasSearchText.Trim();
+        if (query.Length == 0) return;
+        SelectedAtlasNode = AtlasNodes.FirstOrDefault(node =>
+            node.Title.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+            node.NodeId.Contains(query, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void ReturnToAtlas()
+    {
+        CurrentSurface = ShellSurface.Home;
+        OpenedReferenceCapability = null;
+    }
+
     private bool CanManageSelectedIntegration() => SelectedIntegration is not null && CurrentDeviceIdentity is not null;
     private bool CanShowJobs() => readVocationOpportunityOverview is not null && Integrations.Any(integration => integration.ServiceIdentity.Value == "vocation" && integration.IsEffectivelyEnabled);
     private bool CanShowMap() => readVocationMapProjection is not null && Integrations.Any(integration => integration.ServiceIdentity.Value == "vocation" && integration.IsEffectivelyEnabled);
     private bool CanOpenSelectedCapability()
     {
         var selected = SelectedCapability;
-        return selected?.CanOpen == true && (!string.Equals(selected.CapabilityIdentity.Value, "vocation.opportunity_overview", StringComparison.Ordinal) || readVocationOpportunityOverview is not null);
+        if (selected?.CanOpen != true) return false;
+        if (string.Equals(selected.CapabilityIdentity.Value, "vocation.opportunity_overview", StringComparison.Ordinal))
+            return readVocationOpportunityOverview is not null;
+        if (string.Equals(selected.CapabilityIdentity.Value, "vocation.map_projection", StringComparison.Ordinal))
+            return readVocationMapProjection is not null;
+        return true;
     }
 
     private void RefreshCommandStates()

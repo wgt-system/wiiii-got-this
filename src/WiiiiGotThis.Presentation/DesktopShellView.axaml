@@ -1,232 +1,71 @@
-<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:vm="using:WiiiiGotThis.Presentation" xmlns:p="using:WiiiiGotThis.Presentation" x:Class="WiiiiGotThis.Presentation.DesktopShellView" x:DataType="vm:ShellViewModel">
-  <Grid ColumnDefinitions="224,*">
-    <Border Classes="wgt-shell-sidebar" Grid.Column="0" CornerRadius="0" BorderThickness="0,0,1,0" Padding="20">
-      <Grid RowDefinitions="Auto,*,Auto">
-        <StackPanel Spacing="3">
-          <TextBlock Classes="wgt-page-title" FontSize="22">Wiiii Got This</TextBlock>
-          <TextBlock Classes="wgt-secondary" Text="Workspace" />
-        </StackPanel>
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WiiiiGotThis.Presentation"
+             xmlns:p="using:WiiiiGotThis.Presentation"
+             x:Class="WiiiiGotThis.Presentation.DesktopShellView"
+             x:DataType="vm:ShellViewModel">
+  <Grid>
+    <p:DesktopAtlasView x:Name="AtlasWorkspace"
+                        IsVisible="{Binding IsAtlasVisible}" />
 
-        <StackPanel Grid.Row="1" Margin="0,28,0,0" Spacing="2">
-          <RadioButton x:Name="HomeNavigation" Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="_Home" AutomationProperties.Name="Home" AutomationProperties.AutomationId="NavHome" TabIndex="0" Command="{Binding ShowHomeCommand}" IsChecked="{Binding IsHomeActive, Mode=OneWay}" />
-          <RadioButton x:Name="JobsNavigation" Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="_Jobs" AutomationProperties.Name="Jobs" AutomationProperties.AutomationId="NavJobs" TabIndex="1" Command="{Binding ShowJobsCommand}" IsChecked="{Binding IsJobsActive, Mode=OneWay}" />
-          <RadioButton x:Name="MapNavigation" Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="_Map" AutomationProperties.Name="Map" AutomationProperties.AutomationId="NavMap" TabIndex="2" IsVisible="{Binding IsMapAvailable}" Command="{Binding ShowMapCommand}" IsChecked="{Binding IsMapActive, Mode=OneWay}" />
-          <Separator Margin="0,14" />
-          <RadioButton x:Name="SettingsNavigation" Classes="wgt-shell-nav" GroupName="ShellNavigation" Content="_Settings" AutomationProperties.Name="Settings" AutomationProperties.AutomationId="NavSettings" TabIndex="3" Command="{Binding ShowSettingsCommand}" IsChecked="{Binding IsSettingsActive, Mode=OneWay}" />
-        </StackPanel>
-
-        <StackPanel Grid.Row="2" Spacing="3">
-          <TextBlock Classes="wgt-caption" Text="THIS DEVICE" />
-          <TextBlock Classes="wgt-body" Text="{Binding CurrentDeviceName}" TextWrapping="Wrap" />
-          <TextBlock Classes="wgt-caption" Text="{Binding StatusText}" TextWrapping="Wrap" />
+    <Grid IsVisible="{Binding IsJobsVisible}" Margin="24" RowDefinitions="Auto,*" RowSpacing="14">
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+        <Button Width="42"
+                Height="42"
+                CornerRadius="21"
+                Padding="0"
+                Content="◎"
+                Command="{Binding ReturnToAtlasCommand}"
+                AutomationProperties.Name="Return to WGT Atlas"
+                AutomationProperties.AutomationId="ReturnToAtlasFromJobs" />
+        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+          <TextBlock Classes="wgt-caption" Text="VOCATION · TRANSITIONAL CAPABILITY SURFACE" />
+          <TextBlock Classes="wgt-section-title" Text="Opportunity Overview" />
         </StackPanel>
       </Grid>
-    </Border>
+      <Border Grid.Row="1" Classes="wgt-surface">
+        <p:VocationOpportunityOverviewView x:Name="JobsWorkspace"
+                                           DataContext="{Binding OpenedVocationOpportunityOverview}" />
+      </Border>
+    </Grid>
 
-    <Grid Grid.Column="1" Margin="32,28">
-      <Grid IsVisible="{Binding IsHomeVisible}" RowDefinitions="Auto,*">
-        <StackPanel Spacing="4" Margin="0,0,0,22">
-          <TextBlock Classes="wgt-page-title">Home</TextBlock>
-          <TextBlock Classes="wgt-secondary" Text="Your current WGT product areas." />
+    <Grid IsVisible="{Binding IsMapVisible}" Margin="24" RowDefinitions="Auto,*" RowSpacing="14">
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+        <Button Width="42"
+                Height="42"
+                CornerRadius="21"
+                Padding="0"
+                Content="◎"
+                Command="{Binding ReturnToAtlasCommand}"
+                AutomationProperties.Name="Return to WGT Atlas"
+                AutomationProperties.AutomationId="ReturnToAtlasFromMap" />
+        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+          <TextBlock Classes="wgt-caption" Text="VOCATION · ORIENTATION · TRANSITIONAL CAPABILITY SURFACE" />
+          <TextBlock Classes="wgt-section-title" Text="Opportunity Map" />
         </StackPanel>
-
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-          <StackPanel Spacing="20">
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
-              <Border Classes="wgt-product-card" IsVisible="{Binding IsJobsAvailable}">
-                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
-                  <TextBlock Classes="wgt-caption" Text="VOCATION" />
-                  <TextBlock Grid.Row="1" Classes="wgt-section-title">Jobs</TextBlock>
-                  <TextBlock Grid.Row="2" Classes="wgt-secondary" Text="Browse the opportunities currently published by Vocation." TextWrapping="Wrap" />
-                  <Button Grid.Row="3" Classes="wgt-action-button" AutomationProperties.Name="Open Jobs" AutomationProperties.AutomationId="HomeOpenJobs" Command="{Binding ShowJobsCommand}" Content="Open Jobs" HorizontalAlignment="Left" Margin="0,8,0,0" />
-                </Grid>
-              </Border>
-
-              <Border Grid.Column="1" Classes="wgt-product-card" IsVisible="{Binding IsMapAvailable}">
-                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
-                  <TextBlock Classes="wgt-caption" Text="VOCATION · ORIENTATION" />
-                  <TextBlock Grid.Row="1" Classes="wgt-section-title">Map</TextBlock>
-                  <TextBlock Grid.Row="2" Classes="wgt-secondary" Text="Explore published opportunity locations on the shared Orientation map." TextWrapping="Wrap" />
-                  <Button Grid.Row="3" Classes="wgt-action-button" AutomationProperties.Name="Open Map" AutomationProperties.AutomationId="HomeOpenMap" Command="{Binding ShowMapCommand}" Content="Open Map" HorizontalAlignment="Left" Margin="0,8,0,0" />
-                </Grid>
-              </Border>
-            </Grid>
-
-            <Border Classes="wgt-product-card">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
-                <StackPanel Spacing="6">
-                  <TextBlock Classes="wgt-caption" Text="WGT" />
-                  <TextBlock Classes="wgt-section-title">Connections</TextBlock>
-                  <TextBlock Classes="wgt-secondary" Text="Choose which integrations are active on this device and inspect connection health when needed." TextWrapping="Wrap" />
-                </StackPanel>
-                <Button Grid.Column="1" Classes="wgt-action-button" AutomationProperties.Name="Open connection settings" AutomationProperties.AutomationId="HomeOpenSettings" Command="{Binding ShowSettingsCommand}" Content="Open Settings" VerticalAlignment="Center" />
-              </Grid>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
       </Grid>
+      <Border Grid.Row="1" Classes="wgt-surface">
+        <p:VocationMapProjectionView x:Name="MapWorkspace"
+                                     DataContext="{Binding OpenedVocationMapProjection}" />
+      </Border>
+    </Grid>
 
-      <Grid IsVisible="{Binding IsJobsVisible}" RowDefinitions="Auto,*">
-        <StackPanel Spacing="4" Margin="0,0,0,18">
-          <TextBlock Classes="wgt-page-title">Jobs</TextBlock>
-          <TextBlock Classes="wgt-secondary" Text="Published opportunities from Vocation." />
+    <Grid IsVisible="{Binding IsSettingsVisible}">
+      <p:DesktopAtlasView />
+      <Border HorizontalAlignment="Right"
+              VerticalAlignment="Top"
+              Margin="24,78,24,0"
+              Classes="wgt-atlas-popover"
+              Padding="12">
+        <StackPanel Spacing="4">
+          <TextBlock FontWeight="SemiBold" Text="WGT settings moved into the Atlas" />
+          <TextBlock Classes="wgt-secondary"
+                     MaxWidth="260"
+                     Text="Use the small settings control in the Atlas. Service configuration belongs to the relevant service node."
+                     TextWrapping="Wrap" />
+          <Button Command="{Binding ReturnToAtlasCommand}" Content="Open Atlas" HorizontalAlignment="Left" />
         </StackPanel>
-        <Border Classes="wgt-surface" Grid.Row="1">
-          <p:VocationOpportunityOverviewView x:Name="JobsWorkspace" DataContext="{Binding OpenedVocationOpportunityOverview}" />
-        </Border>
-      </Grid>
-
-      <Grid IsVisible="{Binding IsMapVisible}" RowDefinitions="Auto,*">
-        <StackPanel Spacing="4" Margin="0,0,0,18">
-          <TextBlock Classes="wgt-page-title">Map</TextBlock>
-          <TextBlock Classes="wgt-secondary" Text="Opportunity locations from Vocation, rendered by Orientation." />
-        </StackPanel>
-        <Border Classes="wgt-surface" Grid.Row="1">
-          <p:VocationMapProjectionView x:Name="MapWorkspace" DataContext="{Binding OpenedVocationMapProjection}" />
-        </Border>
-      </Grid>
-
-      <Grid IsVisible="{Binding IsSettingsVisible}" RowDefinitions="Auto,*">
-        <StackPanel Spacing="4" Margin="0,0,0,18">
-          <TextBlock Classes="wgt-page-title">Settings</TextBlock>
-          <TextBlock Classes="wgt-secondary" Text="Manage connections and device behavior." />
-        </StackPanel>
-
-        <Grid Grid.Row="1" ColumnDefinitions="220,*" ColumnSpacing="16">
-          <Border Classes="wgt-surface">
-            <DockPanel>
-              <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,12">
-                <TextBlock Classes="wgt-section-title" FontSize="18">Connections</TextBlock>
-                <TextBlock Classes="wgt-caption" Text="Choose a connection to manage." TextWrapping="Wrap" />
-              </StackPanel>
-              <ListBox x:Name="SettingsConnectionsList" AutomationProperties.Name="Connections" AutomationProperties.AutomationId="SettingsConnections" ItemsSource="{Binding Integrations}" SelectedItem="{Binding SelectedIntegration, Mode=TwoWay}">
-                <ListBox.ItemTemplate>
-                  <DataTemplate x:DataType="p:ServiceIntegrationPresentationViewModel">
-                    <Border Classes="wgt-list-divider" Padding="4,9,4,11">
-                      <StackPanel Spacing="4">
-                        <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                        <TextBlock Classes="wgt-caption" IsVisible="{Binding IsReferenceIntegration}" Text="DEVELOPER REFERENCE" />
-                        <TextBlock Classes="wgt-secondary" Text="{Binding EffectiveEnablementText}" />
-                        <TextBlock Classes="wgt-caption" Text="{Binding ConnectionHealthTitle}" TextWrapping="Wrap" />
-                      </StackPanel>
-                    </Border>
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
-            </DockPanel>
-          </Border>
-
-          <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="16">
-              <Border Classes="wgt-surface">
-                <StackPanel Spacing="14">
-                  <StackPanel Spacing="3">
-                    <TextBlock Classes="wgt-caption" Text="SELECTED CONNECTION" />
-                    <TextBlock Classes="wgt-section-title" Text="{Binding SelectedIntegration.DisplayName}" TextWrapping="Wrap" />
-                    <TextBlock Classes="wgt-body" FontWeight="SemiBold" Text="{Binding SelectedIntegration.EffectiveEnablementText}" TextWrapping="Wrap" />
-                  </StackPanel>
-
-                  <Separator />
-
-                  <StackPanel Spacing="8">
-                    <StackPanel Spacing="4">
-                      <TextBlock FontWeight="SemiBold">Global availability</TextBlock>
-                      <TextBlock Classes="wgt-secondary" Text="{Binding SelectedIntegration.GlobalEnablementText}" />
-                      <TextBlock Classes="wgt-caption" Text="Sets the default for devices unless they have an explicit override." TextWrapping="Wrap" />
-                    </StackPanel>
-                    <Button Classes="wgt-action-button" AutomationProperties.AutomationId="SettingsEnableGlobally" IsVisible="{Binding SelectedIntegration.ShowEnableGloballyAction}" Command="{Binding EnableGloballyCommand}" Content="Enable globally" HorizontalAlignment="Left" />
-                    <Button Classes="wgt-action-button" AutomationProperties.AutomationId="SettingsDisableGlobally" IsVisible="{Binding SelectedIntegration.ShowDisableGloballyAction}" Command="{Binding DisableGloballyCommand}" Content="Disable globally" HorizontalAlignment="Left" />
-                  </StackPanel>
-
-                  <Separator />
-
-                  <StackPanel Spacing="8">
-                    <StackPanel Spacing="4">
-                      <TextBlock FontWeight="SemiBold">This device</TextBlock>
-                      <TextBlock Classes="wgt-secondary" Text="{Binding SelectedIntegration.DeviceOverrideText}" />
-                      <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.DeviceBehaviorText}" TextWrapping="Wrap" />
-                    </StackPanel>
-                    <WrapPanel>
-                      <Button AutomationProperties.AutomationId="SettingsEnableOnDevice" IsVisible="{Binding SelectedIntegration.ShowEnableOnDeviceAction}" Command="{Binding EnableOnThisDeviceCommand}" Content="Enable on this device" Margin="0,0,8,6" />
-                      <Button AutomationProperties.AutomationId="SettingsDisableOnDevice" IsVisible="{Binding SelectedIntegration.ShowDisableOnDeviceAction}" Command="{Binding DisableOnThisDeviceCommand}" Content="Disable on this device" Margin="0,0,8,6" />
-                      <Button AutomationProperties.AutomationId="SettingsUseGlobal" IsVisible="{Binding SelectedIntegration.HasDeviceOverride}" Command="{Binding InheritGlobalSettingCommand}" Content="Use global setting" Margin="0,0,8,6" />
-                    </WrapPanel>
-                  </StackPanel>
-                </StackPanel>
-              </Border>
-
-              <Border Classes="wgt-surface">
-                <StackPanel Spacing="10">
-                  <StackPanel Spacing="4">
-                    <TextBlock FontWeight="SemiBold">Connection health</TextBlock>
-                    <TextBlock Classes="wgt-section-title" FontSize="17" Text="{Binding SelectedIntegration.ConnectionHealthTitle}" TextWrapping="Wrap" />
-                    <TextBlock Classes="wgt-secondary" Text="{Binding SelectedIntegration.ConnectionHealthDescription}" TextWrapping="Wrap" />
-                  </StackPanel>
-                  <Button Classes="wgt-action-button" AutomationProperties.Name="Refresh connections" AutomationProperties.AutomationId="SettingsRefresh" Command="{Binding RefreshCommand}" Content="Refresh" HorizontalAlignment="Left" />
-
-                  <Expander AutomationProperties.Name="Connection diagnostics" Header="Diagnostics">
-                    <StackPanel Spacing="5" Margin="0,8,0,0">
-                      <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.PublicationRefreshStatusText}" TextWrapping="Wrap" />
-                      <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.LastRefreshAttemptText}" TextWrapping="Wrap" />
-                      <TextBlock Classes="wgt-caption" Text="{Binding SelectedIntegration.LastSuccessfulRefreshText}" TextWrapping="Wrap" />
-                    </StackPanel>
-                  </Expander>
-                </StackPanel>
-              </Border>
-
-              <Border Classes="wgt-surface">
-                <StackPanel Spacing="12">
-                  <StackPanel Spacing="3">
-                    <TextBlock FontWeight="SemiBold">Capabilities</TextBlock>
-                    <TextBlock Classes="wgt-caption" Text="What this connection can currently provide to WGT." TextWrapping="Wrap" />
-                  </StackPanel>
-
-                  <ListBox AutomationProperties.Name="Capabilities for selected connection" AutomationProperties.AutomationId="SettingsCapabilities" ItemsSource="{Binding SelectedIntegrationCapabilities}" SelectedItem="{Binding SelectedCapability, Mode=TwoWay}" MaxHeight="190">
-                    <ListBox.ItemTemplate>
-                      <DataTemplate x:DataType="vm:CapabilityPresentationViewModel">
-                        <Border Classes="wgt-list-divider" Padding="4,7,4,9">
-                          <StackPanel Spacing="3">
-                            <TextBlock Text="{Binding CapabilityTitle}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                            <TextBlock Classes="wgt-caption" Text="{Binding StatusText}" TextWrapping="Wrap" />
-                          </StackPanel>
-                        </Border>
-                      </DataTemplate>
-                    </ListBox.ItemTemplate>
-                  </ListBox>
-
-                  <StackPanel IsVisible="{Binding IsDesktopCapabilityDetailsVisible}" Spacing="8">
-                    <TextBlock Classes="wgt-caption" Text="SELECTED CAPABILITY" />
-                    <TextBlock Classes="wgt-section-title" FontSize="18" Text="{Binding SelectedCapability.CapabilityTitle}" TextWrapping="Wrap" />
-                    <TextBlock Classes="wgt-secondary" Text="{Binding SelectedCapability.StatusText}" TextWrapping="Wrap" />
-                    <Button AutomationProperties.AutomationId="SettingsOpenCapability" Command="{Binding OpenCapabilityCommand}" Content="Open" HorizontalAlignment="Left" />
-                    <Expander AutomationProperties.Name="Capability technical details" Header="Technical details">
-                      <StackPanel Spacing="4" Margin="0,8,0,0">
-                        <TextBlock Classes="wgt-caption" Text="{Binding SelectedCapability.ServiceDisplayName}" TextWrapping="Wrap" />
-                        <TextBlock Classes="wgt-caption" Text="{Binding SelectedCapability.CapabilityIdentity.Value}" TextWrapping="Wrap" />
-                        <TextBlock Classes="wgt-caption" Text="Contract {Binding SelectedCapability.ContractVersion}" />
-                      </StackPanel>
-                    </Expander>
-                  </StackPanel>
-
-                  <StackPanel IsVisible="{Binding IsReferenceCapabilityOpen}" Spacing="8">
-                    <TextBlock Classes="wgt-caption" Text="DEVELOPER REFERENCE" />
-                    <TextBlock Classes="wgt-section-title" FontSize="18" Text="{Binding OpenedReferenceCapability.CapabilityTitle}" />
-                    <TextBlock Text="Available" FontWeight="SemiBold" />
-                    <TextBlock Classes="wgt-secondary" Text="This reference capability is available through Wiiii Got This." TextWrapping="Wrap" />
-                    <Expander AutomationProperties.Name="Reference capability technical details" Header="Technical details">
-                      <StackPanel Spacing="4" Margin="0,8,0,0">
-                        <TextBlock Classes="wgt-caption" Text="{Binding OpenedReferenceCapability.CapabilityIdentity.Value}" />
-                        <TextBlock Classes="wgt-caption" Text="Contract {Binding OpenedReferenceCapability.ContractVersion}" />
-                      </StackPanel>
-                    </Expander>
-                    <Button AutomationProperties.AutomationId="SettingsBackToCapabilities" Command="{Binding BackToCatalogCommand}" Content="Back" HorizontalAlignment="Left" />
-                  </StackPanel>
-                </StackPanel>
-              </Border>
-            </StackPanel>
-          </ScrollViewer>
-        </Grid>
-      </Grid>
+      </Border>
     </Grid>
   </Grid>
 </UserControl>

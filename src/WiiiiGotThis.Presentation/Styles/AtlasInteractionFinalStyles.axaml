@@ -1,0 +1,114 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Overview declutter: service topology first, capability detail on focus. -->
+  <Style Selector="Border.wgt-atlas-node-shell.capability.overview-secondary">
+    <Setter Property="Opacity" Value="0.42" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.capability.overview-secondary">
+    <Setter Property="Opacity" Value="0.58" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection.overview-secondary">
+    <Setter Property="Opacity" Value="0.1" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-connection.dependency.overview-secondary">
+    <Setter Property="Opacity" Value="0.2" />
+  </Style>
+
+  <!-- Product nodes should never reveal a rectangular Fluent button state. -->
+  <Style Selector="Button.wgt-atlas-node.core:pressed">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service:pressed">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core:focus-visible">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.service:focus-visible">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+  </Style>
+
+  <!-- Hover is expressed through the emblem itself, not through the button hit box. -->
+  <Style Selector="Button.wgt-atlas-node.service:pointerover Border.wgt-node-emblem">
+    <Setter Property="BorderThickness" Value="1.6" />
+  </Style>
+  <Style Selector="Button.wgt-atlas-node.core:pointerover Border.wgt-node-emblem">
+    <Setter Property="BorderThickness" Value="2.2" />
+  </Style>
+
+  <!-- Inspector reads as a local focus dossier instead of a generic settings card. -->
+  <Style Selector="Border.wgt-atlas-kind-chip">
+    <Setter Property="Background" Value="#8A11202A" />
+    <Setter Property="BorderBrush" Value="#663E6275" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="7" />
+  </Style>
+  <Style Selector="Border.wgt-atlas-state-chip">
+    <Setter Property="Background" Value="#66142A31" />
+    <Setter Property="BorderBrush" Value="#664B8DA3" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="7" />
+  </Style>
+  <Style Selector="Button.wgt-inspector-close">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="#FF9EB0BA" />
+    <Setter Property="Opacity" Value="0.66" />
+  </Style>
+  <Style Selector="Button.wgt-inspector-close:pointerover">
+    <Setter Property="Background" Value="#661C2A32" />
+    <Setter Property="Foreground" Value="#FFF0F6F8" />
+    <Setter Property="Opacity" Value="1" />
+  </Style>
+  <Style Selector="Button.wgt-primary-action">
+    <Setter Property="Background" Value="#FF143342" />
+    <Setter Property="BorderBrush" Value="#FF4C9FBC" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="#FFF1F8FA" />
+    <Setter Property="CornerRadius" Value="10" />
+    <Setter Property="Padding" Value="14,9" />
+  </Style>
+  <Style Selector="Button.wgt-primary-action:pointerover">
+    <Setter Property="Background" Value="#FF1B4759" />
+    <Setter Property="BorderBrush" Value="#FF68C5E2" />
+  </Style>
+
+  <!-- Theme-coupled inspector tether: useful locator, not a dominant cable. -->
+  <Style Selector="Path.wgt-atlas-inspector-tether">
+    <Setter Property="StrokeThickness" Value="1.2" />
+    <Setter Property="Opacity" Value="0.34" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether.theme-technical">
+    <Setter Property="Stroke" Value="#FF4CCAF0" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether.theme-elegant">
+    <Setter Property="Stroke" Value="#FFCAB9A6" />
+    <Setter Property="Opacity" Value="0.22" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether.theme-machine">
+    <Setter Property="Stroke" Value="#FF63F5B2" />
+    <Setter Property="StrokeThickness" Value="1.4" />
+  </Style>
+  <Style Selector="Path.wgt-atlas-inspector-tether.theme-world">
+    <Setter Property="Stroke" Value="#FF79D2A5" />
+    <Setter Property="Opacity" Value="0.28" />
+  </Style>
+
+  <!-- Theme-specific primary service-entry action. -->
+  <Style Selector="Grid.wgt-atlas-root.theme-elegant Button.wgt-primary-action">
+    <Setter Property="Background" Value="#FF302830" />
+    <Setter Property="BorderBrush" Value="#FFCAB9A6" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-machine Button.wgt-primary-action">
+    <Setter Property="Background" Value="#FF0B2B1D" />
+    <Setter Property="BorderBrush" Value="#FF63F5B2" />
+    <Setter Property="CornerRadius" Value="4" />
+  </Style>
+  <Style Selector="Grid.wgt-atlas-root.theme-world Button.wgt-primary-action">
+    <Setter Property="Background" Value="#FF153427" />
+    <Setter Property="BorderBrush" Value="#FF79D2A5" />
+  </Style>
+</Styles>
