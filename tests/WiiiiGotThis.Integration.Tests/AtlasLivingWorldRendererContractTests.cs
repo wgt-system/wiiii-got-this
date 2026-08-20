@@ -70,10 +70,10 @@ public sealed class AtlasLivingWorldRendererContractTests
             "WiiiiGotThis.Presentation",
             "AtlasWorldV2Control.cs"));
 
-        Assert.Contains("ExpansionPlaces", world, StringComparison.Ordinal);
-        Assert.Contains("Direct products intentionally remain viable into the low teens", world, StringComparison.Ordinal);
-        Assert.Contains("new(-675, -115)", world, StringComparison.Ordinal);
-        Assert.Contains("new(775, -65)", world, StringComparison.Ordinal);
+        Assert.Contains("private static readonly Point[] ExpansionPlaces", world, StringComparison.Ordinal);
+        Assert.Contains("new(-695, -120)", world, StringComparison.Ordinal);
+        Assert.Contains("new(805, -70)", world, StringComparison.Ordinal);
+        Assert.Contains("DrawExpansionProducts", world, StringComparison.Ordinal);
         Assert.DoesNotContain("ring < 2", world, StringComparison.Ordinal);
     }
 
