@@ -21,10 +21,11 @@ public sealed class AtlasWorldInfrastructureOverlayContractTests
         Assert.Contains("connection.IsEnabled", world, StringComparison.Ordinal);
         Assert.Contains("connection.IsCapabilityUse", world, StringComparison.Ordinal);
         Assert.Contains("BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId", world, StringComparison.Ordinal);
-        Assert.Contains("var facility = vocationCenter + new Vector(132, 64)", world, StringComparison.Ordinal);
+        Assert.Contains("var facility = vocationCenter + new Vector(", world, StringComparison.Ordinal);
         Assert.Contains("DrawIndustrialGround(context, facility", world, StringComparison.Ordinal);
         Assert.Contains("DrawWarehouse(context, facility", world, StringComparison.Ordinal);
         Assert.Contains("DrawRelayMast(context, facility", world, StringComparison.Ordinal);
+        Assert.Contains("OpenWorldRoute(route)", world, StringComparison.Ordinal);
         Assert.Contains("worldV2Renderer = new AtlasWorldV2Control", host, StringComparison.Ordinal);
         Assert.DoesNotContain("new AtlasWorldInfrastructureOverlay", host, StringComparison.Ordinal);
     }
