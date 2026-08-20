@@ -3,61 +3,77 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasWorldV2ContractTests
 {
     [Fact]
-    public void World_v2_is_a_contiguous_authored_landscape_not_the_old_settlement_blob_graph()
+    public void Flagship_atlas_is_an_abstract_modular_grid_not_a_city_or_settlement_renderer()
     {
         var root = FindRepositoryRoot();
-        var world = File.ReadAllText(Path.Combine(root, "src", "WiiiiGotThis.Presentation", "AtlasWorldV2Control.cs"));
+        var grid = File.ReadAllText(Path.Combine(root, "src", "WiiiiGotThis.Presentation", "AtlasGridControl.cs"));
         var host = File.ReadAllText(Path.Combine(root, "src", "WiiiiGotThis.Presentation", "DesktopAtlasView.ProductionRenderer.cs"));
 
-        Assert.Contains("LandOutline", world, StringComparison.Ordinal);
-        Assert.Contains("ServicePlaces", world, StringComparison.Ordinal);
-        Assert.Contains("ExpansionPlaces", world, StringComparison.Ordinal);
-        Assert.Contains("DrawContiguousTerrain", world, StringComparison.Ordinal);
-        Assert.Contains("DrawRegionalLandUse", world, StringComparison.Ordinal);
-        Assert.Contains("DrawWater", world, StringComparison.Ordinal);
-        Assert.Contains("DrawRoadNetwork", world, StringComparison.Ordinal);
-        Assert.Contains("DrawRailNetwork", world, StringComparison.Ordinal);
-        Assert.Contains("DrawUrbanGround", world, StringComparison.Ordinal);
-        Assert.Contains("DrawWgtCity", world, StringComparison.Ordinal);
-        Assert.Contains("DrawVocation", world, StringComparison.Ordinal);
-        Assert.Contains("DrawIllumination", world, StringComparison.Ordinal);
-        Assert.Contains("DrawOrientation", world, StringComparison.Ordinal);
-        Assert.Contains("DrawConveyance", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("CreateOrganicGroundPatch", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("DrawGlow", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("COMPOSED", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("Opportunity Overview", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("Map Projection", world, StringComparison.Ordinal);
+        Assert.Contains("ProductSlot", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawGrid", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawAmbientField", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawPrimaryNodes", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawInfrastructureBus", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawRelationshipTraces", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawVisibleCapabilityPorts", grid, StringComparison.Ordinal);
+        Assert.Contains("PreferredProductOrder", grid, StringComparison.Ordinal);
+        Assert.Contains("maxColumns = 4", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("DrawWgtCity", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("DrawVocation", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("DrawIllumination", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("DrawOrientation", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("DrawConveyance", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("LandOutline", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("COMPOSED", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("Opportunity Overview", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("Map Projection", grid, StringComparison.Ordinal);
 
-        Assert.Contains("worldV2Renderer = new AtlasWorldV2Control", host, StringComparison.Ordinal);
+        Assert.Contains("atlasGridRenderer = new AtlasGridControl", host, StringComparison.Ordinal);
+        Assert.DoesNotContain("new AtlasWorldV2Control", host, StringComparison.Ordinal);
         Assert.DoesNotContain("new AtlasLivingWorldControl", host, StringComparison.Ordinal);
-        Assert.DoesNotContain("new AtlasWorldRegionalArchitectureOverlay", host, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void Shared_capabilities_become_local_facilities_and_progressive_networks()
+    public void Shared_capability_providers_use_a_distinct_infrastructure_layer_and_capability_ports()
     {
         var root = FindRepositoryRoot();
-        var world = File.ReadAllText(Path.Combine(root, "src", "WiiiiGotThis.Presentation", "AtlasWorldV2Control.cs"));
+        var grid = File.ReadAllText(Path.Combine(root, "src", "WiiiiGotThis.Presentation", "AtlasGridControl.cs"));
 
-        Assert.Contains("DrawConveyanceConsumption", world, StringComparison.Ordinal);
-        Assert.Contains("BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId", world, StringComparison.Ordinal);
-        Assert.Contains("BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId", world, StringComparison.Ordinal);
-        Assert.Contains("DrawCapabilityInfrastructure", world, StringComparison.Ordinal);
-        Assert.Contains("zoom < CloseZoom && !focused", world, StringComparison.Ordinal);
-        Assert.Contains("connection.IsEnabled", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("KindLabel", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("CompactStateText", world, StringComparison.Ordinal);
+        Assert.Contains("node.IsSharedCapabilityProvider", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawInfrastructureNode", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawInfrastructureBus", grid, StringComparison.Ordinal);
+        Assert.Contains("AtlasConnectionKind.CapabilityOwnership", grid, StringComparison.Ordinal);
+        Assert.Contains("connection.IsCapabilityUse", grid, StringComparison.Ordinal);
+        Assert.Contains("connection.IsEnabled", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("KindLabel", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("CompactStateText", grid, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void World_v2_exposes_authored_place_anchors_for_host_alignment()
+    public void Grid_exposes_deterministic_node_anchors_for_dossier_and_navigation_alignment()
     {
         var root = FindRepositoryRoot();
-        var world = File.ReadAllText(Path.Combine(root, "src", "WiiiiGotThis.Presentation", "AtlasWorldV2Control.cs"));
+        var grid = File.ReadAllText(Path.Combine(root, "src", "WiiiiGotThis.Presentation", "AtlasGridControl.cs"));
+        var polish = File.ReadAllText(Path.Combine(root, "src", "WiiiiGotThis.Presentation", "DesktopAtlasView.Polish.cs"));
 
-        Assert.Contains("TryGetWorldPosition", world, StringComparison.Ordinal);
-        Assert.Contains("nodePlaces.TryGetValue", world, StringComparison.Ordinal);
+        Assert.Contains("TryGetWorldPosition", grid, StringComparison.Ordinal);
+        Assert.Contains("nodePlaces.TryGetValue", grid, StringComparison.Ordinal);
+        Assert.Contains("atlasGridRenderer.TryGetWorldPosition", polish, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Pointer_and_keyboard_feedback_are_immediate_animated_and_reduced_motion_aware()
+    {
+        var root = FindRepositoryRoot();
+        var grid = File.ReadAllText(Path.Combine(root, "src", "WiiiiGotThis.Presentation", "AtlasGridControl.cs"));
+
+        Assert.Contains("OnPointerMoved", grid, StringComparison.Ordinal);
+        Assert.Contains("OnPointerPressed", grid, StringComparison.Ordinal);
+        Assert.Contains("OnPointerReleased", grid, StringComparison.Ordinal);
+        Assert.Contains("UpdateInteraction", grid, StringComparison.Ordinal);
+        Assert.Contains("RequestAnimationFrame", grid, StringComparison.Ordinal);
+        Assert.Contains("MoveSelection", grid, StringComparison.Ordinal);
+        Assert.Contains("if (reducedMotion)", grid, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
