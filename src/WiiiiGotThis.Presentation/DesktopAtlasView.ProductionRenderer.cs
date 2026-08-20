@@ -9,15 +9,15 @@ namespace WiiiiGotThis.Presentation;
 public sealed partial class DesktopAtlasView
 {
     private AtlasLandscapeControl? productionSceneRenderer;
-    private AtlasWorldV2Control? worldV2Renderer;
+    private AtlasGridControl? atlasGridRenderer;
     private ShellViewModel? productionRendererShell;
 
     private bool IsProductionSceneRendererActive =>
-        productionSceneRenderer is not null || worldV2Renderer is not null;
+        productionSceneRenderer is not null || atlasGridRenderer is not null;
 
     private void EnsureProductionSceneRenderer()
     {
-        if (productionSceneRenderer is not null && worldV2Renderer is not null)
+        if (productionSceneRenderer is not null && atlasGridRenderer is not null)
             return;
 
         productionSceneRenderer = new AtlasLandscapeControl
@@ -29,19 +29,19 @@ public sealed partial class DesktopAtlasView
         productionSceneRenderer.NodeInvoked += OnProductionSceneNodeInvoked;
         productionSceneRenderer.NodeActivated += OnProductionSceneNodeActivated;
 
-        worldV2Renderer = new AtlasWorldV2Control
+        atlasGridRenderer = new AtlasGridControl
         {
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Stretch,
             IsHitTestVisible = false,
             IsVisible = false
         };
-        worldV2Renderer.NodeInvoked += OnProductionSceneNodeInvoked;
-        worldV2Renderer.NodeActivated += OnProductionSceneNodeActivated;
+        atlasGridRenderer.NodeInvoked += OnProductionSceneNodeInvoked;
+        atlasGridRenderer.NodeActivated += OnProductionSceneNodeActivated;
 
-        // The legacy Canvas and the previous World experiments remain in source only as
-        // migration evidence. The active product path is now exactly one renderer at a time:
-        // semantic diagnostic landscape for non-World themes, authored World V2 for World.
+        // The legacy Canvas and earlier World/city experiments are not part of the active path.
+        // Exactly one renderer is active at a time: the diagnostic landscape for the older
+        // appearance themes, or the abstract modular Atlas grid for the flagship World theme.
         SceneCanvas.IsVisible = false;
         SceneCanvas.IsHitTestVisible = false;
         SceneCanvas.Children.Clear();
@@ -50,7 +50,7 @@ public sealed partial class DesktopAtlasView
             themeAmbientLayer.IsVisible = false;
 
         AtlasViewport.Children.Insert(0, productionSceneRenderer);
-        AtlasViewport.Children.Insert(1, worldV2Renderer);
+        AtlasViewport.Children.Insert(1, atlasGridRenderer);
         UpdateProductionScene();
         UpdateProductionSceneCamera();
     }
@@ -95,14 +95,14 @@ public sealed partial class DesktopAtlasView
 
     private void UpdateProductionScene()
     {
-        if (productionSceneRenderer is null || worldV2Renderer is null || productionRendererShell is null)
+        if (productionSceneRenderer is null || atlasGridRenderer is null || productionRendererShell is null)
             return;
 
         var isWorld = productionRendererShell.AtlasTheme == AtlasThemePreference.World;
         productionSceneRenderer.IsVisible = !isWorld;
         productionSceneRenderer.IsHitTestVisible = !isWorld;
-        worldV2Renderer.IsVisible = isWorld;
-        worldV2Renderer.IsHitTestVisible = isWorld;
+        atlasGridRenderer.IsVisible = isWorld;
+        atlasGridRenderer.IsHitTestVisible = isWorld;
 
         productionSceneRenderer.SetScene(
             productionRendererShell.AtlasNodes,
@@ -111,10 +111,7 @@ public sealed partial class DesktopAtlasView
             productionRendererShell.AtlasTheme,
             productionRendererShell.IsAtlasReducedMotion);
 
-        // World receives the complete curated Atlas projection. Shared providers/capabilities are
-        // intentionally retained because World V2 turns them into local facilities and networks
-        // rather than duplicating them as generic product settlements or graph edges.
-        worldV2Renderer.SetScene(
+        atlasGridRenderer.SetScene(
             productionRendererShell.AtlasNodes,
             productionRendererShell.AtlasConnections,
             productionRendererShell.SelectedAtlasNode?.NodeId,
@@ -127,7 +124,7 @@ public sealed partial class DesktopAtlasView
             sceneScale.ScaleX,
             sceneTranslate.X,
             sceneTranslate.Y);
-        worldV2Renderer?.SetCamera(
+        atlasGridRenderer?.SetCamera(
             sceneScale.ScaleX,
             sceneTranslate.X,
             sceneTranslate.Y);
