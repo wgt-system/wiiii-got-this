@@ -3,7 +3,7 @@ namespace WiiiiGotThis.Integration.Tests;
 public sealed class AtlasLivingWorldRendererContractTests
 {
     [Fact]
-    public void World_theme_uses_the_authored_v2_renderer_and_keeps_the_first_living_renderer_inactive()
+    public void World_theme_uses_the_abstract_grid_renderer_and_not_any_city_renderer()
     {
         var root = FindRepositoryRoot();
         var host = File.ReadAllText(Path.Combine(
@@ -11,70 +11,63 @@ public sealed class AtlasLivingWorldRendererContractTests
             "src",
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.ProductionRenderer.cs"));
-        var world = File.ReadAllText(Path.Combine(
+        var grid = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldV2Control.cs"));
-        var legacy = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "WiiiiGotThis.Presentation",
-            "AtlasLivingWorldControl.cs"));
+            "AtlasGridControl.cs"));
 
-        Assert.Contains("new AtlasWorldV2Control", host, StringComparison.Ordinal);
+        Assert.Contains("new AtlasGridControl", host, StringComparison.Ordinal);
         Assert.Contains("AtlasThemePreference.World", host, StringComparison.Ordinal);
-        Assert.Contains("worldV2Renderer.IsVisible = isWorld", host, StringComparison.Ordinal);
+        Assert.Contains("atlasGridRenderer.IsVisible = isWorld", host, StringComparison.Ordinal);
+        Assert.DoesNotContain("new AtlasWorldV2Control", host, StringComparison.Ordinal);
         Assert.DoesNotContain("new AtlasLivingWorldControl", host, StringComparison.Ordinal);
 
-        Assert.Contains("DrawWgtCity", world, StringComparison.Ordinal);
-        Assert.Contains("DrawVocation", world, StringComparison.Ordinal);
-        Assert.Contains("DrawIllumination", world, StringComparison.Ordinal);
-        Assert.Contains("DrawOrientation", world, StringComparison.Ordinal);
-        Assert.Contains("DrawConveyance", world, StringComparison.Ordinal);
-        Assert.Contains("DrawRoadNetwork", world, StringComparison.Ordinal);
-        Assert.Contains("DrawCapabilityInfrastructure", world, StringComparison.Ordinal);
-
-        // The previous renderer remains readable migration evidence only; retaining the file does
-        // not authorize putting it back into the active host to satisfy historical tests.
-        Assert.Contains("public sealed class AtlasLivingWorldControl", legacy, StringComparison.Ordinal);
+        Assert.Contains("DrawGrid", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawPrimaryNodes", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawAmbientField", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawInfrastructureBus", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("City", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("Settlement", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("Village", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("Road", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("Terrain", grid, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void World_v2_treats_shared_capabilities_as_infrastructure_not_peer_product_towns()
+    public void Shared_capabilities_are_infrastructure_modules_not_peer_product_tiles()
     {
         var root = FindRepositoryRoot();
-        var world = File.ReadAllText(Path.Combine(
+        var grid = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldV2Control.cs"));
+            "AtlasGridControl.cs"));
 
-        Assert.Contains("DrawConveyanceConsumption", world, StringComparison.Ordinal);
-        Assert.Contains("DrawIndustrialGround", world, StringComparison.Ordinal);
-        Assert.Contains("DrawWarehouse", world, StringComparison.Ordinal);
-        Assert.Contains("DrawRelayMast", world, StringComparison.Ordinal);
-        Assert.Contains("BuildAtlasProjectionUseCase.ConveyanceDurableDeliveryCapabilityId", world, StringComparison.Ordinal);
-        Assert.Contains("BuildAtlasProjectionUseCase.OrientationGeospatialCapabilityId", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("DrawProductSettlements", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("CapabilityRevealZoom", world, StringComparison.Ordinal);
+        Assert.Contains("node.IsSharedCapabilityProvider", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawInfrastructureNode", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawInfrastructureBus", grid, StringComparison.Ordinal);
+        Assert.Contains("InfrastructureHeight", grid, StringComparison.Ordinal);
+        Assert.Contains("ProductHeight", grid, StringComparison.Ordinal);
+        Assert.Contains("DrawVisibleCapabilityPorts", grid, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void World_v2_has_authored_expansion_sites_for_low_teens_direct_products_before_grouping()
+    public void Direct_products_scale_through_deterministic_rows_before_semantic_grouping_is_needed()
     {
         var root = FindRepositoryRoot();
-        var world = File.ReadAllText(Path.Combine(
+        var grid = File.ReadAllText(Path.Combine(
             root,
             "src",
             "WiiiiGotThis.Presentation",
-            "AtlasWorldV2Control.cs"));
+            "AtlasGridControl.cs"));
 
-        Assert.Contains("private static readonly Point[] ExpansionPlaces", world, StringComparison.Ordinal);
-        Assert.Contains("new(-695, -120)", world, StringComparison.Ordinal);
-        Assert.Contains("new(805, -70)", world, StringComparison.Ordinal);
-        Assert.Contains("DrawExpansionProducts", world, StringComparison.Ordinal);
-        Assert.DoesNotContain("ring < 2", world, StringComparison.Ordinal);
+        Assert.Contains("ProductSlot", grid, StringComparison.Ordinal);
+        Assert.Contains("maxColumns = 4", grid, StringComparison.Ordinal);
+        Assert.Contains("row = index / maxColumns", grid, StringComparison.Ordinal);
+        Assert.Contains("rowCount = Math.Min(maxColumns, count - rowStart)", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("ExpansionPlaces", grid, StringComparison.Ordinal);
+        Assert.DoesNotContain("ring < 2", grid, StringComparison.Ordinal);
     }
 
     private static string FindRepositoryRoot()
