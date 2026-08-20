@@ -27,8 +27,13 @@ public sealed class AtlasDossierV2ContractTests
         Assert.Contains("Border.wgt-atlas-inspector Border.wgt-atlas-kind-chip", styles, StringComparison.Ordinal);
         Assert.Contains("Border.wgt-atlas-inspector Border.wgt-atlas-state-chip", styles, StringComparison.Ordinal);
         Assert.Contains("Property=\"IsVisible\" Value=\"False\"", styles, StringComparison.Ordinal);
+        Assert.Contains("Property=\"IsHitTestVisible\" Value=\"False\"", styles, StringComparison.Ordinal);
+        Assert.Contains("Property=\"Opacity\" Value=\"0\"", styles, StringComparison.Ordinal);
+        Assert.Contains("Property=\"MaxWidth\" Value=\"0\"", styles, StringComparison.Ordinal);
+        Assert.Contains("Property=\"MaxHeight\" Value=\"0\"", styles, StringComparison.Ordinal);
         Assert.Contains("Border.wgt-atlas-inspector Border.wgt-inspector-metric", styles, StringComparison.Ordinal);
         Assert.Contains("Property=\"Background\" Value=\"Transparent\"", styles, StringComparison.Ordinal);
+        Assert.Contains("Property=\"BorderBrush\" Value=\"Transparent\"", styles, StringComparison.Ordinal);
         Assert.Contains("AtlasDossierV2Styles.axaml", app, StringComparison.Ordinal);
     }
 
