@@ -17,23 +17,29 @@ public sealed class AtlasWorldRegionalArchitectureContractTests
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.ProductionRenderer.cs"));
 
-        Assert.Contains("DrawPitchedHouse", world, StringComparison.Ordinal);
-        Assert.Contains("DrawCivicHall", world, StringComparison.Ordinal);
-        Assert.Contains("DrawLongHall", world, StringComparison.Ordinal);
-        Assert.Contains("DrawMarket", world, StringComparison.Ordinal);
+        // Vocation: civic/work town.
+        Assert.Contains("DrawPitchedBuilding", world, StringComparison.Ordinal);
+        Assert.Contains("DrawCivicBuilding", world, StringComparison.Ordinal);
+        Assert.Contains("DrawLongBuilding", world, StringComparison.Ordinal);
+        Assert.Contains("DrawWaterTower", world, StringComparison.Ordinal);
+        Assert.Contains("DrawMarketSquare", world, StringComparison.Ordinal);
 
-        Assert.Contains("DrawLibraryWing", world, StringComparison.Ordinal);
-        Assert.Contains("DrawLanternHall", world, StringComparison.Ordinal);
+        // Illumination: campus/knowledge settlement.
         Assert.Contains("DrawCampusCourt", world, StringComparison.Ordinal);
+        Assert.Contains("DrawPavilion", world, StringComparison.Ordinal);
         Assert.Contains("DrawArcade", world, StringComparison.Ordinal);
 
-        Assert.Contains("DrawSurveyPavilion", world, StringComparison.Ordinal);
+        // Orientation: survey/navigation settlement.
+        Assert.Contains("DrawSurveyTerrace", world, StringComparison.Ordinal);
         Assert.Contains("DrawObservationTower", world, StringComparison.Ordinal);
         Assert.Contains("DrawSurveyMast", world, StringComparison.Ordinal);
         Assert.Contains("DrawBearingRose", world, StringComparison.Ordinal);
 
+        // WGT and Conveyance retain materially different urban/industrial scales.
         Assert.Contains("DrawCityBlock", world, StringComparison.Ordinal);
         Assert.Contains("DrawCentralTower", world, StringComparison.Ordinal);
+        Assert.Contains("DrawWarehouse", world, StringComparison.Ordinal);
+        Assert.Contains("DrawSilo", world, StringComparison.Ordinal);
         Assert.DoesNotContain("new AtlasWorldRegionalArchitectureOverlay", host, StringComparison.Ordinal);
     }
 
@@ -70,10 +76,10 @@ public sealed class AtlasWorldRegionalArchitectureContractTests
             "WiiiiGotThis.Presentation",
             "DesktopAtlasView.Polish.cs"));
 
-        Assert.Contains("[\"vocation\"] = new(-475, 150)", world, StringComparison.Ordinal);
-        Assert.Contains("[\"illumination\"] = new(-250, -335)", world, StringComparison.Ordinal);
-        Assert.Contains("[\"orientation\"] = new(440, -155)", world, StringComparison.Ordinal);
-        Assert.Contains("[\"conveyance\"] = new(455, 305)", world, StringComparison.Ordinal);
+        Assert.Contains("[\"vocation\"] = new(-500, 150)", world, StringComparison.Ordinal);
+        Assert.Contains("[\"illumination\"] = new(-270, -330)", world, StringComparison.Ordinal);
+        Assert.Contains("[\"orientation\"] = new(455, -175)", world, StringComparison.Ordinal);
+        Assert.Contains("[\"conveyance\"] = new(500, 315)", world, StringComparison.Ordinal);
         Assert.Contains("TryGetWorldPosition", world, StringComparison.Ordinal);
         Assert.Contains("worldV2Renderer.TryGetWorldPosition", polish, StringComparison.Ordinal);
     }
